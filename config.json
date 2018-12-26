@@ -1,0 +1,8 @@
+{
+    "HomeFolder": "E:/Users/Junying/OneDrive/Programming/SkillSurveyProject/SkillSurvey/",
+    "AdaptersFolder": "SkillSurvey.SiteAdapters/",
+    "AppDataFolder": "E:/Users/Junying/OneDrive/Programming/SkillSurveyProject/SkillSurvey/AppData",
+    "DatabaseFile": "SkillSurvey.db",
+    "SkillList": ["C#", "Java", "AWS", ".NET Framework", "Azure", "Angular", "React.Js", "Entity Framework",
+        "Javascript", "AWS", "Azure", "ASP.NET MVC", "ASP.NET WebForms", "Power BI", "Team Foundation Server", "Node.Js"]
+}
