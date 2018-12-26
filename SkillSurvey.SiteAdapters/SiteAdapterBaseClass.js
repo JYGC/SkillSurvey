@@ -1,6 +1,6 @@
 const webSpider = require("node-spider");
 
-class SiteAdapter {
+class SiteAdapterBaseClass {
     constructor(parameters) {
         this.pushJobPostCallback = parameters.pushJobPostCallback;
         this.urlSubmitCallback = parameters.urlSubmitCallback;
@@ -71,4 +71,4 @@ class SiteAdapter {
     }
 }
 
-exports.SiteAdapter = SiteAdapter;
+exports.SiteAdapterBaseClass = SiteAdapterBaseClass;

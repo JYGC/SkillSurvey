@@ -2,7 +2,7 @@ const databaseAdapter = require("../SkillSurvey.DatabaseAdapter/DatabaseAdapter.
 const path = require("path");
 const appConfig = require('../config.json');
 
-class Service {
+class ServiceBaseClass {
     constructor(parameters) {
         this.dbAdapter = databaseAdapter({
             databaseFilePath: path.join(appConfig.AppDataFolder, appConfig.DatabaseFile)
@@ -14,4 +14,4 @@ class Service {
     }
 }
 
-exports.Service = Service;
+exports.ServiceBaseClass = ServiceBaseClass;
