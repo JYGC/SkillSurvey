@@ -1,7 +1,7 @@
-const bassClass = require("./BaseService.js");
+const bassClass = require("./ServiceBaseClass.js");
 const textProcessor = require("../SkillSurvey.TextProcessor/TextProcessor.js");
 
-class TextProcess extends bassClass.Service {
+class TextProcess extends bassClass.ServiceBaseClass {
     constructor(parameters) {
         super(parameters);
     }

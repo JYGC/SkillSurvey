@@ -1,6 +1,6 @@
-const bassClass = require("./SiteAdapter.js");
+const bassClass = require("./SiteAdapterBaseClass.js");
 
-class Jora extends bassClass.SiteAdapter {
+class Jora extends bassClass.SiteAdapterBaseClass {
     constructor(parameters) {
         super(parameters);
         this.configSettings = require("./Jora.json");

@@ -19,36 +19,23 @@ CREATE TABLE IF NOT EXISTS [Site]
     [Name] TEXT
 );
 
-CREATE TABLE IF NOT EXISTS [Word]
+CREATE TABLE IF NOT EXISTS [SkillType]
 (
     [Id] INTEGER PRIMARY KEY ASC,
-    [Name] TEXT,
-    [ClassifiedWordId] INT,
-    [JobPostCreateDate] TEXT
+    [Name] TEXT UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS [ClassifiedWord]
+CREATE TABLE IF NOT EXISTS [SkillName]
 (
     [Id] INTEGER PRIMARY KEY ASC,
     [Name] TEXT UNIQUE,
-    [Type] INT
+    [SkillTypeId] INT,
+    [IsEnabled] INT
 );
 
-CREATE TABLE IF NOT EXISTS [ClassifiedWordAlias]
+CREATE TABLE IF NOT EXISTS [SkillWordAlias]
 (
     [Id] INTEGER PRIMARY KEY ASC,
-    [ClassifiedWordId] INT,
+    [SkillNameId] INT,
     [Alias] TEXT UNIQUE
-);
-
-INSERT INTO [Site]
-(
-    [Name]
-)
-VALUES
-(
-    'Seek.com.au'
-),
-(
-    'au.Jora.com'
 );

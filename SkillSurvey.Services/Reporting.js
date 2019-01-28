@@ -1,32 +1,21 @@
 const appConfig = require('../config.json');
-const bassClass = require("./BaseService.js");
+const bassClass = require("./ServiceBaseClass.js");
+const monthlyCountReport = require("../SkillSurvey.ReportGenerator/MonthlyCountReport.js");
 
-class Reporting extends bassClass.Service {
+class Reporting extends bassClass.ServiceBaseClass {
     constructor(parameters) {
         super(parameters);
     }
 
     Run () {
-        var thisClass = this;
-        var skillList = appConfig.SkillList;
-        var occurenceTable = {};
-        thisClass.GetOccurence(skillList, occurenceTable);
-    }
+        var monthlyCountReportObject = monthlyCountReport.NewReport({
+            returnReportCallback: function (outputReport) {
+                console.log(outputReport);
+            },
+            dbAdapter: this.dbAdapter
+        });
 
-    GetOccurence(skillList, occurenceTable) {
-        var thisClass = this;
-        if (skillList.length > 0) {
-            var currentSkill = skillList.splice(0, 1);
-            thisClass.dbAdapter.Word.GetOccurence({
-                WordName: currentSkill,
-                callback: function (rows) {
-                    occurenceTable[currentSkill] = rows;
-                    thisClass.GetOccurence(skillList, occurenceTable);
-                }
-            });
-        } else {
-            console.log(occurenceTable);
-        }
+        monthlyCountReportObject.GetReport();
     }
 }
 

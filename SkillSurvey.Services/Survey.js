@@ -2,9 +2,9 @@ const webSpider = require("node-spider");
 const path = require("path");
 const fs = require("fs");
 const appConfig = require('../config.json');
-const bassClass = require("./BaseService.js");
+const bassClass = require("./ServiceBaseClass.js");
 
-class Survey extends bassClass.Service {
+class Survey extends bassClass.ServiceBaseClass {
     constructor(paramenters) {
         super(paramenters);
         var thisClass = this;
@@ -53,7 +53,7 @@ class Survey extends bassClass.Service {
         fs.readdir(adapterPath, function (error, files) { 
             if (error === null) {
                 for (var i = 0; i < files.length; i++) {
-                    if (files[i] != "SiteAdapter.js" && files[i].includes(".js", files[i].length - 3)) {
+                    if (files[i] != "SiteAdapterBaseClass.js" && files[i].includes(".js", files[i].length - 3)) {
                         siteAdapter = require(path.join(adapterPath, files[i])).NewAdapter({
                             // When a job post is downloaded add it to jobPosts array
                             pushJobPostCallback: function (jobDetails) {

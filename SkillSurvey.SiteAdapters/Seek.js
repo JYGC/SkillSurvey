@@ -1,6 +1,6 @@
-const bassClass = require("./SiteAdapter.js");
+const bassClass = require("./SiteAdapterBaseClass.js");
 
-class Seek extends bassClass.SiteAdapter {
+class Seek extends bassClass.SiteAdapterBaseClass {
     constructor(parameters) {
         super(parameters);
         this.configSettings = require("./Seek.json");
