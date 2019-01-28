@@ -1,6 +1,6 @@
 const databaseQuery = require("./DatabaseQuery.js");
 
-class SkillSurvey_GetAlias extends databaseQuery.DatabaseQuery {
+class SkillName_GetAlias extends databaseQuery.DatabaseQuery {
     constructor () {
         super();
 
@@ -16,4 +16,4 @@ LEFT JOIN
 
 }
 
-module.exports = (parameters) => new SkillSurvey_GetAlias(parameters);
+module.exports = (parameters) => new SkillName_GetAlias(parameters);
