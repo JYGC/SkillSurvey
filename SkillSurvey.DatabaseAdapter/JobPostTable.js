@@ -40,6 +40,20 @@ class JobPosTable extends baseClass.DatabaseTable {
             }
         });
     }
+
+    GetMonthlyCountBySkill(parameters) {
+        var getMonthlyCountBySkill = (require("./JobPost_GetMonthlyCountBySkill.js"))({
+            SkillNameAliases: parameters.SkillNameAliases
+        });
+
+        this.runDatabaseAllCallback(getMonthlyCountBySkill.GetQuery(), getMonthlyCountBySkill.GetFlatData(), function (error, rows) {
+            if (error) {
+                console.log(error.message);
+            } else {
+                parameters.callback(rows);
+            }
+        });
+    }
 }
 
 module.exports = (parameters) => new JobPosTable(parameters);

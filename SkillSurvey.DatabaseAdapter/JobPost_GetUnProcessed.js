@@ -19,7 +19,7 @@ class JobPost_GetUnProcessed extends databaseQuery.DatabaseQuery {
 FROM
     JobPost
 WHERE
-    ProcessStatus = 0`
+    ProcessStatus = 0`;
     }
 }
 

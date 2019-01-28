@@ -26,6 +26,7 @@ class DatabaseAdapter {
         this.Site = (require('./SiteTable.js'))(tableParamters);
         this.ClassifiedWord = (require('./ClassifiedWordTable.js'))(tableParamters);
         this.Word = (require('./WordTable.js'))(tableParamters);
+        this.SkillSurvey = (require('./SkillSurveyTable.js'))(tableParamters);
     }
 }
 
