@@ -6,15 +6,7 @@ class SkillNameTable extends baseClass.DatabaseTable {
     }
 
     GetAlias(parameters) {
-        var getAlias = (require("./SkillName_GetAlias.js"))();
-
-        this.runDatabaseAllCallback(getAlias.GetQuery(), getAlias.GetFlatData(), function (error, rows) {
-            if (error) {
-                console.log(error.message);
-            } else {
-                parameters.callback(rows);
-            }
-        });
+        this.getManyRows((require("./SkillName_GetAlias.js"))(), (rows) => parameters.callback(rows));
     }
 }
 

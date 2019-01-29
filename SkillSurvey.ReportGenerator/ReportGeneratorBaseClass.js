@@ -4,15 +4,16 @@ class ReportGeneratorBaseClass {
         this.dbAdapter = parameters.dbAdapter;
     }
 
+    // From outside, call this only
     GetReport (parameters) {
-        this.GetSkillNames(parameters);
+        this.GetSkillNamesAndAliases(parameters);
     }
 
-    GetSkillNames (parameters) {
+    GetSkillNamesAndAliases (parameters) {
         var thisClass = this;
         thisClass.dbAdapter.SkillName.GetAlias({
             callback: function (rows) {
-                thisClass.rawSkillNames = rows;
+                thisClass.skillNamesAndAliases = rows; // set to class property to work with asynchronous callbacks
                 thisClass.ProcessData();
             }
         });
@@ -21,11 +22,5 @@ class ReportGeneratorBaseClass {
     ProcessData () {
     }
 }
-
-// class SkillNameReportBaseClass extends ReportGeneratorBaseClass {
-//     constructor (parameters) {
-//         super(parameters);
-//     }
-// }
 
 exports.ReportGeneratorBaseClass = ReportGeneratorBaseClass;

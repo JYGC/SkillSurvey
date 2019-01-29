@@ -7,18 +7,27 @@ class DatabaseAdapter {
         this.jsonExporter = sqliteJson(this.database);
 
         var thisClass = this;
+
+        var callbackErrorHandling = function (error, rows, returnCallback) {
+            if (error) {
+                console.log(error.message);
+            } else {
+                (typeof returnCallback === "function") && returnCallback(rows);
+            }
+        };
+
         var tableParamters = {
-            runDatabaseCallback: function (parameterizedSql, sqlParameters, errorCallback) {
-                thisClass.database.run(parameterizedSql, sqlParameters, errorCallback);
+            insertRows: function (sqlQuery, returnCallback) {
+                thisClass.database.run(sqlQuery.GetQuery(), sqlQuery.GetFlatData(),
+                    (error) => callbackErrorHandling(error, null, returnCallback));
             },
-            runDatabaseGetCallback: function (parameterizedSql, sqlParameters, returnCallback) {
-                thisClass.database.get(parameterizedSql, sqlParameters, returnCallback);
+            getOneRow: function (sqlQuery, returnCallback) {
+                thisClass.database.get(sqlQuery.GetQuery(), sqlQuery.GetFlatData(),
+                    (error, rows) => callbackErrorHandling(error, rows, returnCallback));
             },
-            runDatabaseAllCallback: function (parameterizedSql, sqlParameters, returnCallback) {
-                thisClass.database.all(parameterizedSql, sqlParameters, returnCallback);
-            },
-            passToExporterCallback: function (querySections, returnCallback) {
-                thisClass.jsonExporter.json(querySections, returnCallback);
+            getManyRows: function (sqlQuery, returnCallback) {
+                thisClass.database.all(sqlQuery.GetQuery(), sqlQuery.GetFlatData(),
+                    (error, rows) => callbackErrorHandling(error, rows, returnCallback));
             }
         };
 
