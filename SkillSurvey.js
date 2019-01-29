@@ -19,9 +19,6 @@ switch (serviceName) {
     case "reports":
         serviceImport = require('./SkillSurvey.Services/Reporting.js');
         break;
-    case "textprocess":
-        serviceImport = require('./SkillSurvey.Services/TextProcess.js');
-        break;
 }
 
 var service = serviceImport.NewService(null);

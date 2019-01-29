@@ -35,8 +35,6 @@ class Survey extends bassClass.ServiceBaseClass {
                     itemsInserted += jobPostsChunk.length;
                     console.log(itemsInserted + " of " + totalItems + " job posts passed to database");
                 }
-
-                //console.log(thisClass.jobPosts);
             },
             headers: { 'user-agent': 'node-spider' },
             encoding: 'utf8'

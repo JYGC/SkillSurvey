@@ -10,7 +10,7 @@ class ReportGeneratorBaseClass {
 
     GetSkillNames (parameters) {
         var thisClass = this;
-        thisClass.dbAdapter.SkillSurvey.GetAlias({
+        thisClass.dbAdapter.SkillName.GetAlias({
             callback: function (rows) {
                 thisClass.rawSkillNames = rows;
                 thisClass.ProcessData();
