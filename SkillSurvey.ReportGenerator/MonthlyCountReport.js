@@ -10,45 +10,48 @@ class MonthlyCountReport extends bassClass.ReportGeneratorBaseClass {
         
         // Turn flat list of names and aliases into dictionary that groups aliases based on what
         // skillname they belong to.
-        while (this.skillNamesAndAliases.length > 0) {
-            var lastElement = this.skillNamesAndAliases.pop();
+        var index = this.skillNamesAndAliases.length - 1;
+        while (index > 0) {
+            var currentSkillName = this.skillNamesAndAliases[index];
 
             // First alias of the skillname must be the skill name itself.
-            if (!(lastElement.Name in this.aliasDictionary)) {
-                this.aliasDictionary[lastElement.Name] = [lastElement.Name];
+            if (!(currentSkillName.Name in this.aliasDictionary)) {
+                this.aliasDictionary[currentSkillName.Name] = [currentSkillName.Name];
             }
 
             // Ignore {name: "name", alias: null}. Happens when skillname does have aliases.
-            if (lastElement.Alias !== null) {
-                this.aliasDictionary[lastElement.Name].push(lastElement.Alias);
+            if (currentSkillName.Alias !== null) {
+                this.aliasDictionary[currentSkillName.Name].push(currentSkillName.Alias);
             }
+
+            index--;
         }
 
         this.skillNameMonthlyCount = {};
         this.GetSkillMonthlyCount({
-            AliasDictionaryKeys: Object.keys(this.aliasDictionary),
-            AliasDictionary: this.aliasDictionary
+             // avoid passing this.aliasDictionary by reference JSON stringify then JSON parsing 
+            AliasDictionary: JSON.parse(JSON.stringify(this.aliasDictionary))
         });
     }
 
+    // Creates:
+    // {'ASP.NET MVC': [{ MonthYear: '2018-09', Count: 41 }, { MonthYear: '2018-10', Count: 205 }],
+    // '.NET': [{ MonthYear: '2018-09', Count: 332 }, { MonthYear: '2018-10', Count: 2057 }] }
     GetSkillMonthlyCount (parameters) {
         var thisClass = this;
 
-        var lastKey = parameters.AliasDictionaryKeys.pop();
-
-        // GetFlatData() in DatabaseQuery cannot flatten paramters for prepared query if parameters
-        // are flat arrays so they have to be coverted to dictionaries
-        var aliases = []
-        parameters.AliasDictionary[lastKey].forEach(function (item) {
-            aliases.push({alias: "%" + item + "%"} /* WHERE clause is doing LIKE %?% */ );
-        });
+        // Remove currentSkillNameAlias from parameters.AliasDictionary so it isn't pass to in the
+        // recursion.
+        var currentSkillName = Object.keys(parameters.AliasDictionary)[0];
+        var currentSkillNameAlias = parameters.AliasDictionary[currentSkillName];
+        delete parameters.AliasDictionary[currentSkillName];
 
         thisClass.dbAdapter.JobPost.GetMonthlyCountBySkill({
-            SkillNameAliases: aliases,
+            SkillNameAliases: currentSkillNameAlias,
             callback: function (rows) {
-                thisClass.skillNameMonthlyCount[lastKey] = rows;
+                thisClass.skillNameMonthlyCount[currentSkillName] = rows;
 
-                if (parameters.AliasDictionaryKeys.length > 0) {
+                if (Object.keys(parameters.AliasDictionary).length > 0) {
                     thisClass.GetSkillMonthlyCount(parameters);
                 } else {
                     thisClass.returnReportCallback(thisClass.skillNameMonthlyCount);

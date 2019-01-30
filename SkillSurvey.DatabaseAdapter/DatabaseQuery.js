@@ -13,7 +13,9 @@ class DatabaseQuery {
         var flatArray = [];
 
         for (var i = 0; i < this.dataList.length; i++) {
-            flatArray = flatArray.concat(Object.values(this.dataList[i]));
+            // Some dataLists are already flat lists
+            flatArray = flatArray.concat((typeof this.dataList[i] === "object") ? Object.values(
+                this.dataList[i]) : this.dataList[i]);
         }
 
         return flatArray;

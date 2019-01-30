@@ -6,7 +6,10 @@ class JobPost_GetMonthlyCountBySkill extends databaseQuery.DatabaseQuery {
         var thisClass = this;
         
         // Get data to be inserted to database
-        thisClass.dataList = parameters.SkillNameAliases;
+        thisClass.dataList = [];
+        parameters.SkillNameAliases.forEach(function (item) {
+            thisClass.dataList.push("%" + item + "%"); /* WHERE clause is doing LIKE %?% */
+        });
 
         thisClass.parameterizedQuery = `SELECT
     strftime('%Y-%m', JobPost.PostedDate) [MonthYear],
