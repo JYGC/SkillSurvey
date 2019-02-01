@@ -92,7 +92,7 @@ class MonthlyCountReport extends bassClass.ReportGeneratorBaseClass {
                         titles: Object.keys(thisClass.skillNameMonthlyCount),
                         fields: yearMonthFields,
                         data: thisClass.skillNameMonthlyCount,
-                        chartTitle: "Line chart"
+                        chartTitle: "Monthly Count Report"
                     }, function (err, data) {
                         if (err) {
                             console.error(err);
