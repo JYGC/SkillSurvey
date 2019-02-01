@@ -1,6 +1,5 @@
 class ReportGeneratorBaseClass {
     constructor (parameters) {
-        this.returnReportCallback = parameters.returnReportCallback; // Get function that returns report object
         this.dbAdapter = parameters.dbAdapter;
     }
 

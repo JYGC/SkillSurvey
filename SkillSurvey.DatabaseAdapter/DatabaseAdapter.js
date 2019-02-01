@@ -1,10 +1,8 @@
 const sqlite3 = require('sqlite3');
-const sqliteJson = require('sqlite-json');
 
 class DatabaseAdapter {
     constructor (parameters) {
         this.database = new sqlite3.Database(parameters.databaseFilePath);
-        this.jsonExporter = sqliteJson(this.database);
 
         var thisClass = this;
 

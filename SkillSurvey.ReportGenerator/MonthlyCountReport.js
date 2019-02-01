@@ -1,3 +1,7 @@
+var XSLXChart = require("xlsx-chart");
+const path = require("path");
+var fs = require("fs");
+const appConfig = require('../config.json');
 const bassClass = require("./ReportGeneratorBaseClass.js");
 
 class MonthlyCountReport extends bassClass.ReportGeneratorBaseClass {
@@ -35,8 +39,10 @@ class MonthlyCountReport extends bassClass.ReportGeneratorBaseClass {
     }
 
     // Creates:
-    // {'ASP.NET MVC': [{ MonthYear: '2018-09', Count: 41 }, { MonthYear: '2018-10', Count: 205 }],
-    // '.NET': [{ MonthYear: '2018-09', Count: 332 }, { MonthYear: '2018-10', Count: 2057 }] }
+    // [ { SkillName: 'ASP.NET MVC', YearMonthJobCounts: {
+    //  '2019-01': 18, '2018-12': 142, '2018-11': 292, '2018-10': 205, '2018-09': 41 } },
+    // { SkillName: '.NET Framework', YearMonthJobCounts: {
+    //  '2019-01': 200, '2018-12': 1310, '2018-11': 2310, '2018-10': 2057, '2018-09': 332 } } ]
     GetSkillMonthlyCount (parameters) {
         var thisClass = this;
 
@@ -49,12 +55,55 @@ class MonthlyCountReport extends bassClass.ReportGeneratorBaseClass {
         thisClass.dbAdapter.JobPost.GetMonthlyCountBySkill({
             SkillNameAliases: currentSkillNameAlias,
             callback: function (rows) {
-                thisClass.skillNameMonthlyCount[currentSkillName] = rows;
+                var yearMonthJobCounts = {}
+
+                var i = rows.length - 1;
+                while (i >= 0) {
+                    yearMonthJobCounts[rows[i].YearMonth] = rows[i].Count;
+                    i--;
+                }
+
+                thisClass.skillNameMonthlyCount[currentSkillName] = yearMonthJobCounts;
 
                 if (Object.keys(parameters.AliasDictionary).length > 0) {
                     thisClass.GetSkillMonthlyCount(parameters);
                 } else {
-                    thisClass.returnReportCallback(thisClass.skillNameMonthlyCount);
+                    // Create date fields from same month last year to one month ago with one month
+                    // intervals ['2018-02', '2018-03', ..., '2019-01']
+                    var fieldDate = new Date();
+                    fieldDate.setUTCMonth(fieldDate.getUTCMonth() - 12);
+                    // Set day part to 1 because when the current date day is more than 28 days and
+                    // the next month has only 28 days, we get ['2018-01', '2018-03', ...]
+                    fieldDate.setUTCDate(1);
+
+                    var yearMonthFields = [];
+                    var fieldMonth = null;
+                    for (i = 0; i < 12; i++) {
+                        fieldMonth = fieldDate.getUTCMonth() + 1;
+                        yearMonthFields.push(fieldDate.getUTCFullYear().toString() +
+                            ((fieldMonth < 10) ? "-0" : "-") + fieldMonth.toString());
+                        fieldDate.setUTCMonth(fieldDate.getUTCMonth() + 1);
+                    }
+
+                    // Create excel report
+                    var xlsxChart = new XSLXChart();
+                    xlsxChart.generate({
+                        chart: "line",
+                        titles: Object.keys(thisClass.skillNameMonthlyCount),
+                        fields: yearMonthFields,
+                        data: thisClass.skillNameMonthlyCount,
+                        chartTitle: "Line chart"
+                    }, function (err, data) {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            if (!fs.existsSync(appConfig.ReportFolder)){
+                                fs.mkdirSync(appConfig.ReportFolder);
+                            }
+                            fs.writeFileSync(path.join(appConfig.ReportFolder, "MonthlyCountReport " +
+                                (new Date()).toDateString() + ".xlsx"), data);
+                        }
+                    });
                 }
             }
         });

@@ -9,9 +9,6 @@ class Reporting extends bassClass.ServiceBaseClass {
 
     Run () {
         var monthlyCountReportObject = monthlyCountReport.NewReport({
-            returnReportCallback: function (outputReport) {
-                console.log(outputReport);
-            },
             dbAdapter: this.dbAdapter
         });
 

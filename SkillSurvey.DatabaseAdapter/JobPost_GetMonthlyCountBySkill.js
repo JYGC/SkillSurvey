@@ -8,20 +8,23 @@ class JobPost_GetMonthlyCountBySkill extends databaseQuery.DatabaseQuery {
         // Get data to be inserted to database
         thisClass.dataList = [];
         parameters.SkillNameAliases.forEach(function (item) {
-            thisClass.dataList.push("%" + item + "%"); /* WHERE clause is doing LIKE %?% */
+            thisClass.dataList.push("%" + item + " %"); /* WHERE clause is doing LIKE %word % */
+            thisClass.dataList.push("%" + item + ",%"); /* WHERE clause is doing LIKE %word.% */
+            thisClass.dataList.push("%" + item + ".%"); /* WHERE clause is doing LIKE %word,% */
+            thisClass.dataList.push("%" + item + "\n%"); /* WHERE clause is doing LIKE %word\n% */
         });
 
         thisClass.parameterizedQuery = `SELECT
-    strftime('%Y-%m', JobPost.PostedDate) [MonthYear],
+    strftime('%Y-%m', JobPost.PostedDate) [YearMonth],
     COUNT(JobPost.Id) [Count]
 FROM
     JobPost
 WHERE`
         thisClass.parameterizedQuery += `
     JobPost.Body LIKE ?
-OR`.repeat(parameters.SkillNameAliases.length) // Number of where clauses must equal number of 
+OR`.repeat(thisClass.dataList.length) // Number of where clauses must equal number of parameters
     .replace(/OR$/,`GROUP BY
-    [MonthYear];`); // Remove last OR replace with GROUP BY clause
+    [YearMonth];`); // Remove last OR replace with GROUP BY clause
 ;
     }
 }

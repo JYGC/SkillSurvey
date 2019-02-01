@@ -52,6 +52,12 @@ SELECT 'Java', [Id], 1 FROM [SkillType] WHERE [Name] = 'Back End Language'
 UNION
 SELECT 'Node', [Id], 1 FROM [SkillType] WHERE [Name] = 'Back End Language'
 UNION
+SELECT 'MySQL', [Id], 1 FROM [SkillType] WHERE [Name] = 'Back End Language'
+UNION
+SELECT 'Microsoft SQL', [Id], 1 FROM [SkillType] WHERE [Name] = 'Back End Language'
+UNION
+SELECT 'SQLite', [Id], 1 FROM [SkillType] WHERE [Name] = 'Back End Language'
+UNION
 SELECT 'Amazon Web Services', [Id], 1 FROM [SkillType] WHERE [Name] = 'Hosting Platform'
 UNION
 SELECT 'Azure', [Id], 1 FROM [SkillType] WHERE [Name] = 'Hosting Platform'
@@ -96,6 +102,14 @@ UNION
 SELECT [Id], 'Node.js' FROM [SkillName] WHERE [Name] = 'Node'
 UNION
 SELECT [Id], 'NodeJS' FROM [SkillName] WHERE [Name] = 'Node'
+UNION
+SELECT [Id], 'My SQL' FROM [SkillName] WHERE [Name] = 'MySQL'
+UNION
+SELECT [Id], 'MSSQL' FROM [SkillName] WHERE [Name] = 'Microsoft SQL'
+UNION
+SELECT [Id], 'T-SQL' FROM [SkillName] WHERE [Name] = 'Microsoft SQL'
+UNION
+SELECT [Id], 'MS SQL' FROM [SkillName] WHERE [Name] = 'Microsoft SQL'
 UNION
 SELECT [Id], 'AWS' FROM [SkillName] WHERE [Name] = 'Amazon Web Services'
 UNION

@@ -21,9 +21,7 @@
   "homepage": "https://github.com/jygc/SkillSurvey#readme",
   "dependencies": {
     "node-spider": "^1.4.1",
-    "sqlite-async": "^1.0.10",
-    "sqlite-json": "^1.1.0",
-    "sqlite-sync": "^0.3.8",
-    "sqlite3": "^4.0.2"
+    "sqlite3": "^4.0.2",
+    "xlsx-chart": "^0.3.0"
   }
 }
