@@ -21,7 +21,7 @@
   "homepage": "https://github.com/jygc/SkillSurvey#readme",
   "dependencies": {
     "node-spider": "^1.4.1",
-    "sqlite3": "^4.0.2",
-    "xlsx-chart": "^0.3.0"
+    "sqlite3": "^4.1.0",
+    "xlsx-chart": "^0.3.8"
   }
 }
