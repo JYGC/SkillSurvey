@@ -6,10 +6,10 @@ class Jora extends bassClass.SiteAdapterBaseClass {
         this.configSettings = require("./Jora.json");
         this.siteName = "au.Jora.com";
 
-        this.jobPostLink = '.jobtitle';
+        this.jobPostLink = '.job-item';
 
-        this.titleSelector = 'h1';
-        this.bodySelector = '.summary';
+        this.titleSelector = 'h3.job-title.heading-xxlarge';
+        this.bodySelector = '#job-description-container';
         // this.postedDateSelector not used here
         this.citySelector = '.location';
         this.country = "Australia";
@@ -19,7 +19,7 @@ class Jora extends bassClass.SiteAdapterBaseClass {
     }
     
     GetJobSiteNumber(url, doc) {
-        return doc.$(".show-job-container").eq(0).attr('id');
+        return url.substring(url.lastIndexOf("/job/") + 5, url.lastIndexOf("?"));
     }
 
     // Advertisement's post date can calculated by subtracting how old the advert is in days from
