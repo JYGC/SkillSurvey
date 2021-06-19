@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/jygc/SkillSurvey#readme",
   "dependencies": {
+    "lokijs": "^1.5.12",
     "node-spider": "^1.4.1",
     "sqlite3": "^4.2.0",
     "xlsx-chart": "^0.3.9"

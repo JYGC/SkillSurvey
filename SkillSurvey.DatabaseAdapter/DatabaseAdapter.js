@@ -2,7 +2,8 @@ const sqlite3 = require('sqlite3');
 
 class DatabaseAdapter {
     constructor (parameters) {
-        this.database = new sqlite3.Database(parameters.databaseFilePath);
+        this.database = new (require('lokijs'))(parameters.databaseFilePath);
+        //this.database = new sqlite3.Database(parameters.databaseFilePath);
 
         var thisClass = this;
 
@@ -18,6 +19,11 @@ class DatabaseAdapter {
             insertRows: function (sqlQuery, returnCallback) {
                 thisClass.database.run(sqlQuery.GetQuery(), sqlQuery.GetFlatData(),
                     (error) => callbackErrorHandling(error, null, returnCallback));
+            },
+            updateRows: function (sqlQuery, returnCallback) {
+                // thisClass.database.run(sqlQuery.GetQuery(), sqlQuery.GetFlatData(),
+                //     (error) => callbackErrorHandling(error, null, returnCallback));
+                console.log(sqlQuery.GetQuery());
             },
             getOneRow: function (sqlQuery, returnCallback) {
                 thisClass.database.get(sqlQuery.GetQuery(), sqlQuery.GetFlatData(),
