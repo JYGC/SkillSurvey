@@ -52,9 +52,9 @@ class MonthlyCountReport extends bassClass.ReportGeneratorBaseClass {
         var currentSkillNameAlias = parameters.AliasDictionary[currentSkillName];
         delete parameters.AliasDictionary[currentSkillName];
 
-        thisClass.dbAdapter.JobPost.GetMonthlyCountBySkill({
-            SkillNameAliases: currentSkillNameAlias,
-            callback: function (rows) {
+        thisClass.dbAdapter.JobPost.GetMonthlyCountBySkill(
+            currentSkillNameAlias,
+            (rows) => {
                 var yearMonthJobCounts = {}
 
                 var i = rows.length - 1;
@@ -106,7 +106,7 @@ class MonthlyCountReport extends bassClass.ReportGeneratorBaseClass {
                     });
                 }
             }
-        });
+        );
     }
 }
 

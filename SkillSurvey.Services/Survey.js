@@ -29,7 +29,7 @@ class Survey extends bassClass.ServiceBaseClass {
                 var itemsInserted = 0;
                 while (thisClass.jobPosts.length > 0) {
                     var jobPostsChunk = thisClass.jobPosts.splice(0, 100);
-                    thisClass.dbAdapter.JobPost.AddMany({
+                    thisClass.dbAdapter.JobPost.UpdateAndInsert({
                         JobPosts: jobPostsChunk
                     });
                     itemsInserted += jobPostsChunk.length;

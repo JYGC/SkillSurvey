@@ -2,15 +2,16 @@ const sqlite3 = require('sqlite3');
 
 class DatabaseTable {
     constructor (parameters) {
-        this.database = new (require('lokijs'))(parameters.databaseFilePath);
+        this.database = parameters.database;
+        this.getErrorCallback = parameters.getErrorCallback;
+    }
 
-
-
-        
-        this.insertRows = parameters.insertRows;
-        this.updateRows = parameters.updateRows;
-        this.getManyRows = parameters.getManyRows;
-        this.getOneRow = parameters.getOneRow;
+    _SaveData() {
+        this.database.saveDatabase((error) => {
+            if (error && typeof(this.getErrorCallback) === 'function') {
+                this.getErrorCallback(error);
+            }
+        });
     }
 }
 
