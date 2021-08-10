@@ -1,0 +1,11 @@
+{
+    "BaseUrl": "https://au.jora.com",
+    "SearchCriterias": [
+        {
+            "Name": "Software Developer Victoria",
+            "Url": "https://au.jora.com/j?l=Victoria&p={p}&q=software+developer"
+        }
+    ],
+    "PageFlag": "{p}",
+    "Pages": 100
+}

@@ -2,8 +2,10 @@ package services
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
-	"github.com/JYGC/SkillSurvey/pkg/config"
+	"github.com/JYGC/SkillSurvey/pkg/siteadapters"
 	"github.com/gocolly/colly/v2"
 )
 
@@ -11,34 +13,47 @@ const userAgent = "node-spider"
 
 type Survey struct {
 	ServiceBase
-	webSpider *colly.Collector
 }
 
 func NewSurvey() *Survey {
 	survey := new(Survey)
-	survey.webSpider = colly.NewCollector()
-	survey.webSpider.UserAgent = userAgent
-	//Need to ad more function
-	//survey.webSpider.WithTransport(&http.Transport{})
 	return survey
 }
 
 func (s *Survey) Run() {
-	config := config.LoadConfiguration()
-	fmt.Println(config)
-	// c := colly.NewCollector(
-	// 	colly.AllowedDomains("www.halopedia.org"),
+	// webSpider := colly.NewCollector(
+	// 	colly.UserAgent(userAgent),
+	// 	colly.AllowedDomains("www.wikipedia.org", "wikipedia.org"),
 	// )
 
-	// c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+	// webSpider.OnHTML("a[href]", func(e *colly.HTMLElement) {
 	// 	link := e.Attr("href")
 	// 	fmt.Printf("Got link: %q -> %s\n", e.Text, link)
-	// 	c.Visit(e.Request.AbsoluteURL(link))
+	// 	webSpider.Visit(e.Request.AbsoluteURL(link))
 	// })
 
-	// c.OnRequest(func(r *colly.Request) {
+	// webSpider.OnRequest(func(r *colly.Request) {
 	// 	fmt.Println("Visiting", r.URL.String())
 	// })
 
-	// c.Visit("https://www.halopedia.org")
+	// webSpider.Visit("https://www.wikipedia.org")
+	currentSiteAdpter := siteadapters.NewSeek()
+	webSpider := colly.NewCollector(
+		colly.UserAgent(userAgent),
+		colly.AllowedDomains(currentSiteAdpter.ConfigSettings.AllowedDomains...),
+	)
+	webSpider.OnHTML(currentSiteAdpter.JobPostLink, currentSiteAdpter.FetchJobPost)
+	webSpider.OnRequest(func(r *colly.Request) {
+		fmt.Println("Visiting", r.URL.String())
+	})
+	for _, searchCriteria := range currentSiteAdpter.ConfigSettings.SearchCriterias {
+		for searchPage := 1; searchPage <= currentSiteAdpter.ConfigSettings.Pages; searchPage++ {
+			fullUrl := strings.ReplaceAll(
+				searchCriteria.Url,
+				currentSiteAdpter.ConfigSettings.PageFlag,
+				strconv.Itoa(searchPage),
+			)
+			webSpider.Visit(fullUrl)
+		}
+	}
 }
