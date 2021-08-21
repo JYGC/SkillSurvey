@@ -1,5 +1,6 @@
 {
     "BaseUrl": "https://au.jora.com",
+    "AllowedDomains": ["jora.com", "au.jora.com"],
     "SearchCriterias": [
         {
             "Name": "Software Developer Victoria",
