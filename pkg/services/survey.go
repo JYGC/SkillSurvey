@@ -1,12 +1,8 @@
 package services
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/JYGC/SkillSurvey/pkg/siteadapters"
-	"github.com/gocolly/colly"
+	"github.com/JYGC/SkillSurvey/pkg/webscraper"
 )
 
 const userAgent = "node-spider"
@@ -21,30 +17,10 @@ func NewSurvey() *Survey {
 }
 
 func (s *Survey) Run() {
-	for _, currentSiteAdpter := range []siteadapters.ISiteAdapter{
-		siteadapters.NewSeekAdapter(),
-		siteadapters.NewJoraAdapter(),
+	for _, webScraperSite := range []webscraper.WebScraper{
+		*webscraper.NewWebScraper(siteadapters.NewSeekAdapter(), userAgent),
+		*webscraper.NewWebScraper(siteadapters.NewJoraAdapter(), userAgent),
 	} {
-		webSpider := colly.NewCollector(
-			colly.UserAgent(userAgent),
-			colly.AllowedDomains(currentSiteAdpter.GetConfigSettings().AllowedDomains...),
-		)
-		webSpider.OnHTML(currentSiteAdpter.GetJobPostLink(), func(e *colly.HTMLElement) {
-			link := e.Attr("href")
-			fmt.Printf("Got link: %q -> %s\n", e.Text, link)
-		})
-		webSpider.OnRequest(func(r *colly.Request) {
-			fmt.Println("Visiting", r.URL.String())
-		})
-		for _, searchCriteria := range currentSiteAdpter.GetConfigSettings().SearchCriterias {
-			for searchPage := 1; searchPage <= currentSiteAdpter.GetConfigSettings().Pages; searchPage++ {
-				fullUrl := strings.ReplaceAll(
-					searchCriteria.Url,
-					currentSiteAdpter.GetConfigSettings().PageFlag,
-					strconv.Itoa(searchPage),
-				)
-				webSpider.Visit(fullUrl)
-			}
-		}
+		webScraperSite.Start()
 	}
 }

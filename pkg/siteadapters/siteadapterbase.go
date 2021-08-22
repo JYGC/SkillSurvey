@@ -19,6 +19,8 @@ type ISiteAdapter interface {
 	GetPostedDateType() string
 	GetCityType() string
 	GetSuburbType() string
+	GetJobSiteNumber(url string, doc string) string
+	GetPostedDate(url string, doc string) string
 }
 
 type SiteAdapterBase struct {
