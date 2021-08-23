@@ -63,7 +63,6 @@ func (w WebScraper) getJobPosts() {
 	})
 	for _, jobPostLink := range w.jobPostLinks {
 		link := w.siteAdapter.GetConfigSettings().BaseUrl + jobPostLink
-		//fmt.Println(link)
 		w.scraperEngine.Visit(link)
 	}
 	fmt.Println(newJobPostSlice)
