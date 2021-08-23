@@ -7,7 +7,7 @@ import (
 
 	"github.com/JYGC/SkillSurvey/pkg/entities"
 	"github.com/JYGC/SkillSurvey/pkg/siteadapters"
-	"github.com/gocolly/colly"
+	"github.com/gocolly/colly/v2"
 )
 
 type WebScraper struct {
@@ -50,16 +50,21 @@ func (w *WebScraper) getJobPostLinks() {
 
 func (w WebScraper) getJobPosts() {
 	var newJobPostSlice []entities.JobPost
-	w.scraperEngine.OnHTML("html", func(html *colly.HTMLElement) {
+	w.scraperEngine.OnHTML("html", func(doc *colly.HTMLElement) {
 		newJobPost := new(entities.JobPost)
 		newJobPost.SiteName = w.siteAdapter.GetSiteName()
-		newJobPost.JobSiteNumber = w.siteAdapter.GetJobSiteNumber(html.Request.URL.String(), html.Text)
-		newJobPost.Body = html.ChildText(w.siteAdapter.GetBodySelector())
+		newJobPost.JobSiteNumber = w.siteAdapter.GetJobSiteNumber(doc)
+		newJobPost.Body = doc.ChildText(w.siteAdapter.GetBodySelector())
+		newJobPost.PostedDate = w.siteAdapter.GetPostedDate(doc)
+		newJobPost.City = doc.ChildText(w.siteAdapter.GetCitySelector())
+		newJobPost.Country = w.siteAdapter.GetCountry()
+		newJobPost.Suburb = doc.ChildText(w.siteAdapter.GetSuburbSelector())
 		newJobPostSlice = append(newJobPostSlice, *newJobPost)
 	})
 	for _, jobPostLink := range w.jobPostLinks {
 		link := w.siteAdapter.GetConfigSettings().BaseUrl + jobPostLink
-		fmt.Println(link)
-		//w.scraperEngine.Visit(link)
+		//fmt.Println(link)
+		w.scraperEngine.Visit(link)
 	}
+	fmt.Println(newJobPostSlice)
 }

@@ -1,15 +1,20 @@
 package siteadapters
 
 import (
+	"errors"
+	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/JYGC/SkillSurvey/pkg/config"
+	"github.com/gocolly/colly/v2"
 )
 
 const seekConfigPath = "./pkg/siteadapters/seek.json"
 
 type SeekAdapter struct {
-	SiteAdapterBase
+	UrlJobPathDayDateSite
 }
 
 func NewSeekAdapter() *SeekAdapter {
@@ -31,10 +36,29 @@ func NewSeekAdapter() *SeekAdapter {
 	return seek
 }
 
-func (s SeekAdapter) GetJobSiteNumber(url string, doc string) string {
-	return url[strings.Index(url, "/job/")+5 : strings.LastIndex(url, "?")]
-}
-
-func (s SeekAdapter) GetPostedDate(url string, doc string) string {
-	return ""
+func (s SeekAdapter) GetPostedDate(doc *colly.HTMLElement) time.Time {
+	ageString := doc.ChildText(".yvsb870._14uh9942c._1qw3t4i0._1qw3t4ix._1qw3t4i1.xn3fpb4._1qw3t4i9")
+	timeAgoIndex := strings.Index(ageString, "Posted ") + 7
+	agoIndex := strings.Index(ageString, " ago")
+	timeAgo := ageString[timeAgoIndex:agoIndex]
+	currentDate := time.Now()
+	var postedDate time.Time
+	var err error
+	switch timeAgoUnit := ageString[agoIndex-1 : agoIndex]; timeAgoUnit {
+	case "d":
+		var day int
+		day, err = strconv.Atoi(timeAgo[:len(timeAgo)-1])
+		postedDate = currentDate.AddDate(0, 0, -day)
+	case "h", "m", "s":
+		var timeAgoDuration time.Duration
+		timeAgoDuration, err = time.ParseDuration(timeAgo)
+		postedDate = currentDate.Add(-timeAgoDuration)
+	default:
+		err = errors.New("cannot determine posted time")
+	}
+	if err != nil {
+		//TODO: Error handling
+		fmt.Println(err.Error())
+	}
+	return postedDate
 }

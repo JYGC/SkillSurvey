@@ -1,7 +1,11 @@
 package siteadapters
 
 import (
+	"strings"
+	"time"
+
 	"github.com/JYGC/SkillSurvey/pkg/config"
+	"github.com/gocolly/colly/v2"
 )
 
 type ISiteAdapter interface {
@@ -19,8 +23,8 @@ type ISiteAdapter interface {
 	GetPostedDateType() string
 	GetCityType() string
 	GetSuburbType() string
-	GetJobSiteNumber(url string, doc string) string
-	GetPostedDate(url string, doc string) string
+	GetJobSiteNumber(doc *colly.HTMLElement) string
+	GetPostedDate(doc *colly.HTMLElement) time.Time
 }
 
 type SiteAdapterBase struct {
@@ -94,4 +98,21 @@ func (s SiteAdapterBase) GetCityType() string {
 
 func (s SiteAdapterBase) GetSuburbType() string {
 	return s.SuburbType
+}
+
+func (s SiteAdapterBase) GetJobSiteNumber(doc *colly.HTMLElement) string {
+	return ""
+}
+
+func (s SiteAdapterBase) GetPostedDate(doc *colly.HTMLElement) time.Time {
+	return time.Now()
+}
+
+type UrlJobPathDayDateSite struct {
+	SiteAdapterBase
+}
+
+func (u UrlJobPathDayDateSite) GetJobSiteNumber(doc *colly.HTMLElement) string {
+	url := doc.Request.URL.String()
+	return url[strings.Index(url, "/job/")+5 : strings.LastIndex(url, "?")]
 }

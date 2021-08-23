@@ -18,8 +18,8 @@ func NewSurvey() *Survey {
 
 func (s *Survey) Run() {
 	for _, webScraperSite := range []webscraper.WebScraper{
-		*webscraper.NewWebScraper(siteadapters.NewSeekAdapter(), userAgent),
 		*webscraper.NewWebScraper(siteadapters.NewJoraAdapter(), userAgent),
+		*webscraper.NewWebScraper(siteadapters.NewSeekAdapter(), userAgent),
 	} {
 		webScraperSite.Start()
 	}
