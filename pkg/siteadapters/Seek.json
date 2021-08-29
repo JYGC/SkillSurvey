@@ -8,5 +8,20 @@
         }
     ],
     "PageFlag": "{p}",
-    "Pages": 100
+    "Pages": 100,
+    "SiteSelectors": {
+        "SiteName": "https://www.seek.com.au",
+        "JobPostLink": "[data-automation=\"jobTitle\"]",
+        "TitleSelector": "[data-automation=\"job-detail-title\"]",
+        "BodySelector": "[data-automation=\"jobAdDetails\"]",
+        "PostedDateSelector": ".yvsb870._14uh9942c._1qw3t4i0._1qw3t4ix._1qw3t4i1.xn3fpb4._1qw3t4i9",
+        "CitySelector": "div.FYwKg._3VxpE_4 > div:nth-child(1)",
+        "Country": "Australia",
+        "SuburbSelector": "div.FYwKg._3VxpE_4 > div:nth-child(2)",
+        "TitleType": "text",
+        "BodyType": "text",
+        "PostedDateType": "text",
+        "CityType": "text",
+        "SuburbType": "text"
+    }
 }
