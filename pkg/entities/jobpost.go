@@ -1,9 +1,11 @@
 package entities
 
-import "time"
+import (
+	"time"
+)
 
 type JobPost struct {
-	SiteName      string
+	SiteId        int
 	JobSiteNumber string
 	Title         string
 	Body          string
@@ -11,4 +13,9 @@ type JobPost struct {
 	City          string
 	Country       string
 	Suburb        string
+}
+
+type InboundJobPost struct {
+	JobPost
+	SiteName string
 }

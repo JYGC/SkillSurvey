@@ -15,7 +15,7 @@ func main() {
 		case "survey":
 			service = services.NewSurvey()
 		case "reports":
-			fmt.Println("reports")
+			service = services.NewReports()
 		default:
 			fmt.Println("Unknown argment")
 		}

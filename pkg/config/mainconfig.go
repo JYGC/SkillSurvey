@@ -9,6 +9,7 @@ type MainConfig struct {
 	AppDataFolder  string
 	DatabaseFile   string
 	ReportFolder   string
+	ServerPort     string
 }
 
 func LoadMainConfig() MainConfig {

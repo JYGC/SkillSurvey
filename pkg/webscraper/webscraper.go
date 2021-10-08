@@ -49,22 +49,22 @@ func (w *WebScraper) getJobPostLinks() {
 }
 
 func (w WebScraper) getJobPosts() {
-	var newJobPostSlice []entities.JobPost
+	var newInboundJobPostSlice []entities.InboundJobPost
 	w.scraperEngine.OnHTML("html", func(doc *colly.HTMLElement) {
-		newJobPost := new(entities.JobPost)
-		newJobPost.SiteName = w.siteAdapter.GetConfigSettings().SiteSelectors.SiteName
-		newJobPost.JobSiteNumber = w.siteAdapter.GetJobSiteNumber(doc)
-		newJobPost.Body = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.BodySelector)
-		newJobPost.PostedDate = w.siteAdapter.GetPostedDate(doc)
-		newJobPost.City = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.CitySelector)
-		newJobPost.Country = w.siteAdapter.GetConfigSettings().SiteSelectors.Country
-		newJobPost.Suburb = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.SuburbSelector)
-		newJobPostSlice = append(newJobPostSlice, *newJobPost)
+		newInboundJobPost := new(entities.InboundJobPost)
+		newInboundJobPost.SiteName = w.siteAdapter.GetConfigSettings().SiteSelectors.SiteName
+		newInboundJobPost.JobSiteNumber = w.siteAdapter.GetJobSiteNumber(doc)
+		newInboundJobPost.Body = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.BodySelector)
+		newInboundJobPost.PostedDate = w.siteAdapter.GetPostedDate(doc)
+		newInboundJobPost.City = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.CitySelector)
+		newInboundJobPost.Country = w.siteAdapter.GetConfigSettings().SiteSelectors.Country
+		newInboundJobPost.Suburb = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.SuburbSelector)
+		newInboundJobPostSlice = append(newInboundJobPostSlice, *newInboundJobPost)
 	})
 	for _, jobPostLink := range w.jobPostLinks {
 		link := w.siteAdapter.GetConfigSettings().BaseUrl + jobPostLink
 		w.scraperEngine.Visit(link)
 	}
 	fmt.Println(len(w.jobPostLinks))
-	fmt.Println(newJobPostSlice)
+	fmt.Println(newInboundJobPostSlice)
 }
