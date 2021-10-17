@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/JYGC/SkillSurvey/pkg/entities"
-	"github.com/JYGC/SkillSurvey/pkg/siteadapters"
+	"github.com/JYGC/SkillSurvey/internal/entities"
+	"github.com/JYGC/SkillSurvey/internal/siteadapters"
 	"github.com/gocolly/colly/v2"
 )
 

@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JYGC/SkillSurvey/pkg/config"
+	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/gocolly/colly/v2"
 )
 
-const seekConfigPath = "./pkg/siteadapters/seek.json"
+const seekConfigPath = "./internal/siteadapters/seek.json"
 
 type SeekAdapter struct {
 	UrlJobPathDayDateSite

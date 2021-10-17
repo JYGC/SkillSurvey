@@ -1,5 +1,5 @@
 package database
 
 type SkillWordAliasCollection struct {
-	CollectionBase
+	DbTableCallBase
 }

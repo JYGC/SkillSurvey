@@ -4,4 +4,6 @@ type IEntity interface {
 	ToInterface() map[string]interface{}
 }
 
-type EntityBase struct{}
+type EntityBase struct {
+	ID uint
+}

@@ -1,23 +1,14 @@
-package services
+package main
 
 import (
 	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/JYGC/SkillSurvey/pkg/config"
+	"github.com/JYGC/SkillSurvey/internal/config"
 )
 
-type Reports struct {
-	ServiceBase
-}
-
-func NewReports() *Reports {
-	reports := new(Reports)
-	return reports
-}
-
-func (r *Reports) Run() {
+func main() {
 	configSettings := config.LoadMainConfig()
 	fs := http.FileServer(http.Dir("./frontend/dist"))
 	http.Handle("/", fs)

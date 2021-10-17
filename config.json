@@ -4,5 +4,6 @@
     "AppDataFolder": "C:/Users/Junying/AppData/Roaming/SkillSurvey/",
     "DatabaseFile": "SkillSurvey.New.db",
     "ReportFolder": "C:/Users/Junying/SkillSurveyReports",
-    "ServerPort": "3000"
+    "ServerPort": "3000",
+    "ErrorLogFile": "error.log"
 }

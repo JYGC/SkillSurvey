@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JYGC/SkillSurvey/pkg/config"
+	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/gocolly/colly/v2"
 )
 

@@ -10,6 +10,7 @@ type MainConfig struct {
 	DatabaseFile   string
 	ReportFolder   string
 	ServerPort     string
+	ErrorLogFile   string
 }
 
 func LoadMainConfig() MainConfig {

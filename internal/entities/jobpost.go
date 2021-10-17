@@ -5,7 +5,8 @@ import (
 )
 
 type JobPost struct {
-	SiteId        int
+	EntityBase
+	Site          Site `gorm:"foreignKey:ID"`
 	JobSiteNumber string
 	Title         string
 	Body          string

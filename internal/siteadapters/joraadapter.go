@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JYGC/SkillSurvey/pkg/config"
+	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/gocolly/colly/v2"
 )
 
-const joraConfigPath = "./pkg/siteadapters/jora.json"
+const joraConfigPath = "./internal/siteadapters/jora.json"
 
 type JoraAdapter struct {
 	UrlJobPathDayDateSite
