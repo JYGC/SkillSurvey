@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/JYGC/SkillSurvey/internal/entities"
+	"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/JYGC/SkillSurvey/internal/siteadapters"
 	"github.com/gocolly/colly/v2"
 )
@@ -51,6 +52,11 @@ func (w *WebScraper) getJobPostLinks() {
 func (w WebScraper) getJobPosts() {
 	var newInboundJobPostSlice []entities.InboundJobPost
 	w.scraperEngine.OnHTML("html", func(doc *colly.HTMLElement) {
+		defer func() {
+			if err := recover(); err != nil {
+				exception.ErrorLogger.Println(err)
+			}
+		}()
 		newInboundJobPost := new(entities.InboundJobPost)
 		newInboundJobPost.SiteName = w.siteAdapter.GetConfigSettings().SiteSelectors.SiteName
 		newInboundJobPost.JobSiteNumber = w.siteAdapter.GetJobSiteNumber(doc)

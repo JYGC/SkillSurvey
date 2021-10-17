@@ -2,7 +2,6 @@ package siteadapters
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -44,8 +43,7 @@ func (s SeekAdapter) GetPostedDate(doc *colly.HTMLElement) time.Time {
 		err = errors.New("cannot determine posted time")
 	}
 	if err != nil {
-		//TODO: Error handling
-		fmt.Println(err.Error())
+		panic(err)
 	}
 	return postedDate
 }
