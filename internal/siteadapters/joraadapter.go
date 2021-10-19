@@ -1,7 +1,6 @@
 package siteadapters
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -36,8 +35,7 @@ func (j JoraAdapter) GetPostedDate(doc *colly.HTMLElement) time.Time {
 		var err error
 		daysOld, err = strconv.Atoi(ageString[0 : daysIndex-1])
 		if err != nil {
-			//TODO: Error handling
-			fmt.Println("Failed to get days")
+			panic(err)
 		}
 	}
 	// set to next month if argument is more then number of days in

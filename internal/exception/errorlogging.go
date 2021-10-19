@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 
 	"github.com/JYGC/SkillSurvey/internal/config"
 )
@@ -22,4 +23,15 @@ func init() {
 		panic(err)
 	}
 	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
+func ReportError(extraData map[string]string) {
+	errorMap := make(map[string]interface{})
+	if extraData != nil {
+		errorMap["Extra data"] = extraData
+	}
+	if err := recover(); err != nil {
+		errorMap["Stacktrace"] = string(debug.Stack())
+		ErrorLogger.Println(errorMap)
+	}
 }

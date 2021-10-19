@@ -1,7 +1,6 @@
 package webscraper
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -14,7 +13,6 @@ import (
 type WebScraper struct {
 	siteAdapter   siteadapters.ISiteAdapter
 	scraperEngine colly.Collector
-	jobPostLinks  []string
 }
 
 func NewWebScraper(siteadapter siteadapters.ISiteAdapter, userAgent string) *WebScraper {
@@ -22,21 +20,25 @@ func NewWebScraper(siteadapter siteadapters.ISiteAdapter, userAgent string) *Web
 	newWebScraper.siteAdapter = siteadapter
 	newWebScraper.scraperEngine = *colly.NewCollector(
 		colly.UserAgent(userAgent),
-		colly.AllowedDomains(newWebScraper.siteAdapter.GetConfigSettings().AllowedDomains...),
+		colly.AllowedDomains(
+			newWebScraper.siteAdapter.GetConfigSettings().AllowedDomains...,
+		),
 	)
 	return newWebScraper
 }
 
-func (w WebScraper) Start() {
-	w.getJobPostLinks()
-	w.getJobPosts()
+func (w WebScraper) Scrap() []entities.InboundJobPost {
+	return w.getJobPosts(w.getJobPostLinks())
 }
 
-func (w *WebScraper) getJobPostLinks() {
-	w.scraperEngine.OnHTML(w.siteAdapter.GetConfigSettings().SiteSelectors.JobPostLink, func(e *colly.HTMLElement) {
-		link := e.Attr("href")
-		w.jobPostLinks = append(w.jobPostLinks, link)
-	})
+func (w *WebScraper) getJobPostLinks() (jobPostLinks []string) {
+	w.scraperEngine.OnHTML(
+		w.siteAdapter.GetConfigSettings().SiteSelectors.JobPostLink,
+		func(e *colly.HTMLElement) {
+			link := e.Attr("href")
+			jobPostLinks = append(jobPostLinks, link)
+		},
+	)
 	for _, searchCriteria := range w.siteAdapter.GetConfigSettings().SearchCriterias {
 		for searchPage := 1; searchPage <= w.siteAdapter.GetConfigSettings().Pages; searchPage++ {
 			fullUrl := strings.ReplaceAll(
@@ -47,30 +49,43 @@ func (w *WebScraper) getJobPostLinks() {
 			w.scraperEngine.Visit(fullUrl)
 		}
 	}
+	return jobPostLinks
 }
 
-func (w WebScraper) getJobPosts() {
-	var newInboundJobPostSlice []entities.InboundJobPost
+func (w WebScraper) getJobPosts(jobPostLinksSlice []string) (newInboundJobPostSlice []entities.InboundJobPost) {
 	w.scraperEngine.OnHTML("html", func(doc *colly.HTMLElement) {
-		defer func() {
-			if err := recover(); err != nil {
-				exception.ErrorLogger.Println(err)
-			}
-		}()
+		defer exception.ReportError(map[string]string{
+			"Url": doc.Request.URL.String(),
+		})
 		newInboundJobPost := new(entities.InboundJobPost)
 		newInboundJobPost.SiteName = w.siteAdapter.GetConfigSettings().SiteSelectors.SiteName
 		newInboundJobPost.JobSiteNumber = w.siteAdapter.GetJobSiteNumber(doc)
+		newInboundJobPost.Title = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.TitleSelector)
 		newInboundJobPost.Body = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.BodySelector)
 		newInboundJobPost.PostedDate = w.siteAdapter.GetPostedDate(doc)
 		newInboundJobPost.City = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.CitySelector)
 		newInboundJobPost.Country = w.siteAdapter.GetConfigSettings().SiteSelectors.Country
 		newInboundJobPost.Suburb = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.SuburbSelector)
+		// w.reportIfEmptyStr(doc, "JobSiteNumber", newInboundJobPost.JobSiteNumber)
+		// w.reportIfEmptyStr(doc, "Title", newInboundJobPost.Title)
+		// w.reportIfEmptyStr(doc, "Body", newInboundJobPost.Body)
+		// w.reportIfEmptyStr(doc, "City", newInboundJobPost.City)
+		// w.reportIfEmptyStr(doc, "Country", newInboundJobPost.Country)
+		// w.reportIfEmptyStr(doc, "Suburb", newInboundJobPost.Suburb)
 		newInboundJobPostSlice = append(newInboundJobPostSlice, *newInboundJobPost)
 	})
-	for _, jobPostLink := range w.jobPostLinks {
+	for _, jobPostLink := range jobPostLinksSlice {
 		link := w.siteAdapter.GetConfigSettings().BaseUrl + jobPostLink
 		w.scraperEngine.Visit(link)
 	}
-	fmt.Println(len(w.jobPostLinks))
-	fmt.Println(newInboundJobPostSlice)
+	return newInboundJobPostSlice
 }
+
+// func (w WebScraper) reportIfEmptyStr(doc *colly.HTMLElement, fieldName string, fieldValue string) {
+// 	if strings.TrimSpace(fieldValue) == "" {
+// 		exception.ReportError(map[string]string{
+// 			"Url":     doc.Request.URL.String(),
+// 			fieldName: fieldValue,
+// 		})
+// 	}
+// }
