@@ -1,6 +1,8 @@
 package database
 
 import (
+	"strings"
+
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"gorm.io/gorm"
 )
@@ -26,16 +28,27 @@ func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) {
 	var existingJobPosts []entities.JobPost
 	j.db.Where("job_site_number IN ?", jobPostSiteNumbers).Find(&existingJobPosts)
 	for _, jobPost := range existingJobPosts {
-		jobPost.Title = jobPostMap[jobPost.JobSiteNumber].Title
-		jobPost.Body = jobPostMap[jobPost.JobSiteNumber].Body
-		jobPost.PostedDate = jobPostMap[jobPost.JobSiteNumber].PostedDate
-		jobPost.City = jobPostMap[jobPost.JobSiteNumber].City
-		jobPost.Country = jobPostMap[jobPost.JobSiteNumber].Country
-		jobPost.Suburb = jobPostMap[jobPost.JobSiteNumber].Suburb
+		jobPostMapElement := jobPostMap[jobPost.JobSiteNumber]
+		if len(strings.TrimSpace(jobPostMapElement.Title)) != 0 {
+			jobPost.Title = jobPostMapElement.Title
+		}
+		if len(strings.TrimSpace(jobPostMapElement.Body)) != 0 {
+			jobPost.Body = jobPostMapElement.Body
+		}
+		jobPost.PostedDate = jobPostMapElement.PostedDate
+		if len(strings.TrimSpace(jobPostMapElement.City)) != 0 {
+			jobPost.City = jobPostMapElement.City
+		}
+		if len(strings.TrimSpace(jobPostMapElement.Country)) != 0 {
+			jobPost.Country = jobPostMapElement.Country
+		}
+		if len(strings.TrimSpace(jobPostMapElement.Suburb)) != 0 {
+			jobPost.Suburb = jobPostMapElement.Suburb
+		}
 		delete(jobPostMap, jobPost.JobSiteNumber)
 		j.db.Save(&jobPost)
 	}
-	newJobPosts := make([]entities.JobPost, 0, len(jobPostMap))
+	var newJobPosts []entities.JobPost
 	for _, value := range jobPostMap {
 		newJobPosts = append(newJobPosts, value)
 	}

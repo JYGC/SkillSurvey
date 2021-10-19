@@ -25,13 +25,17 @@ func init() {
 	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
+func ReportErrorIfPanic(extraData map[string]string) {
+	if err := recover(); err != nil {
+		ReportError(extraData)
+	}
+}
+
 func ReportError(extraData map[string]string) {
 	errorMap := make(map[string]interface{})
 	if extraData != nil {
 		errorMap["Extra data"] = extraData
 	}
-	if err := recover(); err != nil {
-		errorMap["Stacktrace"] = string(debug.Stack())
-		ErrorLogger.Println(errorMap)
-	}
+	errorMap["Stacktrace"] = string(debug.Stack())
+	ErrorLogger.Println(errorMap)
 }

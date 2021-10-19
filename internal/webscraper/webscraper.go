@@ -54,7 +54,7 @@ func (w *WebScraper) getJobPostLinks() (jobPostLinks []string) {
 
 func (w WebScraper) getJobPosts(jobPostLinksSlice []string) (newInboundJobPostSlice []entities.InboundJobPost) {
 	w.scraperEngine.OnHTML("html", func(doc *colly.HTMLElement) {
-		defer exception.ReportError(map[string]string{
+		defer exception.ReportErrorIfPanic(map[string]string{
 			"Url": doc.Request.URL.String(),
 		})
 		newInboundJobPost := new(entities.InboundJobPost)
@@ -66,12 +66,12 @@ func (w WebScraper) getJobPosts(jobPostLinksSlice []string) (newInboundJobPostSl
 		newInboundJobPost.City = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.CitySelector)
 		newInboundJobPost.Country = w.siteAdapter.GetConfigSettings().SiteSelectors.Country
 		newInboundJobPost.Suburb = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.SuburbSelector)
-		// w.reportIfEmptyStr(doc, "JobSiteNumber", newInboundJobPost.JobSiteNumber)
-		// w.reportIfEmptyStr(doc, "Title", newInboundJobPost.Title)
-		// w.reportIfEmptyStr(doc, "Body", newInboundJobPost.Body)
-		// w.reportIfEmptyStr(doc, "City", newInboundJobPost.City)
-		// w.reportIfEmptyStr(doc, "Country", newInboundJobPost.Country)
-		// w.reportIfEmptyStr(doc, "Suburb", newInboundJobPost.Suburb)
+		w.reportIfEmptyStr(doc, "JobSiteNumber", newInboundJobPost.JobSiteNumber)
+		w.reportIfEmptyStr(doc, "Title", newInboundJobPost.Title)
+		w.reportIfEmptyStr(doc, "Body", newInboundJobPost.Body)
+		w.reportIfEmptyStr(doc, "City", newInboundJobPost.City)
+		w.reportIfEmptyStr(doc, "Country", newInboundJobPost.Country)
+		w.reportIfEmptyStr(doc, "Suburb", newInboundJobPost.Suburb)
 		newInboundJobPostSlice = append(newInboundJobPostSlice, *newInboundJobPost)
 	})
 	for _, jobPostLink := range jobPostLinksSlice {
@@ -81,11 +81,11 @@ func (w WebScraper) getJobPosts(jobPostLinksSlice []string) (newInboundJobPostSl
 	return newInboundJobPostSlice
 }
 
-// func (w WebScraper) reportIfEmptyStr(doc *colly.HTMLElement, fieldName string, fieldValue string) {
-// 	if strings.TrimSpace(fieldValue) == "" {
-// 		exception.ReportError(map[string]string{
-// 			"Url":     doc.Request.URL.String(),
-// 			fieldName: fieldValue,
-// 		})
-// 	}
-// }
+func (w WebScraper) reportIfEmptyStr(doc *colly.HTMLElement, fieldName string, fieldValue string) {
+	if len(strings.TrimSpace(fieldValue)) == 0 {
+		exception.ReportError(map[string]string{
+			"Url":           doc.Request.URL.String(),
+			"Missing Field": fieldName,
+		})
+	}
+}
