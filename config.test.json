@@ -1,0 +1,9 @@
+{
+    "HomeFolder": "E:/Users/Junying/OneDrive/Programming/SkillSurveyProject/SkillSurvey/",
+    "AdaptersFolder": "SkillSurvey.SiteAdapters/",
+    "AppDataFolder": "C:/Users/Junying/AppData/Roaming/SkillSurvey/Test/",
+    "DatabaseFile": "SkillSurvey.db",
+    "ReportFolder": "C:/Users/Junying/SkillSurveyReports/Test",
+    "ServerPort": "3000",
+    "ErrorLogFile": "error.log"
+}

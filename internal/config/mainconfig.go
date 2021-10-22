@@ -1,6 +1,13 @@
 package config
 
-const MainConfigFilePath = "./config.json"
+import (
+	"flag"
+)
+
+const (
+	configPath     = "./config.json"
+	testConfigPath = "./config.test.json"
+)
 
 type MainConfig struct {
 	ConfigBase
@@ -15,6 +22,10 @@ type MainConfig struct {
 
 func LoadMainConfig() MainConfig {
 	var mainConfig MainConfig
-	JsonToConfig(&mainConfig, MainConfigFilePath)
+	if flag.Lookup("test.v") == nil {
+		JsonToConfig(&mainConfig, configPath)
+	} else {
+		JsonToConfig(&mainConfig, testConfigPath)
+	}
 	return mainConfig
 }
