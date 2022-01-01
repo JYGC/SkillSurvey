@@ -2,6 +2,7 @@ package database
 
 import (
 	"strings"
+	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"gorm.io/gorm"
@@ -25,6 +26,7 @@ func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) {
 		jobPostSiteNumbers = append(jobPostSiteNumbers, jobPost.JobSiteNumber)
 		jobPostMap[jobPost.JobSiteNumber] = jobPost
 	}
+	// update existing jobposts
 	var existingJobPosts []entities.JobPost
 	j.db.Where("job_site_number IN ?", jobPostSiteNumbers).Find(&existingJobPosts)
 	for _, jobPost := range existingJobPosts {
@@ -48,9 +50,17 @@ func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) {
 		delete(jobPostMap, jobPost.JobSiteNumber)
 		j.db.Save(&jobPost)
 	}
+	// insert new jobposts
 	var newJobPosts []entities.JobPost
+	jobPostMapIndex := 0
 	for _, value := range jobPostMap {
+		chunkSize := 1000
+		value.CreateDate = time.Now()
 		newJobPosts = append(newJobPosts, value)
+		if len(newJobPosts) >= chunkSize || jobPostMapIndex >= len(jobPostMap)-1 {
+			j.db.Create(newJobPosts)
+			newJobPosts = nil
+		}
+		jobPostMapIndex++
 	}
-	j.db.Create(newJobPosts)
 }

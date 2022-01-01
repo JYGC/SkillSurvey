@@ -3,7 +3,6 @@ module github.com/JYGC/SkillSurvey
 go 1.17
 
 require (
-	github.com/HouzuoGuo/tiedot v0.0.0-20200330175510-6fb216206052
 	github.com/gocolly/colly/v2 v2.1.0
 	gorm.io/driver/sqlite v1.1.6
 	gorm.io/gorm v1.21.16

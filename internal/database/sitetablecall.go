@@ -16,9 +16,9 @@ func NewSiteTableCall(db *gorm.DB) (tableCall *SiteTableCall) {
 	return tableCall
 }
 
-func (s SiteTableCall) GetAll() (results []entities.Site) {
-	s.db.Find(&results)
-	return results
+func (s SiteTableCall) GetAll() (results []entities.Site, err error) {
+	err = s.db.Find(&results).Error
+	return results, err
 }
 
 // func (s SiteTableCall) InsertBulk() {

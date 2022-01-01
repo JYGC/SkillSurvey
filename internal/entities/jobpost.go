@@ -6,7 +6,8 @@ import (
 
 type JobPost struct {
 	EntityBase
-	Site          Site `gorm:"foreignKey:ID"`
+	SiteID        uint
+	Site          Site `gorm:"foreignKey:SiteID"`
 	JobSiteNumber string
 	Title         string
 	Body          string
@@ -14,6 +15,7 @@ type JobPost struct {
 	City          string
 	Country       string
 	Suburb        string
+	CreateDate    time.Time
 }
 
 type InboundJobPost struct {

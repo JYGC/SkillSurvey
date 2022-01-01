@@ -25,4 +25,9 @@ func main() {
 	exception.ErrorLogger.Panic(
 		http.ListenAndServe(fmt.Sprintf(":%s", configSettings.ServerPort), nil),
 	)
+	// res, err := database.DbAdapter.SkillName.GetAlias()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Println(res)
 }

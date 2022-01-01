@@ -27,7 +27,7 @@ func NewWebScraper(siteadapter siteadapters.ISiteAdapter, userAgent string) *Web
 	return newWebScraper
 }
 
-func (w WebScraper) Scrap() []entities.InboundJobPost {
+func (w WebScraper) Scrape() []entities.InboundJobPost {
 	return w.getJobPosts(w.getJobPostLinks())
 }
 

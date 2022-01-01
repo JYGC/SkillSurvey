@@ -10,7 +10,7 @@
     "PageFlag": "{p}",
     "Pages": 5,
     "SiteSelectors": {
-        "SiteName": "https://au.jora.com",
+        "SiteName": "au.jora.com",
         "JobPostLink": ".job-link",
         "TitleSelector": "h3.job-title.heading-xxlarge",
         "BodySelector": "#job-description-container",
