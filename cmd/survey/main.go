@@ -20,7 +20,7 @@ func main() {
 	}
 	existingSites, getSitesErr := database.DbAdapter.Site.GetAll()
 	if getSitesErr != nil {
-		exception.ReportError(map[string]string{
+		exception.ReportError(map[string]interface{}{
 			"Details": getSitesErr.Error(),
 		})
 	}

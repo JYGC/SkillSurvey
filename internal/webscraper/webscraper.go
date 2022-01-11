@@ -54,10 +54,11 @@ func (w *WebScraper) getJobPostLinks() (jobPostLinks []string) {
 
 func (w WebScraper) getJobPosts(jobPostLinksSlice []string) (newInboundJobPostSlice []entities.InboundJobPost) {
 	w.scraperEngine.OnHTML("html", func(doc *colly.HTMLElement) {
-		defer exception.ReportErrorIfPanic(map[string]string{
-			"Url": doc.Request.URL.String(),
-		})
 		newInboundJobPost := new(entities.InboundJobPost)
+		defer exception.ReportErrorIfPanic(map[string]interface{}{
+			"Url":               doc.Request.URL.String(),
+			"newInboundJobPost": newInboundJobPost,
+		})
 		newInboundJobPost.SiteName = w.siteAdapter.GetConfigSettings().SiteSelectors.SiteName
 		newInboundJobPost.JobSiteNumber = w.siteAdapter.GetJobSiteNumber(doc)
 		newInboundJobPost.Title = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.TitleSelector)
@@ -66,26 +67,16 @@ func (w WebScraper) getJobPosts(jobPostLinksSlice []string) (newInboundJobPostSl
 		newInboundJobPost.City = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.CitySelector)
 		newInboundJobPost.Country = w.siteAdapter.GetConfigSettings().SiteSelectors.Country
 		newInboundJobPost.Suburb = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.SuburbSelector)
-		w.reportIfEmptyStr(doc, "JobSiteNumber", newInboundJobPost.JobSiteNumber)
-		w.reportIfEmptyStr(doc, "Title", newInboundJobPost.Title)
-		w.reportIfEmptyStr(doc, "Body", newInboundJobPost.Body)
-		w.reportIfEmptyStr(doc, "City", newInboundJobPost.City)
-		w.reportIfEmptyStr(doc, "Country", newInboundJobPost.Country)
-		w.reportIfEmptyStr(doc, "Suburb", newInboundJobPost.Suburb)
 		newInboundJobPostSlice = append(newInboundJobPostSlice, *newInboundJobPost)
 	})
+	if len(jobPostLinksSlice) == 0 {
+		exception.ReportError(map[string]interface{}{
+			"Message": "No job post links found. Possible site selector error",
+		})
+	}
 	for _, jobPostLink := range jobPostLinksSlice {
 		link := w.siteAdapter.GetConfigSettings().BaseUrl + jobPostLink
 		w.scraperEngine.Visit(link)
 	}
 	return newInboundJobPostSlice
-}
-
-func (w WebScraper) reportIfEmptyStr(doc *colly.HTMLElement, fieldName string, fieldValue string) {
-	if len(strings.TrimSpace(fieldValue)) == 0 {
-		exception.ReportError(map[string]string{
-			"Url":           doc.Request.URL.String(),
-			"Missing Field": fieldName,
-		})
-	}
 }

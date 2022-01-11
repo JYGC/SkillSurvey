@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/config"
+	"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/gocolly/colly/v2"
 )
 
@@ -24,9 +25,16 @@ func NewJoraAdapter() *JoraAdapter {
 // Advertisement's post date can calculated by subtracting how old the advert is in days from
 // the current date.
 func (j JoraAdapter) GetPostedDate(doc *colly.HTMLElement) time.Time {
-	ageString := doc.ChildText(".listed-date") // .date contains either "N days" or "today"
+	variableRef := make(map[string]interface{})
+	defer exception.ReportErrorIfPanic(map[string]interface{}{
+		"Url":       doc.Request.URL.String(),
+		"Variables": variableRef,
+	})
+	ageString := doc.ChildText(j.ConfigSettings.SiteSelectors.PostedDateSelector) // .date contains either "N days" or "today"
+	variableRef["ageString"] = ageString
 	daysOld := 0
 	daysIndex := strings.Index(ageString, "days")
+	variableRef["daysIndex"] = daysIndex
 	currentDate := time.Now()
 	postedDate := time.Now()
 	// TODO: support hours and minutes ago

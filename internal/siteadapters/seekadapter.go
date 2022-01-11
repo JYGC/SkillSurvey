@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/config"
+	"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/gocolly/colly/v2"
 )
 
@@ -23,10 +24,19 @@ func NewSeekAdapter() *SeekAdapter {
 }
 
 func (s SeekAdapter) GetPostedDate(doc *colly.HTMLElement) time.Time {
+	variableRef := make(map[string]interface{})
+	defer exception.ReportErrorIfPanic(map[string]interface{}{
+		"Url":       doc.Request.URL.String(),
+		"Variables": variableRef,
+	})
 	ageString := doc.ChildText(s.ConfigSettings.SiteSelectors.PostedDateSelector)
+	variableRef["ageString"] = ageString
 	timeAgoIndex := strings.Index(ageString, "Posted ") + 7
+	variableRef["timeAgoIndex"] = timeAgoIndex
 	agoIndex := strings.Index(ageString, " ago")
+	variableRef["agoIndex"] = agoIndex
 	timeAgo := ageString[timeAgoIndex:agoIndex]
+	variableRef["timeAgo"] = timeAgo
 	currentDate := time.Now()
 	var postedDate time.Time
 	var err error

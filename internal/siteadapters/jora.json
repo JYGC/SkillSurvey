@@ -14,7 +14,7 @@
         "JobPostLink": ".job-link",
         "TitleSelector": "h3.job-title.heading-xxlarge",
         "BodySelector": "#job-description-container",
-        "PostedDateSelector": "",
+        "PostedDateSelector": ".listed-date",
         "CitySelector": ".location",
         "Country": "Australia",
         "SuburbSelector": ".location",

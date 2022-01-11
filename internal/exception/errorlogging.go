@@ -25,13 +25,13 @@ func init() {
 	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func ReportErrorIfPanic(extraData map[string]string) {
+func ReportErrorIfPanic(extraData map[string]interface{}) {
 	if err := recover(); err != nil {
 		ReportError(extraData)
 	}
 }
 
-func ReportError(extraData map[string]string) {
+func ReportError(extraData map[string]interface{}) {
 	errorMap := make(map[string]interface{})
 	if extraData != nil {
 		errorMap["Extra data"] = extraData
