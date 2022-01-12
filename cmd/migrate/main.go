@@ -88,7 +88,13 @@ func main() {
 		// migrate job posts
 		var newJobPosts []entities.JobPost
 		for _, jobPost := range jobPosts {
-			postedDate, _ := time.Parse("2006-01-02 15:04:00.000", jobPost.PostedDate)
+			postedDate, tperr := time.Parse(
+				time.RFC3339Nano,
+				strings.Replace(jobPost.PostedDate, " ", "T", 1)+"Z",
+			)
+			if tperr != nil {
+				fmt.Println(tperr)
+			}
 			newJobPosts = append(newJobPosts, entities.JobPost{
 				Site:          newSitesMap[uint(jobPost.SiteId)],
 				JobSiteNumber: jobPost.JobSiteNumber,
@@ -147,11 +153,6 @@ func main() {
 		}
 		database.DbAdapter.Create(newSkillWordAliases)
 
-		// fmt.Println(newSites)
-		// fmt.Println(newJobPostsMap)
-		// fmt.Println(newSkillTypesMap)
-		// fmt.Println(newSkillNamesMap)
-		// fmt.Println(newSkillWordAliases)
 	} else {
 		fmt.Println(err)
 	}
