@@ -11,7 +11,7 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-const seekConfigPath = "./internal/siteadapters/seek.json"
+const seekConfigPath = "./seek.json"
 
 type SeekAdapter struct {
 	UrlJobPathDayDateSite

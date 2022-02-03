@@ -10,7 +10,7 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-const joraConfigPath = "./internal/siteadapters/jora.json"
+const joraConfigPath = "./jora.json"
 
 type JoraAdapter struct {
 	UrlJobPathDayDateSite
