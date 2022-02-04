@@ -37,6 +37,6 @@ func main() {
 	}
 	for k, v := range skillNameMap {
 		r, e := database.DbAdapter.JobPost.GetMonthlyCountBySkill(k, v)
-		fmt.Println(r, e)
+		fmt.Println(r, e) //continure here
 	}
 }
