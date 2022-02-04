@@ -1,6 +1,8 @@
 package exception
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -25,10 +27,19 @@ func init() {
 	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func ReportErrorIfPanic(extraData map[string]interface{}) {
-	if err := recover(); err != nil {
+func ReportErrorIfPanic(extraData map[string]interface{}) (err error) {
+	if errInterface := recover(); errInterface != nil {
 		ReportError(extraData)
+		switch x := errInterface.(type) {
+		case string:
+			err = errors.New(x)
+		case error:
+			err = x
+		default:
+			err = fmt.Errorf("%v", x)
+		}
 	}
+	return err
 }
 
 func ReportError(extraData map[string]interface{}) {

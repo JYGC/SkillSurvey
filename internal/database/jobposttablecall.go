@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/entities"
+	"github.com/JYGC/SkillSurvey/internal/exception"
 	"gorm.io/gorm"
 )
 
@@ -63,4 +64,44 @@ func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) {
 		}
 		jobPostMapIndex++
 	}
+}
+
+func (j JobPostTableCall) GetMonthlyCountBySkill(skillName string, skillNameAliases []entities.SkillNameAlias) (
+	result []entities.MonthlyCount,
+	err error,
+) {
+	defer func() {
+		err = exception.ReportErrorIfPanic(map[string]interface{}{
+			"Message": "GetMonthlyCountBySkill",
+		})
+	}()
+	bodyLike := "job_posts.body LIKE ?"
+	query := j.db.Table("job_posts").Select(
+		"strftime('%Y-%m', job_posts.posted_date) `[YearMonth]`, COUNT(job_posts.id) [Count]",
+	).Group("[YearMonth]").Where(
+		bodyLike, "%"+skillName+"%",
+	).Or(
+		bodyLike, "%"+skillName+" %",
+	).Or(
+		bodyLike, "%"+skillName+",%",
+	).Or(
+		bodyLike, "%"+skillName+".%",
+	).Or(
+		bodyLike, "%"+skillName+"\n%",
+	)
+	for _, skillNameAlias := range skillNameAliases {
+		query = query.Or(
+			bodyLike, "%"+skillNameAlias.Alias+"%",
+		).Or(
+			bodyLike, "%"+skillNameAlias.Alias+" %",
+		).Or(
+			bodyLike, "%"+skillNameAlias.Alias+",%",
+		).Or(
+			bodyLike, "%"+skillNameAlias.Alias+".%",
+		).Or(
+			bodyLike, "%"+skillNameAlias.Alias+"\n%",
+		)
+	}
+	query.Scan(&result)
+	return result, err
 }

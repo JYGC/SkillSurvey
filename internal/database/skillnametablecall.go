@@ -19,6 +19,6 @@ func NewSkillNameTableCall(db *gorm.DB) (tableCall *SkillNameTableCall) {
 }
 
 func (s SkillNameTableCall) GetAlias() (result []entities.SkillNameAlias, err error) {
-	err = s.db.Find(&result).Error
+	err = s.db.Joins("SkillName").Find(&result).Error
 	return result, err
 }
