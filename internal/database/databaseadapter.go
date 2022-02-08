@@ -10,10 +10,11 @@ import (
 )
 
 type DatabaseAdapter struct {
-	database  *gorm.DB
-	JobPost   *JobPostTableCall
-	Site      *SiteTableCall
-	SkillName *SkillNameTableCall
+	database     *gorm.DB
+	JobPost      *JobPostTableCall
+	Site         *SiteTableCall
+	SkillName    *SkillNameTableCall
+	MonthlyCount *MonthlyCountReportTableCall
 }
 
 func (da DatabaseAdapter) Create(items interface{}) (tx *gorm.DB) {
@@ -42,4 +43,5 @@ func init() {
 	DbAdapter.JobPost = NewJobPostTableCall(DbAdapter.database)
 	DbAdapter.Site = NewSiteTableCall(DbAdapter.database)
 	DbAdapter.SkillName = NewSkillNameTableCall(DbAdapter.database)
+	DbAdapter.MonthlyCount = NewMonthlyCountReportTableCall(DbAdapter.database)
 }

@@ -19,8 +19,3 @@ type SkillNameAlias struct {
 	SkillName   SkillName `gorm:"foreignKey:SkillNameID"`
 	Alias       string
 }
-
-type MonthlyCount struct {
-	YearMonth string `gorm:"column:[YearMonth]"`
-	Count     int
-}

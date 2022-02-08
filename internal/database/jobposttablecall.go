@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/entities"
-	"github.com/JYGC/SkillSurvey/internal/exception"
 	"gorm.io/gorm"
 )
 
@@ -66,15 +65,13 @@ func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) {
 	}
 }
 
-func (j JobPostTableCall) GetMonthlyCountBySkill(skillName string, skillNameAliases []entities.SkillNameAlias) (
-	result []entities.MonthlyCount,
+func (j JobPostTableCall) GetMonthlyCountBySkill(
+	skillName string,
+	skillNameAliases []entities.SkillNameAlias,
+) (
+	result []entities.MonthlyCountReport,
 	err error,
 ) {
-	defer func() {
-		err = exception.ReportErrorIfPanic(map[string]interface{}{
-			"Message": "GetMonthlyCountBySkill",
-		})
-	}()
 	bodyLike := "job_posts.body LIKE ?"
 	query := j.db.Table("job_posts").Select(
 		"strftime('%Y-%m', job_posts.posted_date) `[YearMonth]`, COUNT(job_posts.id) [Count]",
@@ -102,6 +99,6 @@ func (j JobPostTableCall) GetMonthlyCountBySkill(skillName string, skillNameAlia
 			bodyLike, "%"+skillNameAlias.Alias+"\n%",
 		)
 	}
-	query.Scan(&result)
+	err = query.Scan(&result).Error
 	return result, err
 }
