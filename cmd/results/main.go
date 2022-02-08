@@ -19,7 +19,7 @@ func main() {
 	if err != nil {
 		exception.ErrorLogger.Println(err)
 	}
-	fs := http.FileServer(http.Dir("./frontend/dist"))
+	fs := http.FileServer(http.Dir("./resultsui/dist"))
 	http.Handle("/", fs)
 	fmt.Printf("Server listening on port %s\n", configSettings.ServerPort)
 	exception.ErrorLogger.Panic(
