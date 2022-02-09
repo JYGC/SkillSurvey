@@ -30,11 +30,11 @@ export default defineComponent({
         this.getData = {
             labels: chartLabels,
         };
+        // get data from API and put them on chart
         fetch('http://localhost:3000/api/getMonthlyCount').then(
             response => response.json()
         ).then(data => {
             let processedDataSet: Object[] = []
-            console.log(data)
             for (const key in data) {
                 let monthYearDict: { [id: string] : Number; } = {};
                 for (let i = 0; i < chartLabels.length; i++) {
@@ -47,14 +47,15 @@ export default defineComponent({
                     label: key,
                     data: Object.keys(monthYearDict).map((key) => monthYearDict[key]),
                     fill: false,
-                    borderColor: "#" + Math.floor(Math.random()*16777215).toString(16)
+                    borderColor: "#" + Math.floor(Math.random()*16777215).toString(16),
+                    hidden: true,
                 });
             }
-            console.log(processedDataSet);
             this.getData = {
                 datasets: processedDataSet,
             };
         }).catch(error => {
+            alert(error)
             console.log(error)
         });
     }

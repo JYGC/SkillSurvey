@@ -11,6 +11,9 @@ import (
 const userAgent = "node-spider"
 
 func main() {
+	variableRef := make(map[string]interface{})
+	defer exception.ReportErrorIfPanic(map[string]interface{}{"Variables": variableRef})
+	// get jobposts from websites
 	var newInboundJobPostSlice []entities.InboundJobPost
 	for _, webScraperSite := range []webscraper.WebScraper{
 		*webscraper.NewWebScraper(siteadapters.NewJoraAdapter(), userAgent),
@@ -18,13 +21,18 @@ func main() {
 	} {
 		newInboundJobPostSlice = append(newInboundJobPostSlice, webScraperSite.Scrape()...)
 	}
-	existingSites, getSitesErr := database.DbAdapter.Site.GetAll()
-	if getSitesErr != nil {
-		exception.ReportError(map[string]interface{}{
-			"Details": getSitesErr.Error(),
-		})
+	existingSites, err := database.DbAdapter.Site.GetAll()
+	if err != nil {
+		panic(err)
 	}
+	// insert jobposts to database
 	siteMap := entities.MakeSiteMap(existingSites)
 	newJobPostSlice := entities.CreateJobPosts(siteMap, newInboundJobPostSlice)
-	database.DbAdapter.JobPost.BulkUpdateOrInsert(newJobPostSlice)
+	if err := database.DbAdapter.JobPost.BulkUpdateOrInsert(newJobPostSlice); err != nil {
+		variableRef["existingSites"] = existingSites
+		variableRef["siteMap"] = siteMap
+		variableRef["newInboundJobPostSlice"] = newInboundJobPostSlice
+		variableRef["newJobPostSlice"] = newJobPostSlice
+		panic(err)
+	}
 }

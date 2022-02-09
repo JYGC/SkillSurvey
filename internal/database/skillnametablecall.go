@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/JYGC/SkillSurvey/internal/dataschemas"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"gorm.io/gorm"
 )
@@ -18,7 +19,7 @@ func NewSkillNameTableCall(db *gorm.DB) (tableCall *SkillNameTableCall) {
 	return tableCall
 }
 
-func (s SkillNameTableCall) GetAlias() (result []entities.AliasWithSkillName, err error) {
+func (s SkillNameTableCall) GetAlias() (result []dataschemas.AliasWithSkillName, err error) {
 	err = s.db.Model(&entities.SkillName{}).Select(
 		"skill_names.name, skill_name_aliases.alias",
 	).Joins(

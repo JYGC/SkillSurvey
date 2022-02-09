@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/database"
+	"github.com/JYGC/SkillSurvey/internal/exception"
 )
 
 func main() {
@@ -13,11 +13,13 @@ func main() {
 }
 
 func makeMonthlyCountReport() {
+	variableRef := make(map[string]interface{})
+	defer exception.ReportErrorIfPanic(map[string]interface{}{"Variables": variableRef})
+	// Associate skill name with array of their aliases
 	skillNameAliases, err := database.DbAdapter.SkillName.GetAlias()
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
-	// Associate skill name with array of their aliases
 	skillNameMap := make(map[string][]string)
 	for _, skillNameAlias := range skillNameAliases {
 		skillNameMap[skillNameAlias.Name] = append(
@@ -29,22 +31,33 @@ func makeMonthlyCountReport() {
 			skillNameMap[skillNameAlias.Name] = skillNameMap[skillNameAlias.Name][:len(skillNameMap[skillNameAlias.Name])-1]
 		}
 	}
+	// Create report
 	for skillName, aliases := range skillNameMap {
-		skill, e0 := database.DbAdapter.SkillName.GetByName(skillName)
-		counts, e1 := database.DbAdapter.JobPost.GetMonthlyCountBySkill(skillName, aliases)
-		if e0 != nil || e1 != nil {
-			fmt.Println(e0)
-			fmt.Println(e1)
+		skill, err := database.DbAdapter.SkillName.GetByName(skillName)
+		if err != nil {
+			variableRef["skillName"] = skillName
+			panic(err)
+		}
+		counts, err := database.DbAdapter.JobPost.GetMonthlyCountBySkill(skillName, aliases)
+		if err != nil {
+			variableRef["skillName"] = skillName
+			variableRef["aliases"] = aliases
+			panic(err)
 		}
 		for i := range counts {
 			counts[i].SkillName = skill
 			counts[i].Identifier = strconv.FormatUint(uint64(skill.ID), 10) + " " + counts[i].YearMonth
-			var ec error
-			counts[i].YearMonthDate, ec = time.Parse(time.RFC3339, counts[i].YearMonth+"-01T00:00:00Z")
-			if ec != nil {
-				fmt.Println(ec)
+			counts[i].YearMonthDate, err = time.Parse(time.RFC3339, counts[i].YearMonth+"-01T00:00:00Z")
+			if err != nil {
+				variableRef["i"] = i
+				variableRef["skill.ID"] = skill.ID
+				variableRef["counts[i].YearMonth"] = counts[i].YearMonth
+				panic(err)
 			}
 		}
-		database.DbAdapter.MonthlyCount.BulkUpdateOrInsert(counts)
+		if err := database.DbAdapter.MonthlyCount.BulkUpdateOrInsert(counts); err != nil {
+			variableRef["counts"] = counts
+			panic(err)
+		}
 	}
 }

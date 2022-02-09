@@ -19,7 +19,7 @@ func NewJobPostTableCall(db *gorm.DB) (tableCall *JobPostTableCall) {
 	return tableCall
 }
 
-func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) {
+func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) (err error) {
 	jobPostMap := make(map[string]entities.JobPost)
 	var jobPostSiteNumbers []string
 	for _, jobPost := range jobPosts {
@@ -28,7 +28,9 @@ func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) {
 	}
 	// update existing jobposts
 	var existingJobPosts []entities.JobPost
-	j.db.Where("job_site_number IN ?", jobPostSiteNumbers).Find(&existingJobPosts)
+	if err = j.db.Where("job_site_number IN ?", jobPostSiteNumbers).Find(&existingJobPosts).Error; err != nil {
+		return err
+	}
 	for _, jobPost := range existingJobPosts {
 		jobPostMapElement := jobPostMap[jobPost.JobSiteNumber]
 		if len(strings.TrimSpace(jobPostMapElement.Title)) != 0 {
@@ -48,7 +50,9 @@ func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) {
 			jobPost.Suburb = jobPostMapElement.Suburb
 		}
 		delete(jobPostMap, jobPost.JobSiteNumber)
-		j.db.Save(&jobPost)
+		if err = j.db.Save(&jobPost).Error; err != nil {
+			return err
+		}
 	}
 	// insert new jobposts
 	var newJobPosts []entities.JobPost
@@ -58,11 +62,15 @@ func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) {
 		value.CreateDate = time.Now()
 		newJobPosts = append(newJobPosts, value)
 		if len(newJobPosts) >= chunkSize || jobPostMapIndex >= len(jobPostMap)-1 {
-			j.db.Create(newJobPosts)
+			if err = j.db.Create(newJobPosts).Error; err != nil {
+				return err
+			}
 			newJobPosts = nil
 		}
 		jobPostMapIndex++
 	}
+	// No errors if return here
+	return nil
 }
 
 func (j JobPostTableCall) GetMonthlyCountBySkill(

@@ -19,8 +19,3 @@ type SkillNameAlias struct {
 	SkillName   SkillName `gorm:"foreignKey:SkillNameID"`
 	Alias       string
 }
-
-type AliasWithSkillName struct {
-	Name  string
-	Alias string
-}

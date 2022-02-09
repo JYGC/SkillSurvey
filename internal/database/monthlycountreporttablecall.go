@@ -29,8 +29,7 @@ func (m MonthlyCountReportTableCall) BulkUpdateOrInsert(
 	}
 	// update exising mountlycountreports
 	var existingMonthlyCountSlice []entities.MonthlyCountReport
-	err = m.db.Where("identifier IN ?", monthlyCountIdentifiers).Find(&existingMonthlyCountSlice).Error
-	if err != nil {
+	if err = m.db.Where("identifier IN ?", monthlyCountIdentifiers).Find(&existingMonthlyCountSlice).Error; err != nil {
 		return err
 	}
 	for _, existingMonthlyCount := range existingMonthlyCountSlice {
