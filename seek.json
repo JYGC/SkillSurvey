@@ -1,0 +1,27 @@
+{
+    "BaseUrl": "https://www.seek.com.au",
+    "AllowedDomains": ["www.seek.com.au"],
+    "SearchCriterias": [
+        {
+            "Name": "All TechJobs Melbourne",
+            "Url": "https://www.seek.com.au/jobs-in-information-communication-technology/in-All-Melbourne-VIC?page={p}"
+        }
+    ],
+    "PageFlag": "{p}",
+    "Pages": 5,
+    "SiteSelectors": {
+        "SiteName": "seek.com.au",
+        "JobPostLink": "[data-automation=\"jobTitle\"]",
+        "TitleSelector": "[data-automation=\"job-detail-title\"]",
+        "BodySelector": "[data-automation=\"jobAdDetails\"]",
+        "PostedDateSelector": ".yvsb870._14uh9944u._1qw3t4i0._1qw3t4i1y._1qw3t4i1._1d0g9qk4._1qw3t4ib",
+        "CitySelector": "div.FYwKg._3VxpE_4 > div:nth-child(1)",
+        "Country": "Australia",
+        "SuburbSelector": "div.FYwKg._3VxpE_4 > div:nth-child(2)",
+        "TitleType": "text",
+        "BodyType": "text",
+        "PostedDateType": "text",
+        "CityType": "text",
+        "SuburbType": "text"
+    }
+}
