@@ -1,18 +1,17 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <MonthlyCountReport />
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import HelloWorld from './components/HelloWorld.vue';
+import { defineComponent } from 'vue';
+import MonthlyCountReport from './components/MonthlyCountReport.vue';
 
-@Options({
+export default defineComponent({
+  name: 'App',
   components: {
-    HelloWorld,
-  },
-})
-export default class App extends Vue {}
+    MonthlyCountReport
+  }
+});
 </script>
 
 <style>

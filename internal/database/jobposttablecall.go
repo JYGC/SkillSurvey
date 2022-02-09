@@ -76,8 +76,6 @@ func (j JobPostTableCall) GetMonthlyCountBySkill(
 	query := j.db.Table("job_posts").Select(
 		"strftime('%Y-%m', job_posts.posted_date) `[YearMonth]`, COUNT(job_posts.id) [Count]",
 	).Group("[YearMonth]").Where(
-		bodyLike, "%"+skillName+"%",
-	).Or(
 		bodyLike, "%"+skillName+" %",
 	).Or(
 		bodyLike, "%"+skillName+",%",
@@ -88,8 +86,6 @@ func (j JobPostTableCall) GetMonthlyCountBySkill(
 	)
 	for _, skillNameAlias := range skillNameAliases {
 		query = query.Or(
-			bodyLike, "%"+skillNameAlias.Alias+"%",
-		).Or(
 			bodyLike, "%"+skillNameAlias.Alias+" %",
 		).Or(
 			bodyLike, "%"+skillNameAlias.Alias+",%",

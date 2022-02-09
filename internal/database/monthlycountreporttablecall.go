@@ -1,6 +1,8 @@
 package database
 
 import (
+	"time"
+
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"gorm.io/gorm"
 )
@@ -46,4 +48,18 @@ func (m MonthlyCountReportTableCall) BulkUpdateOrInsert(
 	}
 	err = m.db.Create(&newMonthlyCount).Error
 	return err
+}
+
+func (m MonthlyCountReportTableCall) GetReport() (result []entities.MonthlyCountReport, err error) {
+	currentYear, currentMonth, _ := time.Now().Date()
+	lastYear := time.Date(currentYear-1, currentMonth, 0, 0, 0, 0, 0, time.Now().UTC().Location())
+	startCurrentMonth := time.Date(currentYear, currentMonth, 0, 0, 0, 0, 0, time.Now().UTC().Location())
+	err = m.db.Joins("SkillName").Where(
+		"year_month_date >= ?",
+		lastYear,
+	).Where(
+		"year_month_date < ?",
+		startCurrentMonth,
+	).Find(&result).Error
+	return result, err
 }

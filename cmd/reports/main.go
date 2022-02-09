@@ -18,6 +18,9 @@ func makeMonthlyCountReport() {
 	if err != nil {
 		fmt.Println(err)
 	}
+	for _, ede := range skillNameAliases {
+		fmt.Println(ede)
+	}
 	// Associate skill name with array of their aliases
 	skillNameMap := make(map[string][]entities.SkillNameAlias)
 	for _, skillNameAlias := range skillNameAliases {
