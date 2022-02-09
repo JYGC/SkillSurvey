@@ -47,6 +47,9 @@ func getMonthlyCount(w http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+	for k, _ := range _resp {
+		fmt.Println("Key: " + k)
+	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK)

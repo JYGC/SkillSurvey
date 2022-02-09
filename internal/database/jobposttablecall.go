@@ -67,7 +67,7 @@ func (j JobPostTableCall) BulkUpdateOrInsert(jobPosts []entities.JobPost) {
 
 func (j JobPostTableCall) GetMonthlyCountBySkill(
 	skillName string,
-	skillNameAliases []entities.SkillNameAlias,
+	skillNameAliases []string,
 ) (
 	result []entities.MonthlyCountReport,
 	err error,
@@ -86,13 +86,13 @@ func (j JobPostTableCall) GetMonthlyCountBySkill(
 	)
 	for _, skillNameAlias := range skillNameAliases {
 		query = query.Or(
-			bodyLike, "%"+skillNameAlias.Alias+" %",
+			bodyLike, "%"+skillNameAlias+" %",
 		).Or(
-			bodyLike, "%"+skillNameAlias.Alias+",%",
+			bodyLike, "%"+skillNameAlias+",%",
 		).Or(
-			bodyLike, "%"+skillNameAlias.Alias+".%",
+			bodyLike, "%"+skillNameAlias+".%",
 		).Or(
-			bodyLike, "%"+skillNameAlias.Alias+"\n%",
+			bodyLike, "%"+skillNameAlias+"\n%",
 		)
 	}
 	err = query.Scan(&result).Error

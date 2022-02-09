@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/database"
-	"github.com/JYGC/SkillSurvey/internal/entities"
 )
 
 func main() {
@@ -18,16 +17,17 @@ func makeMonthlyCountReport() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	for _, ede := range skillNameAliases {
-		fmt.Println(ede)
-	}
 	// Associate skill name with array of their aliases
-	skillNameMap := make(map[string][]entities.SkillNameAlias)
+	skillNameMap := make(map[string][]string)
 	for _, skillNameAlias := range skillNameAliases {
-		skillNameMap[skillNameAlias.SkillName.Name] = append(
-			skillNameMap[skillNameAlias.SkillName.Name],
-			skillNameAlias,
+		skillNameMap[skillNameAlias.Name] = append(
+			skillNameMap[skillNameAlias.Name],
+			skillNameAlias.Alias,
 		)
+		// Skill names with no aliases must have an empty alias array
+		if len(skillNameAlias.Alias) == 0 {
+			skillNameMap[skillNameAlias.Name] = skillNameMap[skillNameAlias.Name][:len(skillNameMap[skillNameAlias.Name])-1]
+		}
 	}
 	for skillName, aliases := range skillNameMap {
 		skill, e0 := database.DbAdapter.SkillName.GetByName(skillName)
