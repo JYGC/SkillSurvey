@@ -35,11 +35,12 @@ export default defineComponent({
             response => response.json()
         ).then(data => {
             let processedDataSet: Object[] = []
+            // for each skill, use monthYearDictTemplate to create a new monthYearDict
+            let monthYearDictTemplate: { [id: string] : Number; } = {};
+            chartLabels.forEach((el) => monthYearDictTemplate[el] = 0);
             for (const key in data) {
-                let monthYearDict: { [id: string] : Number; } = {};
-                for (let i = 0; i < chartLabels.length; i++) {
-                    monthYearDict[chartLabels[i]] = 0;
-                }
+                // monthYearDict is used to put counts in the correct monthYear on the chart
+                let monthYearDict = JSON.parse(JSON.stringify(monthYearDictTemplate));
                 for (let i = 0; i < data[key].length; i++) {
                     monthYearDict[data[key][i].YearMonth] = data[key][i].Count;
                 }
