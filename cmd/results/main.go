@@ -22,7 +22,7 @@ func main() {
 	if err != nil {
 		exception.ErrorLogger.Println(err)
 	}
-	fs := http.FileServer(http.Dir("./resultsui/dist"))
+	fs := http.FileServer(http.Dir(configSettings.ResultUiRoot))
 	http.Handle("/", fs)
 	http.HandleFunc("/api/", getMonthlyCount)
 	fmt.Printf("Server listening on port %s\n", configSettings.ServerPort)

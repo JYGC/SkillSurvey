@@ -9,6 +9,7 @@ import (
 	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/database"
 	"github.com/JYGC/SkillSurvey/internal/entities"
+	"github.com/JYGC/SkillSurvey/internal/readonlysettings"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -55,8 +56,12 @@ type SkillWordAlias struct {
 
 func main() {
 	configSettings := config.LoadMainConfig()
+	appDataFolder, err := readonlysettings.GetAppDataFolder(configSettings.IsProduction)
+	if err != nil {
+		panic(err)
+	}
 	oldDb, _ := gorm.Open(
-		sqlite.Open(filepath.Join(configSettings.AppDataFolder, "SkillSurvey.old.db")),
+		sqlite.Open(filepath.Join(appDataFolder, "SkillSurvey.old.db")),
 		&gorm.Config{DisableForeignKeyConstraintWhenMigrating: true},
 	)
 	//Get data of old format
@@ -71,7 +76,7 @@ func main() {
 	oldDb.Raw("SELECT * FROM SkillName").Scan(&skillNames)
 	oldDb.Raw("SELECT * FROM SkillWordAlias").Scan(&skillWordAliases)
 	// create new tables
-	_, err := database.DbAdapter.Site.GetAll()
+	//_, err := database.DbAdapter.Site.GetAll()
 	if err == nil {
 		// convert to new format, make associations and commit ot database
 		var newSites []entities.Site

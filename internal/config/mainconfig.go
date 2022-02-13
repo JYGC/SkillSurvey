@@ -11,13 +11,9 @@ const (
 
 type MainConfig struct {
 	ConfigBase
-	HomeFolder     string
-	AdaptersFolder string
-	AppDataFolder  string
-	DatabaseFile   string
-	ReportFolder   string
-	ServerPort     string
-	ErrorLogFile   string
+	ServerPort   string
+	IsProduction bool
+	ResultUiRoot string
 }
 
 func LoadMainConfig() MainConfig {

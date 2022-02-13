@@ -1,9 +1,5 @@
 {
-    "HomeFolder": "E:/Users/jygcn/OneDrive/Programming/SkillSurveyProject/SkillSurvey/",
-    "AdaptersFolder": "SkillSurvey.SiteAdapters/",
-    "AppDataFolder": "C:/Users/jygcn/AppData/Roaming/SkillSurveyDev/",
-    "DatabaseFile": "SkillSurvey.db",
-    "ReportFolder": "C:/Users/jygcn/SkillSurveyReports",
     "ServerPort": "3000",
-    "ErrorLogFile": "error.log"
+    "IsProduction": false,
+    "ResultUiRoot": "./resultsui/dist"
 }

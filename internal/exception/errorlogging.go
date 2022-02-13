@@ -9,14 +9,24 @@ import (
 	"runtime/debug"
 
 	"github.com/JYGC/SkillSurvey/internal/config"
+	"github.com/JYGC/SkillSurvey/internal/readonlysettings"
 )
+
+const errorLogFile = "error.log"
 
 var ErrorLogger *log.Logger
 
 func init() {
 	configSettings := config.LoadMainConfig()
+	var err error
+	var appDataFolder string
+	appDataFolder, err = readonlysettings.GetAppDataFolder(configSettings.IsProduction)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
 	file, err := os.OpenFile(
-		filepath.Join(configSettings.AppDataFolder, configSettings.ErrorLogFile),
+		filepath.Join(appDataFolder, errorLogFile),
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY,
 		0666,
 	)
