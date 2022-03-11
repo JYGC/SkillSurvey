@@ -71,7 +71,8 @@ func (w WebScraper) getJobPosts(jobPostLinksSlice []string) (newInboundJobPostSl
 	})
 	if len(jobPostLinksSlice) == 0 {
 		exception.ReportError(map[string]interface{}{
-			"Message": "No job post links found. Possible site selector error",
+			"Message":  "No job post links found. Possible site selector error",
+			"SiteName": w.siteAdapter.GetConfigSettings().SiteSelectors.SiteName,
 		})
 	}
 	for _, jobPostLink := range jobPostLinksSlice {
