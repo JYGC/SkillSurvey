@@ -33,7 +33,7 @@ type JobPost struct {
 	City          string
 	Country       string
 	Suburb        string
-	CreateDate    time.Time // CONITUE HERE: DATE COULD NOT BE READ
+	CreateDate    time.Time
 }
 
 type SkillType struct {
@@ -67,14 +67,8 @@ func main() {
 	//Get data of old format
 	var sites []Site
 	var jobPosts []JobPost
-	var skillTypes []SkillType
-	var skillNames []SkillName
-	var skillWordAliases []SkillWordAlias
 	oldDb.Raw("SELECT * FROM Site").Scan(&sites)
 	oldDb.Raw("SELECT Id, SiteId, JobSiteNumber, Title, Body, PostedDate, City, Country, Suburb, CreateDate FROM JobPost").Scan(&jobPosts)
-	oldDb.Raw("SELECT * FROM SkillType").Scan(&skillTypes)
-	oldDb.Raw("SELECT * FROM SkillName").Scan(&skillNames)
-	oldDb.Raw("SELECT * FROM SkillWordAlias").Scan(&skillWordAliases)
 	// create new tables
 	//_, err := database.DbAdapter.Site.GetAll()
 	if err == nil {
@@ -85,7 +79,6 @@ func main() {
 				Name: strings.ToLower(site.Name),
 			})
 		}
-		database.DbAdapter.Create(newSites)
 		newSitesMap := make(map[uint]entities.Site)
 		for _, site := range newSites {
 			newSitesMap[site.ID] = site
@@ -120,44 +113,10 @@ func main() {
 				end = len(newJobPosts)
 			}
 			newJobPostsDivided = newJobPosts[i:end]
-			database.DbAdapter.Create(newJobPostsDivided)
+			if err := database.DbAdapter.JobPost.BulkUpdateOrInsert(newJobPostsDivided); err != nil {
+				panic(err)
+			}
 		}
-		// migrate skill type
-		var newSkillTypes []entities.SkillType
-		for _, skillType := range skillTypes {
-			newSkillTypes = append(newSkillTypes, entities.SkillType{
-				Name: skillType.Name,
-			})
-		}
-		database.DbAdapter.Create(newSkillTypes)
-		newSkillTypesMap := make(map[uint]entities.SkillType)
-		for _, skillType := range newSkillTypes {
-			newSkillTypesMap[skillType.ID] = skillType
-		}
-		// migrate skill name
-		var newSkillNames []entities.SkillName
-		for _, skillName := range skillNames {
-			newSkillNames = append(newSkillNames, entities.SkillName{
-				Name:      skillName.Name,
-				SkillType: newSkillTypesMap[uint(skillName.SkillTypeId)],
-				IsEnabled: skillName.IsEnabled,
-			})
-		}
-		database.DbAdapter.Create(newSkillNames)
-		newSkillNamesMap := make(map[uint]entities.SkillName)
-		for _, skillName := range newSkillNames {
-			newSkillNamesMap[skillName.ID] = skillName
-		}
-		// migrate skill word alias
-		var newSkillWordAliases []entities.SkillNameAlias
-		for _, skillWordAlias := range skillWordAliases {
-			newSkillWordAliases = append(newSkillWordAliases, entities.SkillNameAlias{
-				SkillName: newSkillNamesMap[uint(skillWordAlias.SkillNameId)],
-				Alias:     skillWordAlias.Alias,
-			})
-		}
-		database.DbAdapter.Create(newSkillWordAliases)
-
 	} else {
 		fmt.Println(err)
 	}
