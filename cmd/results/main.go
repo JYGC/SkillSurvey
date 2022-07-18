@@ -32,13 +32,6 @@ func main() {
 }
 
 func getMonthlyCount(w http.ResponseWriter, request *http.Request) {
-	//decoder := json.NewDecoder(request.Body)
-	//var _inp inp = inp{Num1: 3, Num2: 2}
-	//var _resp resp
-	//decoder.Decode(&_inp)
-	//_resp.Num = _inp.Num1 + _inp.Num2
-	//fmt.Println(_resp)
-
 	reportSlice, err := database.DbAdapter.MonthlyCount.GetReport()
 	_resp := make(map[string][]entities.MonthlyCountReport)
 	for _, reportElement := range reportSlice {
