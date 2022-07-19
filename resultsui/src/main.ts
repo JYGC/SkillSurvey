@@ -1,10 +1,7 @@
-import { Chart, registerables } from "chart.js";
-Chart.register(...registerables);
-
 // Declare routes
 import { createRouter, createWebHistory } from 'vue-router';
-import HelloWorld from '@/components/HelloWorld.vue';
-import MonthlyCountReport from '@/components/MonthlyCountReport.vue';
+import HelloWorld from '@/routes/HelloWorld.vue';
+import MonthlyCountReport from '@/routes/MonthlyCountReport.vue';
 const routes = [
     {
         path: '/',

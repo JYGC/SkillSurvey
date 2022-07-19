@@ -2,6 +2,10 @@
     <LineChart :chartData="getData" :height="windowHeight" />
 </template>
 <script lang="ts">
+// Active chart support
+import { Chart, registerables } from "chart.js";
+Chart.register(...registerables);
+
 import { defineComponent } from 'vue';
 import { LineChart } from 'vue-chart-3';
 
