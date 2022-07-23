@@ -1,7 +1,8 @@
 <template>
   <div id="nav">
       <router-link to="/">Home</router-link> |
-      <router-link to="/monthly-count-report">Monthly count report</router-link>
+      <router-link to="/monthly-count-report">Monthly count report</router-link> |
+      <router-link to="/skill-add">Skill add</router-link>
   </div>
   <router-view />
 </template>
