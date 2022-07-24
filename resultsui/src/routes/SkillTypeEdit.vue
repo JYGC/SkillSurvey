@@ -9,7 +9,9 @@
         <label>Skills of this type:</label>
     </div>
     <div>
-        <button v-for="skillName in skillType.skillNames" :key="skillName.iD">{{skillName.name}}</button>
+        <router-link v-for="skillName in skillType.skillNames" :key="skillName.iD" to="/skill-edit/{{skillName.iD}}">
+            {{skillName.name}}
+        </router-link>
     </div>
     <div>
         <span>
@@ -21,7 +23,7 @@
 <script lang="ts">
 import SkillTypeView from '@/components/SkillTypeView.vue';
 import { SkillType } from '@/schemas/skills';
-import { defineComponent, reactive } from 'vue'
+import { defineComponent, reactive } from 'vue';
 
 export default defineComponent({
     setup() {

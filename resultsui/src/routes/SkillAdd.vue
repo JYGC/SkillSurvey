@@ -11,9 +11,9 @@
 </template>
 
 <script lang="ts">
-import SkillView from '@/components/SkillView.vue'
+import SkillView from '@/components/SkillView.vue';
 import { SkillName } from '@/schemas/skills';
-import { defineComponent, reactive } from 'vue'
+import { defineComponent, reactive } from 'vue';
 
 export default defineComponent({
     setup() {

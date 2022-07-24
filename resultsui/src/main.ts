@@ -4,8 +4,10 @@ import HelloWorld from '@/routes/HelloWorld.vue';
 import MonthlyCountReport from '@/routes/MonthlyCountReport.vue';
 import SkillAdd from '@/routes/SkillAdd.vue';
 import SkillEdit from '@/routes/SkillEdit.vue';
+import SkillsList from '@/routes/SkillsList.vue';
 import SkillTypeAdd from '@/routes/SkillTypeAdd.vue';
 import SkillTypeEdit from '@/routes/SkillTypeEdit.vue';
+import SkillTypesList from '@/routes/SkillTypesList.vue';
 const routes = [
     {
         path: '/',
@@ -18,14 +20,19 @@ const routes = [
         component: MonthlyCountReport
     },
     {
-        path: '/skill-add',
+        path: '/skill-add/',
         name: 'skill-add',
         component: SkillAdd
     },
     {
-        path: '/skill-edit',
+        path: '/skill-edit/:id',
         name: 'skill-edit',
         component: SkillEdit
+    },
+    {
+        path: '/skills-list',
+        name: 'skills-list',
+        component: SkillsList
     },
     {
         path: '/skill-type-add',
@@ -33,11 +40,16 @@ const routes = [
         component: SkillTypeAdd
     },
     {
-        path: '/skill-type-edit',
+        path: '/skill-type-edit/:id',
         name: 'skill-type-edit',
         component: SkillTypeEdit
     },
-]
+    {
+        path: '/skill-types-list/',
+        name: 'skill-types-list',
+        component: SkillTypesList
+    },
+];
 const router = createRouter({
     history: createWebHistory(process.env.BASE_URL),
     routes
