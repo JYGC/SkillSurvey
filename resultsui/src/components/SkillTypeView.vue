@@ -14,12 +14,23 @@
 </template>
 <script lang="ts">
 import { SkillType } from '@/schemas/skills';
-import { defineComponent } from 'vue';
+import { computed, defineComponent } from 'vue';
 
 export default defineComponent({
-    name: 'skill-type-view',
     props: {
-        'skillType': Object as () => SkillType
+        modelValue: {
+            type: Object as () => SkillType
+        }
+    },
+    emit: ['update:modelValue'],
+    setup(props, { emit }) {
+        const skillType = computed({
+            get: () => props.modelValue,
+            set: (value) => emit('update:modelValue', value)
+        });
+        return {
+            skillType
+        }
     }
 })
 </script>

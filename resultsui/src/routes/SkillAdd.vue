@@ -1,34 +1,41 @@
 <template>
     <div>
-        <skill-view v-bind:skillName="skillName" ref="skillView" />
+        <button>Back</button>
     </div>
     <div>
-        {{skillName.name}}
+        <SkillView v-model="skillName" />
     </div>
     <div>
-        <button v-on:click="alert(1)">Call Ch</button>
+        <button>Save</button>
     </div>
 </template>
 
 <script lang="ts">
 import SkillView from '@/components/SkillView.vue'
 import { SkillName } from '@/schemas/skills';
-import { defineComponent } from 'vue'
+import { defineComponent, reactive } from 'vue'
 
 export default defineComponent({
-    name: 'skill-add',
-    components: {
-        SkillView
-    },
-    data() {
+    setup() {
+        let skillName: SkillName = reactive({
+            iD: -1,
+            skillTypeID: -1,
+            skillType: {
+                iD: -1,
+                name: "",
+                description: "",
+                skillNames: []
+            },
+            name: "",
+            isEnabled: true,
+            skillNameAliases: []
+        });
         return {
-            skillName: Object as () => SkillName
+            skillName
         };
     },
-    methods: {
-        // callCh(): void {
-        //     this.$refs.skillView.testCallChild();
-        // }
+    components: {
+        SkillView
     }
 })
 </script>

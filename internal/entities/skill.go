@@ -2,7 +2,8 @@ package entities
 
 type SkillType struct {
 	EntityBase
-	Name       string
+	Name string
+	//Description string
 	SkillNames []SkillName
 }
 

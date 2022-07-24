@@ -2,7 +2,10 @@
   <div id="nav">
       <router-link to="/">Home</router-link> |
       <router-link to="/monthly-count-report">Monthly count report</router-link> |
-      <router-link to="/skill-add">Skill add</router-link>
+      <router-link to="/skill-add">Skill add</router-link> |
+      <router-link to="/skill-edit">Skill edit</router-link> |
+      <router-link to="/skill-type-add">Skill type add</router-link> |
+      <router-link to="/skill-type-edit">Skill type edit</router-link>
   </div>
   <router-view />
 </template>
