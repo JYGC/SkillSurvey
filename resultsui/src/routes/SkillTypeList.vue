@@ -37,9 +37,7 @@ export default defineComponent({
         fetch('http://localhost:3000/api/skilltypelist').then(
             response => response.json()
         ).then(data => {
-            for (let i: number = 0; i < data.length; i++) {
-                this.skillTypes.push(data[i]);
-            }
+            for (let i: number = 0; i < data.length; i++) this.skillTypes.push(data[i]);
         });
     }
 });

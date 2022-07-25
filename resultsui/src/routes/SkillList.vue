@@ -13,7 +13,11 @@
             <tr v-for="skillName in skillNames" :key="skillName.ID">
                 <td>{{ skillName.Name }}</td>
                 <td>{{ skillName.SkillType.Name }}</td>
-                <td>{{ getTopFiveAliases(skillName.SkillNameAliases) }}</td>
+                <td>
+                    <div v-for="alias in getAliasList(skillName.SkillNameAliases)" :key="alias">
+                        {{ alias }}
+                    </div>
+                </td>
                 <td>
                     <router-link to="/skill-edit/{{ skillName.ID }}">Edit</router-link>
                 </td>
@@ -37,16 +41,14 @@ export default defineComponent({
         fetch('http://localhost:3000/api/skilllist').then(
             response => response.json()
         ).then(data => {
-            for (let i: number = 0; i < data.length; i++) {
-                this.skillNames.push(data[i]);
-            }
+            for (let i: number = 0; i < data.length; i++) this.skillNames.push(data[i]);
         });
     },
     methods: {
-        getTopFiveAliases(skillNameAliases: SkillNameAlias[]): string {
-            console.log(skillNameAliases);
-            if (skillNameAliases !== null) return skillNameAliases.map(s => s.Alias).join(", ");
-            return "";
+        getAliasList(skillNameAliases: SkillNameAlias[]): string[] {
+            if (skillNameAliases === null) return [];
+            let aliasList: string[] = skillNameAliases.map(s => s.Alias);
+            return aliasList;
         }
     }
 });
