@@ -1,8 +1,6 @@
 package database
 
 import (
-	"fmt"
-
 	"github.com/JYGC/SkillSurvey/internal/dataschemas"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"gorm.io/gorm"
@@ -68,6 +66,5 @@ func (s SkillNameTableCall) GetAll() (skillNameListResult []entities.SkillName, 
 	for _, skillName := range skillNameIDMap {
 		skillNameListResult = append(skillNameListResult, skillName)
 	}
-	fmt.Println(skillNameListResult)
 	return skillNameListResult, err
 }
