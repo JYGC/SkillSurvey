@@ -1,22 +1,22 @@
 export interface SkillType {
-	iD: number;
-	name: string;
-	description: string;
-	skillNames: Array<SkillName>;
+	ID: number;
+	Name: string;
+	Description: string;
+	SkillNames: Array<SkillName>;
 }
 
 export interface SkillName {
-	iD: number;
-	skillTypeID: number;
-	skillType: SkillType;
-	name: string;
-	isEnabled: boolean;
-	skillNameAliases: Array<SkillNameAlias>;
+	ID: number;
+	SkillTypeID: number;
+	SkillType: SkillType;
+	Name: string;
+	IsEnabled: boolean;
+	SkillNameAliases: Array<SkillNameAlias>;
 }
 
 export interface SkillNameAlias {
-	iD: number;
-	skillNameID: number | undefined;
-	skillName: SkillName | undefined;
-	alias: string;
+	ID: number;
+	SkillNameID: number;
+	SkillName: SkillName;
+	Alias: string;
 }

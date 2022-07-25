@@ -35,7 +35,7 @@ export default defineComponent({
             labels: chartLabels,
         };
         // get data from API and put them on chart
-        fetch('http://localhost:3000/api/getMonthlyCount').then(
+        fetch('http://localhost:3000/api/getmonthlycount').then(
             response => response.json()
         ).then(data => {
             let processedDataSet: Object[] = []

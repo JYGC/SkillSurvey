@@ -14,6 +14,7 @@ type DatabaseAdapter struct {
 	database     *gorm.DB
 	JobPost      *JobPostTableCall
 	Site         *SiteTableCall
+	SkillType    *SkillTypeTableCall
 	SkillName    *SkillNameTableCall
 	MonthlyCount *MonthlyCountReportTableCall
 }
@@ -51,6 +52,7 @@ func init() {
 	}
 	DbAdapter.JobPost = NewJobPostTableCall(DbAdapter.database)
 	DbAdapter.Site = NewSiteTableCall(DbAdapter.database)
+	DbAdapter.SkillType = NewSkillTypeTableCall(DbAdapter.database)
 	DbAdapter.SkillName = NewSkillNameTableCall(DbAdapter.database)
 	DbAdapter.MonthlyCount = NewMonthlyCountReportTableCall(DbAdapter.database)
 }

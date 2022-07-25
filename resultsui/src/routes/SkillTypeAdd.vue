@@ -17,10 +17,10 @@ import { defineComponent, reactive } from 'vue';
 export default defineComponent({
     setup() {
         let skillType: SkillType = reactive({
-            iD: -1,
-            name: "",
-            description: "",
-            skillNames: []
+            ID: -1,
+            Name: "",
+            Description: "",
+            SkillNames: []
         });
         return {
             skillType

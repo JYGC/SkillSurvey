@@ -3,7 +3,7 @@
         <label>Skill name:</label>
     </div>
     <div>
-        <input type="text" name="skillName" id="skillName" v-model="skillName.name" />
+        <input type="text" name="skillName" id="skillName" v-model="skillName.Name" />
     </div>
     <div>
         <label>Skill type:</label>
@@ -17,8 +17,8 @@
         <label>Alternate phrases:</label>
     </div>
     <div>
-        <div v-for="alias in skillName?.skillNameAliases" v-bind:key="alias.iD">
-            <input type="text" v-model="alias.alias" />
+        <div v-for="alias in skillName?.SkillNameAliases" v-bind:key="alias.ID">
+            <input type="text" v-model="alias.Alias" />
             <button v-on:click="deleteNewSkillNameAlias(alias)">Delete</button>
         </div>
         <div>
@@ -53,17 +53,18 @@ export default defineComponent({
     },
     methods: {
         addNewSkillNameAlias(): void {
+            if (typeof this.skillName === 'undefined' || this.skillName === null) return;
             let newAliasObject: SkillNameAlias = {
-                iD: -1,
-                skillNameID: this.skillName?.iD,
-                skillName: this.skillName,
-                alias: this.newAlias
+                ID: -1,
+                SkillNameID: this.skillName.ID,
+                SkillName: this.skillName,
+                Alias: this.newAlias
             };
-            this.skillName?.skillNameAliases.push(newAliasObject);
+            this.skillName.SkillNameAliases.push(newAliasObject);
             this.newAlias = "";
         },
         deleteNewSkillNameAlias(skillAlias: SkillNameAlias): void {
-            this.skillName?.skillNameAliases.splice(this.skillName?.skillNameAliases.indexOf(skillAlias), 1);
+            this.skillName?.SkillNameAliases.splice(this.skillName?.SkillNameAliases.indexOf(skillAlias), 1);
         }
     }
 })

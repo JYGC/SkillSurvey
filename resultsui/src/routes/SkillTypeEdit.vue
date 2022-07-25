@@ -9,8 +9,8 @@
         <label>Skills of this type:</label>
     </div>
     <div>
-        <router-link v-for="skillName in skillType.skillNames" :key="skillName.iD" to="/skill-edit/{{skillName.iD}}">
-            {{skillName.name}}
+        <router-link v-for="skillName in skillType.SkillNames" :key="skillName.ID" to="/skill-edit/{{skillName.ID}}">
+            {{skillName.Name}}
         </router-link>
     </div>
     <div>
@@ -28,18 +28,18 @@ import { defineComponent, reactive } from 'vue';
 export default defineComponent({
     setup() {
         let skillType: SkillType = reactive({
-            iD: -1,
-            name: "",
-            description: "",
-            skillNames: []
+            ID: -1,
+            Name: "",
+            Description: "",
+            SkillNames: []
         });
-        skillType.skillNames.push({
-            iD: 2,
-            skillTypeID: skillType.iD,
-            skillType: skillType,
-            name: "C#",
-            isEnabled: true,
-            skillNameAliases: []
+        skillType.SkillNames?.push({
+            ID: 2,
+            SkillTypeID: skillType.ID,
+            SkillType: skillType,
+            Name: "C#",
+            IsEnabled: true,
+            SkillNameAliases: []
         });
         return {
             skillType

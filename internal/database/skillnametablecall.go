@@ -1,6 +1,8 @@
 package database
 
 import (
+	"fmt"
+
 	"github.com/JYGC/SkillSurvey/internal/dataschemas"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"gorm.io/gorm"
@@ -13,7 +15,6 @@ type SkillNameTableCall struct {
 func NewSkillNameTableCall(db *gorm.DB) (tableCall *SkillNameTableCall) {
 	tableCall = new(SkillNameTableCall)
 	tableCall.db = db
-	tableCall.MigrateTable(&entities.SkillType{})
 	tableCall.MigrateTable(&entities.SkillName{})
 	tableCall.MigrateTable(&entities.SkillNameAlias{})
 	return tableCall
@@ -31,4 +32,42 @@ func (s SkillNameTableCall) GetAlias() (result []dataschemas.AliasWithSkillName,
 func (s SkillNameTableCall) GetByName(skillName string) (result entities.SkillName, err error) {
 	err = s.db.Where("name = ?", skillName).First(&result).Error
 	return result, err
+}
+
+func (s SkillNameTableCall) GetAll() (skillNameListResult []entities.SkillName, err error) {
+	var skillNameSlice []entities.SkillName
+	err = s.db.Find(&skillNameSlice).Error
+	if err != nil {
+		return nil, err
+	}
+	var skillTypeSlice []entities.SkillType
+	err = s.db.Find(&skillTypeSlice).Error
+	if err != nil {
+		return nil, err
+	}
+	var skillNameAliasSlice []entities.SkillNameAlias
+	err = s.db.Model(&skillNameSlice).Association("SkillNameAliases").Find(&skillNameAliasSlice)
+	if err != nil {
+		return nil, err
+	}
+	skillTypeIDMap := make(map[uint]entities.SkillType)
+	for _, skillType := range skillTypeSlice {
+		skillTypeIDMap[skillType.ID] = skillType
+	}
+	skillNameIDMap := make(map[uint]entities.SkillName)
+	for _, skillName := range skillNameSlice {
+		skillName.SkillType = skillTypeIDMap[skillName.SkillTypeID]
+		skillNameIDMap[skillName.ID] = skillName
+	}
+	for _, skillNameAlias := range skillNameAliasSlice {
+		if skillName, ok := skillNameIDMap[skillNameAlias.SkillNameID]; ok {
+			skillName.SkillNameAliases = append(skillName.SkillNameAliases, skillNameAlias)
+			skillNameIDMap[skillNameAlias.SkillNameID] = skillName
+		}
+	}
+	for _, skillName := range skillNameIDMap {
+		skillNameListResult = append(skillNameListResult, skillName)
+	}
+	fmt.Println(skillNameListResult)
+	return skillNameListResult, err
 }

@@ -4,10 +4,10 @@ import HelloWorld from '@/routes/HelloWorld.vue';
 import MonthlyCountReport from '@/routes/MonthlyCountReport.vue';
 import SkillAdd from '@/routes/SkillAdd.vue';
 import SkillEdit from '@/routes/SkillEdit.vue';
-import SkillsList from '@/routes/SkillsList.vue';
+import SkillList from '@/routes/SkillList.vue';
 import SkillTypeAdd from '@/routes/SkillTypeAdd.vue';
 import SkillTypeEdit from '@/routes/SkillTypeEdit.vue';
-import SkillTypesList from '@/routes/SkillTypesList.vue';
+import SkillTypeList from '@/routes/SkillTypeList.vue';
 const routes = [
     {
         path: '/',
@@ -30,9 +30,9 @@ const routes = [
         component: SkillEdit
     },
     {
-        path: '/skills-list',
-        name: 'skills-list',
-        component: SkillsList
+        path: '/skill-list',
+        name: 'skill-list',
+        component: SkillList
     },
     {
         path: '/skill-type-add',
@@ -45,9 +45,9 @@ const routes = [
         component: SkillTypeEdit
     },
     {
-        path: '/skill-types-list/',
-        name: 'skill-types-list',
-        component: SkillTypesList
+        path: '/skill-type-list/',
+        name: 'skill-type-list',
+        component: SkillTypeList
     },
 ];
 const router = createRouter({

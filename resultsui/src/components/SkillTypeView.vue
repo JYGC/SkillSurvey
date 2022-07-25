@@ -3,13 +3,13 @@
         <label>Skill Type:</label>
     </div>
     <div>
-        <input type="text" name="skillType" id="skillType" v-model="skillType.name" />
+        <input type="text" name="skillType" id="skillType" v-model="skillType.Name" />
     </div>
     <div>
         <label>Description:</label>
     </div>
     <div>
-        <textarea class="description" v-model="skillType.description" placeholder="Skill type description"></textarea>
+        <textarea class="description" v-model="skillType.Description" placeholder="Skill type description"></textarea>
     </div>
 </template>
 <script lang="ts">

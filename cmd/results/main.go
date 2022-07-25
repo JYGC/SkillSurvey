@@ -24,14 +24,25 @@ func main() {
 	}
 	fs := http.FileServer(http.Dir(configSettings.ResultUiRoot))
 	http.Handle("/", fs)
-	http.HandleFunc("/api/", getMonthlyCount)
+	http.HandleFunc("/api/getmonthlycount", getMonthlyCountAPI)
+	http.HandleFunc("/api/skilltypelist", getSkillTypeListAPI)
+	http.HandleFunc("/api/skilllist", getSkillListAPI)
 	fmt.Printf("Server listening on port %s\n", configSettings.ServerPort)
 	exception.ErrorLogger.Panic(
 		http.ListenAndServe(fmt.Sprintf(":%s", configSettings.ServerPort), nil),
 	)
 }
 
-func getMonthlyCount(w http.ResponseWriter, request *http.Request) {
+func makeResponse(w http.ResponseWriter, request *http.Request, content interface{}) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(content); err != nil {
+		panic(err)
+	}
+}
+
+func getMonthlyCountAPI(w http.ResponseWriter, request *http.Request) {
 	reportSlice, err := database.DbAdapter.MonthlyCount.GetReport()
 	_resp := make(map[string][]entities.MonthlyCountReport)
 	for _, reportElement := range reportSlice {
@@ -40,10 +51,21 @@ func getMonthlyCount(w http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(_resp); err != nil {
+	makeResponse(w, request, _resp)
+}
+
+func getSkillTypeListAPI(w http.ResponseWriter, request *http.Request) {
+	skillTypeSlice, err := database.DbAdapter.SkillType.GetAll()
+	if err != nil {
 		panic(err)
 	}
+	makeResponse(w, request, skillTypeSlice)
+}
+
+func getSkillListAPI(w http.ResponseWriter, request *http.Request) {
+	skillSlice, err := database.DbAdapter.SkillName.GetAll()
+	if err != nil {
+		panic(err)
+	}
+	makeResponse(w, request, skillSlice)
 }

@@ -21,17 +21,17 @@ import { defineComponent, reactive } from 'vue';
 export default defineComponent({
     setup() {
         let skillName: SkillName = reactive({
-            iD: -1,
-            skillTypeID: -1,
-            skillType: {
-                iD: -1,
-                name: "",
-                description: "",
-                skillNames: []
+            ID: -1,
+            SkillTypeID: -1,
+            SkillType: {
+                ID: -1,
+                Name: "",
+                Description: "",
+                SkillNames: []
             },
-            name: "",
-            isEnabled: true,
-            skillNameAliases: []
+            Name: "",
+            IsEnabled: true,
+            SkillNameAliases: []
         });
         return {
             skillName
