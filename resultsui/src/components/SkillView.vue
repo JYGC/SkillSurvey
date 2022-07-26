@@ -54,7 +54,7 @@ export default defineComponent({
         };
     },
     created() {
-        fetch('http://localhost:3000/api/getallidandname').then(
+        fetch('http://localhost:3000/skill/getallidandname').then(
             response => response.json()
         ).then(data => {
             for (let key in data) {

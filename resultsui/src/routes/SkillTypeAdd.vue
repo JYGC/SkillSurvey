@@ -1,6 +1,6 @@
 <template>
     <div>
-        <button>Back</button>
+        <a href="#" @click.prevent="$router.go(-1)">Back</a>
     </div>
     <div>
         <SkillTypeView v-model="skillType" />

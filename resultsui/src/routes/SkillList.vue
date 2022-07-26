@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <button to="/skill-add">New Skill</button>
+    <div class="btn">
+        <router-link :to="{ name: 'skill-add' }">New Skill Type</router-link>
     </div>
     <div>
         <table>
@@ -38,7 +38,7 @@ export default defineComponent({
     },
     created() {
         // get data from API
-        fetch('http://localhost:3000/api/getskilllist').then(
+        fetch('http://localhost:3000/skill/getall').then(
             response => response.json()
         ).then(data => {
             for (let i: number = 0; i < data.length; i++) this.skillNames.push(data[i]);
@@ -53,3 +53,10 @@ export default defineComponent({
     }
 });
 </script>
+
+<style>
+.btn > a {
+    border: 1px solid;
+    text-decoration-line: none;
+}
+</style>

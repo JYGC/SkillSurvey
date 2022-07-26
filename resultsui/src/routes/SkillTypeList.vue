@@ -1,6 +1,6 @@
 <template>
     <div>
-        <button to="/skill-type-add">New Skill Type</button>
+        <router-link :to="{ name: 'skill-type-add' }">New Skill Type</router-link>
     </div>
     <div>
         <table>
@@ -34,7 +34,7 @@ export default defineComponent({
     },
     created() {
         // get data from API
-        fetch('http://localhost:3000/api/getskilltypelist').then(
+        fetch('http://localhost:3000/skilltype/getall').then(
             response => response.json()
         ).then(data => {
             for (let i: number = 0; i < data.length; i++) this.skillTypes.push(data[i]);

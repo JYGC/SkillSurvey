@@ -1,6 +1,6 @@
 <template>
     <div>
-        <button>Back</button>
+        <a href="#" @click.prevent="$router.go(-1)">Back</a>
     </div>
     <div>
         <SkillTypeView v-model="skillType" />
@@ -47,7 +47,7 @@ export default defineComponent({
         SkillTypeView
     },
     created() {
-        fetch(`http://localhost:3000/api/getskilltypebyid?skilltypeid=${ useRoute().params.skilltypeid }`).then(
+        fetch(`http://localhost:3000/skilltype/getbyid?skilltypeid=${ useRoute().params.skilltypeid }`).then(
             response => response.json()
         ).then(data => {
             this.skillType.ID = data.ID;

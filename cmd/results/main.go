@@ -25,12 +25,12 @@ func main() {
 	}
 	fs := http.FileServer(http.Dir(configSettings.ResultUiRoot))
 	http.Handle("/", fs)
-	http.HandleFunc("/api/getmonthlycount", getMonthlyCountAPI)
-	http.HandleFunc("/api/getskilltypelist", getSkillTypeListAPI)
-	http.HandleFunc("/api/getskilltypebyid", getSkillTypeByIDAPI)
-	http.HandleFunc("/api/getskilllist", getSkillListAPI)
-	http.HandleFunc("/api/getskillbyid", getSkillByIDAPI)
-	http.HandleFunc("/api/getallidandname", getAllSkillTypeAPI)
+	http.HandleFunc("/report/getmonthlycount", getMonthlyCountAPI)
+	http.HandleFunc("/skilltype/getall", getSkillTypeListAPI)
+	http.HandleFunc("/skilltype/getbyid", getSkillTypeByIDAPI)
+	http.HandleFunc("/skill/getall", getSkillListAPI)
+	http.HandleFunc("/skill/getbyid", getSkillByIDAPI)
+	http.HandleFunc("/skill/getallidandname", getAllSkillTypeAPI)
 	fmt.Printf("Server listening on port %s\n", configSettings.ServerPort)
 	exception.ErrorLogger.Panic(
 		http.ListenAndServe(fmt.Sprintf(":%s", configSettings.ServerPort), nil),
@@ -68,7 +68,6 @@ func getSkillTypeListAPI(w http.ResponseWriter, request *http.Request) {
 
 func getSkillTypeByIDAPI(w http.ResponseWriter, request *http.Request) {
 	skilTypeID, err := strconv.ParseUint(request.URL.Query().Get("skilltypeid"), 10, 64)
-	fmt.Println(skilTypeID)
 	if err != nil {
 		panic(err)
 	}
