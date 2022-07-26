@@ -18,7 +18,7 @@ func NewSkillNameTableCall(db *gorm.DB) (tableCall *SkillNameTableCall) {
 	return tableCall
 }
 
-func (s SkillNameTableCall) GetAlias() (result []dataschemas.AliasWithSkillName, err error) {
+func (s SkillNameTableCall) GetAliasWithSkillName() (result []dataschemas.AliasWithSkillName, err error) {
 	err = s.db.Model(&entities.SkillName{}).Select(
 		"skill_names.name, skill_name_aliases.alias",
 	).Joins(
@@ -32,7 +32,7 @@ func (s SkillNameTableCall) GetByName(skillName string) (result entities.SkillNa
 	return result, err
 }
 
-func (s SkillNameTableCall) GetAll() (skillNameListResult []entities.SkillName, err error) {
+func (s SkillNameTableCall) GetAllWithTypeAndAliases() (skillNameListResult []entities.SkillName, err error) {
 	var skillNameSlice []entities.SkillName
 	err = s.db.Find(&skillNameSlice).Error
 	if err != nil {
@@ -70,7 +70,7 @@ func (s SkillNameTableCall) GetAll() (skillNameListResult []entities.SkillName, 
 	return skillNameListResult, err
 }
 
-func (s SkillNameTableCall) GetByID(ID uint) (skillNameResult *entities.SkillName, err error) {
+func (s SkillNameTableCall) GetByIDWithTypeAndAliases(ID uint) (skillNameResult *entities.SkillName, err error) {
 	err = s.db.First(&skillNameResult, ID).Error
 	if err != nil {
 		return nil, err

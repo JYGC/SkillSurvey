@@ -21,7 +21,7 @@ export default defineComponent({
             ID: -1,
             SkillTypeID: -1,
             SkillType: {
-                ID: -1,
+                ID: 0,
                 Name: "",
                 Description: "",
                 SkillNames: []

@@ -16,7 +16,7 @@ func NewSkillTypeTableCall(db *gorm.DB) (tableCall *SkillTypeTableCall) {
 	return tableCall
 }
 
-func (s SkillTypeTableCall) GetAll() (skillTypeListResult []entities.SkillType, err error) {
+func (s SkillTypeTableCall) GetAllWithSkillNames() (skillTypeListResult []entities.SkillType, err error) {
 	var skillTypeSlice []entities.SkillType
 	err = s.db.Find(&skillTypeSlice).Error
 	if err != nil {
@@ -43,7 +43,7 @@ func (s SkillTypeTableCall) GetAll() (skillTypeListResult []entities.SkillType, 
 	return skillTypeListResult, err
 }
 
-func (s SkillTypeTableCall) GetByID(ID uint) (skillTypeResult *entities.SkillType, err error) {
+func (s SkillTypeTableCall) GetByIDWithSkillNames(ID uint) (skillTypeResult *entities.SkillType, err error) {
 	err = s.db.First(&skillTypeResult, ID).Error
 	if err != nil {
 		return nil, err
@@ -53,4 +53,17 @@ func (s SkillTypeTableCall) GetByID(ID uint) (skillTypeResult *entities.SkillTyp
 		return nil, err
 	}
 	return skillTypeResult, err
+}
+
+func (s SkillTypeTableCall) GetAllIDAndName() (skillTypeMapResult map[uint]string, err error) {
+	skillTypeMapResult = map[uint]string{}
+	var skillTypeSlice []entities.SkillType
+	err = s.db.Find(&skillTypeSlice).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, skillType := range skillTypeSlice {
+		skillTypeMapResult[skillType.ID] = skillType.Name
+	}
+	return skillTypeMapResult, err
 }

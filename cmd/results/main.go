@@ -27,9 +27,10 @@ func main() {
 	http.Handle("/", fs)
 	http.HandleFunc("/api/getmonthlycount", getMonthlyCountAPI)
 	http.HandleFunc("/api/getskilltypelist", getSkillTypeListAPI)
+	http.HandleFunc("/api/getskilltypebyid", getSkillTypeByIDAPI)
 	http.HandleFunc("/api/getskilllist", getSkillListAPI)
 	http.HandleFunc("/api/getskillbyid", getSkillByIDAPI)
-	http.HandleFunc("/api/getskilltypebyid", getSkillTypeByIDAPI)
+	http.HandleFunc("/api/getallidandname", getAllSkillTypeAPI)
 	fmt.Printf("Server listening on port %s\n", configSettings.ServerPort)
 	exception.ErrorLogger.Panic(
 		http.ListenAndServe(fmt.Sprintf(":%s", configSettings.ServerPort), nil),
@@ -58,15 +59,28 @@ func getMonthlyCountAPI(w http.ResponseWriter, request *http.Request) {
 }
 
 func getSkillTypeListAPI(w http.ResponseWriter, request *http.Request) {
-	skillTypeSlice, err := database.DbAdapter.SkillType.GetAll()
+	skillTypeSlice, err := database.DbAdapter.SkillType.GetAllWithSkillNames()
 	if err != nil {
 		panic(err)
 	}
 	makeResponse(w, request, skillTypeSlice)
 }
 
+func getSkillTypeByIDAPI(w http.ResponseWriter, request *http.Request) {
+	skilTypeID, err := strconv.ParseUint(request.URL.Query().Get("skilltypeid"), 10, 64)
+	fmt.Println(skilTypeID)
+	if err != nil {
+		panic(err)
+	}
+	skillType, err := database.DbAdapter.SkillType.GetByIDWithSkillNames(uint(skilTypeID))
+	if err != nil {
+		panic(err)
+	}
+	makeResponse(w, request, skillType)
+}
+
 func getSkillListAPI(w http.ResponseWriter, request *http.Request) {
-	skillSlice, err := database.DbAdapter.SkillName.GetAll()
+	skillSlice, err := database.DbAdapter.SkillName.GetAllWithTypeAndAliases()
 	if err != nil {
 		panic(err)
 	}
@@ -78,23 +92,17 @@ func getSkillByIDAPI(w http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	skillName, err := database.DbAdapter.SkillName.GetByID(uint(skillID))
+	skillName, err := database.DbAdapter.SkillName.GetByIDWithTypeAndAliases(uint(skillID))
 	if err != nil {
 		panic(err)
 	}
 	makeResponse(w, request, skillName)
 }
 
-func getSkillTypeByIDAPI(w http.ResponseWriter, request *http.Request) {
-	skilTypeID, err := strconv.ParseUint(request.URL.Query().Get("skilltypeid"), 10, 64)
-	fmt.Println(skilTypeID)
+func getAllSkillTypeAPI(w http.ResponseWriter, request *http.Request) {
+	skillTypeIDAndName, err := database.DbAdapter.SkillType.GetAllIDAndName()
 	if err != nil {
 		panic(err)
 	}
-	skillType, err := database.DbAdapter.SkillType.GetByID(uint(skilTypeID))
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(skillType)
-	makeResponse(w, request, skillType)
+	makeResponse(w, request, skillTypeIDAndName)
 }

@@ -10,7 +10,7 @@
     </div>
     <div>
         <select name="skill-types" id="skill-types">
-            <option v-for="skillType in skillTypes" value="{{skillType}}" v-bind:key="skillType">{{skillType}}</option>
+            <option v-for="(value, propertyName) in skillTypes" :value="propertyName" v-bind:key="propertyName">{{value}}</option>
         </select>
     </div>
     <div>
@@ -29,7 +29,7 @@
 </template>
 <script lang="ts">
 import { SkillName, SkillNameAlias } from '@/schemas/skills';
-import { computed, defineComponent } from 'vue';
+import { computed, defineComponent, reactive } from 'vue';
 
 export default defineComponent({
     props: {
@@ -44,12 +44,23 @@ export default defineComponent({
             set: (value) => emit('update:modelValue', value)
         });
         let newAlias: string = "";
-        let skillTypes: Array<string> = ['frontend', 'backend', 'middleware'];
+        let skillTypes: { [id: string]: string } = reactive({
+            "0": "-- Select skill type --"
+        });
         return {
             skillName,
             newAlias,
             skillTypes
         };
+    },
+    created() {
+        fetch('http://localhost:3000/api/getallidandname').then(
+            response => response.json()
+        ).then(data => {
+            for (let key in data) {
+                this.skillTypes[key] = data[key];
+            }
+        });
     },
     methods: {
         addNewSkillNameAlias(): void {

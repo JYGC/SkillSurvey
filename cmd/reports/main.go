@@ -16,7 +16,7 @@ func makeMonthlyCountReport() {
 	variableRef := make(map[string]interface{})
 	defer exception.ReportErrorIfPanic(map[string]interface{}{"Variables": variableRef})
 	// Associate skill name with array of their aliases
-	skillNameAliases, err := database.DbAdapter.SkillName.GetAlias()
+	skillNameAliases, err := database.DbAdapter.SkillName.GetAliasWithSkillName()
 	if err != nil {
 		panic(err)
 	}
