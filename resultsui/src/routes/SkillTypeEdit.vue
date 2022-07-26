@@ -9,9 +9,14 @@
         <label>Skills of this type:</label>
     </div>
     <div>
-        <router-link v-for="skillName in skillType.SkillNames" :key="skillName.ID" to="/skill-edit/{{skillName.ID}}">
-            {{skillName.Name}}
-        </router-link>
+        <div v-for="skillName in skillType.SkillNames" :key="skillName.ID">
+            <router-link :to="{ name: 'skill-edit', params: { skillid: skillName.ID } }">
+                {{skillName.Name}}
+            </router-link>
+        </div>
+        <div>
+            <router-link :to="{ name: 'skill-add' }">New Skill</router-link>
+        </div>
     </div>
     <div>
         <span>
@@ -24,6 +29,7 @@
 import SkillTypeView from '@/components/SkillTypeView.vue';
 import { SkillType } from '@/schemas/skills';
 import { defineComponent, reactive } from 'vue';
+import { useRoute } from 'vue-router';
 
 export default defineComponent({
     setup() {
@@ -33,20 +39,22 @@ export default defineComponent({
             Description: "",
             SkillNames: []
         });
-        skillType.SkillNames?.push({
-            ID: 2,
-            SkillTypeID: skillType.ID,
-            SkillType: skillType,
-            Name: "C#",
-            IsEnabled: true,
-            SkillNameAliases: []
-        });
         return {
             skillType
         };
     },
     components: {
         SkillTypeView
+    },
+    created() {
+        fetch(`http://localhost:3000/api/getskilltypebyid?skilltypeid=${ useRoute().params.skilltypeid }`).then(
+            response => response.json()
+        ).then(data => {
+            this.skillType.ID = data.ID;
+            this.skillType.Name = data.Name;
+            this.skillType.Description = data.Description;
+            this.skillType.SkillNames = data.SkillNames;
+        });
     }
 })
 </script>

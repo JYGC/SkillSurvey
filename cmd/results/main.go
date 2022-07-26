@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
+	"strconv"
 
 	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/database"
@@ -25,8 +26,10 @@ func main() {
 	fs := http.FileServer(http.Dir(configSettings.ResultUiRoot))
 	http.Handle("/", fs)
 	http.HandleFunc("/api/getmonthlycount", getMonthlyCountAPI)
-	http.HandleFunc("/api/skilltypelist", getSkillTypeListAPI)
-	http.HandleFunc("/api/skilllist", getSkillListAPI)
+	http.HandleFunc("/api/getskilltypelist", getSkillTypeListAPI)
+	http.HandleFunc("/api/getskilllist", getSkillListAPI)
+	http.HandleFunc("/api/getskillbyid", getSkillByIDAPI)
+	http.HandleFunc("/api/getskilltypebyid", getSkillTypeByIDAPI)
 	fmt.Printf("Server listening on port %s\n", configSettings.ServerPort)
 	exception.ErrorLogger.Panic(
 		http.ListenAndServe(fmt.Sprintf(":%s", configSettings.ServerPort), nil),
@@ -44,14 +47,14 @@ func makeResponse(w http.ResponseWriter, request *http.Request, content interfac
 
 func getMonthlyCountAPI(w http.ResponseWriter, request *http.Request) {
 	reportSlice, err := database.DbAdapter.MonthlyCount.GetReport()
-	_resp := make(map[string][]entities.MonthlyCountReport)
+	report := make(map[string][]entities.MonthlyCountReport)
 	for _, reportElement := range reportSlice {
-		_resp[reportElement.SkillName.Name] = append(_resp[reportElement.SkillName.Name], reportElement)
+		report[reportElement.SkillName.Name] = append(report[reportElement.SkillName.Name], reportElement)
 	}
 	if err != nil {
 		panic(err)
 	}
-	makeResponse(w, request, _resp)
+	makeResponse(w, request, report)
 }
 
 func getSkillTypeListAPI(w http.ResponseWriter, request *http.Request) {
@@ -68,4 +71,30 @@ func getSkillListAPI(w http.ResponseWriter, request *http.Request) {
 		panic(err)
 	}
 	makeResponse(w, request, skillSlice)
+}
+
+func getSkillByIDAPI(w http.ResponseWriter, request *http.Request) {
+	skillID, err := strconv.ParseUint(request.URL.Query().Get("skillid"), 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	skillName, err := database.DbAdapter.SkillName.GetByID(uint(skillID))
+	if err != nil {
+		panic(err)
+	}
+	makeResponse(w, request, skillName)
+}
+
+func getSkillTypeByIDAPI(w http.ResponseWriter, request *http.Request) {
+	skilTypeID, err := strconv.ParseUint(request.URL.Query().Get("skilltypeid"), 10, 64)
+	fmt.Println(skilTypeID)
+	if err != nil {
+		panic(err)
+	}
+	skillType, err := database.DbAdapter.SkillType.GetByID(uint(skilTypeID))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(skillType)
+	makeResponse(w, request, skillType)
 }

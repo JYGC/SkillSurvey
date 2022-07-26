@@ -22,14 +22,14 @@ func (s SkillTypeTableCall) GetAll() (skillTypeListResult []entities.SkillType, 
 	if err != nil {
 		return nil, err
 	}
+	skillTypeIDMap := make(map[uint]entities.SkillType)
+	for _, skillType := range skillTypeSlice {
+		skillTypeIDMap[skillType.ID] = skillType
+	}
 	var skillNameSlice []entities.SkillName
 	err = s.db.Model(&skillTypeSlice).Association("SkillNames").Find(&skillNameSlice)
 	if err != nil {
 		return nil, err
-	}
-	skillTypeIDMap := make(map[uint]entities.SkillType)
-	for _, skillType := range skillTypeSlice {
-		skillTypeIDMap[skillType.ID] = skillType
 	}
 	for _, skillName := range skillNameSlice {
 		if skillType, ok := skillTypeIDMap[skillName.SkillTypeID]; ok {
@@ -41,4 +41,16 @@ func (s SkillTypeTableCall) GetAll() (skillTypeListResult []entities.SkillType, 
 		skillTypeListResult = append(skillTypeListResult, skillType)
 	}
 	return skillTypeListResult, err
+}
+
+func (s SkillTypeTableCall) GetByID(ID uint) (skillTypeResult *entities.SkillType, err error) {
+	err = s.db.First(&skillTypeResult, ID).Error
+	if err != nil {
+		return nil, err
+	}
+	err = s.db.Model(&skillTypeResult).Association("SkillNames").Find(&skillTypeResult.SkillNames)
+	if err != nil {
+		return nil, err
+	}
+	return skillTypeResult, err
 }

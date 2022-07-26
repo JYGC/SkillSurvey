@@ -25,7 +25,7 @@ const routes = [
         component: SkillAdd
     },
     {
-        path: '/skill-edit/:id',
+        path: '/skill-edit/:skillid',
         name: 'skill-edit',
         component: SkillEdit
     },
@@ -40,7 +40,7 @@ const routes = [
         component: SkillTypeAdd
     },
     {
-        path: '/skill-type-edit/:id',
+        path: '/skill-type-edit/:skilltypeid',
         name: 'skill-type-edit',
         component: SkillTypeEdit
     },

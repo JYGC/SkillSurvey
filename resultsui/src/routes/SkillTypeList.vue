@@ -15,7 +15,7 @@
                 <td>{{ skillType.Description }}</td>
                 <td>{{ (skillType.SkillNames !== null) ? skillType.SkillNames.length : 0 }}</td>
                 <td>
-                    <router-link to="/skill-type-edit/{{ skillType.ID }}">Edit</router-link>
+                    <router-link :to="{ name: 'skill-type-edit', params: { skilltypeid: skillType.ID } }">Edit</router-link>
                 </td>
             </tr>
         </table>
@@ -34,7 +34,7 @@ export default defineComponent({
     },
     created() {
         // get data from API
-        fetch('http://localhost:3000/api/skilltypelist').then(
+        fetch('http://localhost:3000/api/getskilltypelist').then(
             response => response.json()
         ).then(data => {
             for (let i: number = 0; i < data.length; i++) this.skillTypes.push(data[i]);

@@ -19,7 +19,7 @@
                     </div>
                 </td>
                 <td>
-                    <router-link to="/skill-edit/{{ skillName.ID }}">Edit</router-link>
+                    <router-link :to="{ name: 'skill-edit', params: { skillid: skillName.ID } }">Edit</router-link>
                 </td>
             </tr>
         </table>
@@ -38,7 +38,7 @@ export default defineComponent({
     },
     created() {
         // get data from API
-        fetch('http://localhost:3000/api/skilllist').then(
+        fetch('http://localhost:3000/api/getskilllist').then(
             response => response.json()
         ).then(data => {
             for (let i: number = 0; i < data.length; i++) this.skillNames.push(data[i]);

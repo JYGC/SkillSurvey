@@ -43,11 +43,6 @@ func (s SkillNameTableCall) GetAll() (skillNameListResult []entities.SkillName, 
 	if err != nil {
 		return nil, err
 	}
-	var skillNameAliasSlice []entities.SkillNameAlias
-	err = s.db.Model(&skillNameSlice).Association("SkillNameAliases").Find(&skillNameAliasSlice)
-	if err != nil {
-		return nil, err
-	}
 	skillTypeIDMap := make(map[uint]entities.SkillType)
 	for _, skillType := range skillTypeSlice {
 		skillTypeIDMap[skillType.ID] = skillType
@@ -56,6 +51,12 @@ func (s SkillNameTableCall) GetAll() (skillNameListResult []entities.SkillName, 
 	for _, skillName := range skillNameSlice {
 		skillName.SkillType = skillTypeIDMap[skillName.SkillTypeID]
 		skillNameIDMap[skillName.ID] = skillName
+	}
+	// get aliases and attach them to SkillNames
+	var skillNameAliasSlice []entities.SkillNameAlias
+	err = s.db.Model(&skillNameSlice).Association("SkillNameAliases").Find(&skillNameAliasSlice)
+	if err != nil {
+		return nil, err
 	}
 	for _, skillNameAlias := range skillNameAliasSlice {
 		if skillName, ok := skillNameIDMap[skillNameAlias.SkillNameID]; ok {
@@ -67,4 +68,20 @@ func (s SkillNameTableCall) GetAll() (skillNameListResult []entities.SkillName, 
 		skillNameListResult = append(skillNameListResult, skillName)
 	}
 	return skillNameListResult, err
+}
+
+func (s SkillNameTableCall) GetByID(ID uint) (skillNameResult *entities.SkillName, err error) {
+	err = s.db.First(&skillNameResult, ID).Error
+	if err != nil {
+		return nil, err
+	}
+	err = s.db.First(&skillNameResult.SkillType, skillNameResult.SkillTypeID).Error
+	if err != nil {
+		return nil, err
+	}
+	err = s.db.Model(&skillNameResult).Association("SkillNameAliases").Find(&skillNameResult.SkillNameAliases)
+	if err != nil {
+		return nil, err
+	}
+	return skillNameResult, err
 }
