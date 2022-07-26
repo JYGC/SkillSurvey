@@ -9,7 +9,7 @@
         <label>Skill type:</label>
     </div>
     <div>
-        <select name="skill-types" id="skill-types">
+        <select name="skill-types" id="skill-types" v-model="skillName.SkillTypeID">
             <option v-for="(value, propertyName) in skillTypes" :value="propertyName" v-bind:key="propertyName">{{value}}</option>
         </select>
     </div>
@@ -44,7 +44,7 @@ export default defineComponent({
             set: (value) => emit('update:modelValue', value)
         });
         let newAlias: string = "";
-        let skillTypes: { [id: string]: string } = reactive({
+        let skillTypes: { [id: number]: string } = reactive({
             "0": "-- Select skill type --"
         });
         return {
@@ -58,7 +58,7 @@ export default defineComponent({
             response => response.json()
         ).then(data => {
             for (let key in data) {
-                this.skillTypes[key] = data[key];
+                this.skillTypes[parseInt(key)] = data[key];
             }
         });
     },

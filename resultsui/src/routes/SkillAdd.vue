@@ -19,7 +19,7 @@ export default defineComponent({
     setup() {
         let skillName: SkillName = reactive({
             ID: -1,
-            SkillTypeID: -1,
+            SkillTypeID: 0,
             SkillType: {
                 ID: 0,
                 Name: "",
