@@ -108,7 +108,7 @@ func getSkillByIDAPI(w http.ResponseWriter, request *http.Request) {
 	makeResponse(w, request, skillName)
 }
 
-func addSkillAPI(w http.ResponseWriter, request *http.Request) {
+func addSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {
 	var skillNameID uint
 	var requestBody map[string]interface{}
 	if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
@@ -140,7 +140,7 @@ func addSkillAPI(w http.ResponseWriter, request *http.Request) {
 	if skillNameID, err = database.DbAdapter.SkillName.AddOne(newSkillName); err != nil {
 		panic(err)
 	}
-	makeResponse(w, request, map[string]interface{}{"ID": skillNameID})
+	makeResponse(responseWriter, request, map[string]interface{}{"ID": skillNameID})
 }
 
 func saveSkillAPI(w http.ResponseWriter, request *http.Request) {
