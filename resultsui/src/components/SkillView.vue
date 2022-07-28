@@ -54,7 +54,7 @@ export default defineComponent({
         };
     },
     created() {
-        fetch('http://localhost:3000/skill/getallidandname').then(
+        fetch('http://localhost:3000/skilltype/getallidandname').then(
             response => response.json()
         ).then(data => {
             for (let key in data) {
@@ -68,7 +68,7 @@ export default defineComponent({
             let newAliasObject: SkillNameAlias = {
                 ID: -1,
                 SkillNameID: this.skillName.ID,
-                SkillName: this.skillName,
+                SkillName: null,
                 Alias: this.newAlias
             };
             this.skillName.SkillNameAliases.push(newAliasObject);

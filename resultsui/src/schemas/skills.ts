@@ -8,7 +8,7 @@ export interface SkillType {
 export interface SkillName {
 	ID: number;
 	SkillTypeID: number;
-	SkillType: SkillType;
+	SkillType: SkillType | null;
 	Name: string;
 	IsEnabled: boolean;
 	SkillNameAliases: Array<SkillNameAlias>;
@@ -17,6 +17,6 @@ export interface SkillName {
 export interface SkillNameAlias {
 	ID: number;
 	SkillNameID: number;
-	SkillName: SkillName;
+	SkillName: SkillName | null;
 	Alias: string;
 }

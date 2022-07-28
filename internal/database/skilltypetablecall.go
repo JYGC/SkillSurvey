@@ -18,8 +18,7 @@ func NewSkillTypeTableCall(db *gorm.DB) (tableCall *SkillTypeTableCall) {
 
 func (s SkillTypeTableCall) GetAllWithSkillNames() (skillTypeListResult []entities.SkillType, err error) {
 	var skillTypeSlice []entities.SkillType
-	err = s.db.Find(&skillTypeSlice).Error
-	if err != nil {
+	if err = s.db.Find(&skillTypeSlice).Error; err != nil {
 		return nil, err
 	}
 	skillTypeIDMap := make(map[uint]entities.SkillType)
@@ -27,8 +26,7 @@ func (s SkillTypeTableCall) GetAllWithSkillNames() (skillTypeListResult []entiti
 		skillTypeIDMap[skillType.ID] = skillType
 	}
 	var skillNameSlice []entities.SkillName
-	err = s.db.Model(&skillTypeSlice).Association("SkillNames").Find(&skillNameSlice)
-	if err != nil {
+	if err = s.db.Model(&skillTypeSlice).Association("SkillNames").Find(&skillNameSlice); err != nil {
 		return nil, err
 	}
 	for _, skillName := range skillNameSlice {
@@ -44,22 +42,19 @@ func (s SkillTypeTableCall) GetAllWithSkillNames() (skillTypeListResult []entiti
 }
 
 func (s SkillTypeTableCall) GetByIDWithSkillNames(ID uint) (skillTypeResult *entities.SkillType, err error) {
-	err = s.db.First(&skillTypeResult, ID).Error
-	if err != nil {
+	if err = s.db.First(&skillTypeResult, ID).Error; err != nil {
 		return nil, err
 	}
-	err = s.db.Model(&skillTypeResult).Association("SkillNames").Find(&skillTypeResult.SkillNames)
-	if err != nil {
+	if err = s.db.Model(&skillTypeResult).Association("SkillNames").Find(&skillTypeResult.SkillNames); err != nil {
 		return nil, err
 	}
 	return skillTypeResult, err
 }
 
 func (s SkillTypeTableCall) GetAllIDAndName() (skillTypeMapResult map[uint]string, err error) {
-	skillTypeMapResult = map[uint]string{}
+	skillTypeMapResult = make(map[uint]string)
 	var skillTypeSlice []entities.SkillType
-	err = s.db.Find(&skillTypeSlice).Error
-	if err != nil {
+	if err = s.db.Find(&skillTypeSlice).Error; err != nil {
 		return nil, err
 	}
 	for _, skillType := range skillTypeSlice {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
+	"reflect"
 	"strconv"
 
 	"github.com/JYGC/SkillSurvey/internal/config"
@@ -28,9 +29,10 @@ func main() {
 	http.HandleFunc("/report/getmonthlycount", getMonthlyCountAPI)
 	http.HandleFunc("/skilltype/getall", getSkillTypeListAPI)
 	http.HandleFunc("/skilltype/getbyid", getSkillTypeByIDAPI)
+	http.HandleFunc("/skilltype/getallidandname", getAllSkillTypeIDAndNameAPI)
 	http.HandleFunc("/skill/getall", getSkillListAPI)
 	http.HandleFunc("/skill/getbyid", getSkillByIDAPI)
-	http.HandleFunc("/skill/getallidandname", getAllSkillTypeAPI)
+	http.HandleFunc("/skill/add", addSkillAPI)
 	fmt.Printf("Server listening on port %s\n", configSettings.ServerPort)
 	exception.ErrorLogger.Panic(
 		http.ListenAndServe(fmt.Sprintf(":%s", configSettings.ServerPort), nil),
@@ -78,6 +80,14 @@ func getSkillTypeByIDAPI(w http.ResponseWriter, request *http.Request) {
 	makeResponse(w, request, skillType)
 }
 
+func getAllSkillTypeIDAndNameAPI(w http.ResponseWriter, request *http.Request) {
+	skillTypeIDAndName, err := database.DbAdapter.SkillType.GetAllIDAndName()
+	if err != nil {
+		panic(err)
+	}
+	makeResponse(w, request, skillTypeIDAndName)
+}
+
 func getSkillListAPI(w http.ResponseWriter, request *http.Request) {
 	skillSlice, err := database.DbAdapter.SkillName.GetAllWithTypeAndAliases()
 	if err != nil {
@@ -98,10 +108,41 @@ func getSkillByIDAPI(w http.ResponseWriter, request *http.Request) {
 	makeResponse(w, request, skillName)
 }
 
-func getAllSkillTypeAPI(w http.ResponseWriter, request *http.Request) {
-	skillTypeIDAndName, err := database.DbAdapter.SkillType.GetAllIDAndName()
-	if err != nil {
+func addSkillAPI(w http.ResponseWriter, request *http.Request) {
+	var skillNameID uint
+	var requestBody map[string]interface{}
+	if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
 		panic(err)
 	}
-	makeResponse(w, request, skillTypeIDAndName)
+	newSkillName := entities.SkillName{}
+	var err error
+	var ok bool
+	var uint64SkillTypeID uint64
+	if uint64SkillTypeID, err = strconv.ParseUint(requestBody["SkillTypeID"].(string), 10, 64); err != nil {
+		panic(err)
+	}
+	newSkillName.SkillTypeID = uint(uint64SkillTypeID)
+	if newSkillName.Name, ok = requestBody["Name"].(string); !ok {
+		panic("can't convert Name to string")
+	}
+	newSkillName.IsEnabled = true
+	if reflect.TypeOf(requestBody["SkillNameAliases"]).Kind() != reflect.Slice {
+		panic("can't convert SkillNameAliases to slice")
+	}
+	skillNameAliasesValue := reflect.ValueOf(requestBody["SkillNameAliases"])
+	for index := 0; index < skillNameAliasesValue.Len(); index++ {
+		skillNameAliasInterface := skillNameAliasesValue.Index(index).Interface()
+		skillNameAliasMap := skillNameAliasInterface.(map[string]interface{})
+		newSkillName.SkillNameAliases = append(newSkillName.SkillNameAliases, entities.SkillNameAlias{
+			Alias: skillNameAliasMap["Alias"].(string),
+		})
+	}
+	if skillNameID, err = database.DbAdapter.SkillName.AddOne(newSkillName); err != nil {
+		panic(err)
+	}
+	makeResponse(w, request, map[string]interface{}{"ID": skillNameID})
+}
+
+func saveSkillAPI(w http.ResponseWriter, request *http.Request) {
+
 }

@@ -34,13 +34,11 @@ func (s SkillNameTableCall) GetByName(skillName string) (result entities.SkillNa
 
 func (s SkillNameTableCall) GetAllWithTypeAndAliases() (skillNameListResult []entities.SkillName, err error) {
 	var skillNameSlice []entities.SkillName
-	err = s.db.Find(&skillNameSlice).Error
-	if err != nil {
+	if err = s.db.Find(&skillNameSlice).Error; err != nil {
 		return nil, err
 	}
 	var skillTypeSlice []entities.SkillType
-	err = s.db.Find(&skillTypeSlice).Error
-	if err != nil {
+	if err = s.db.Find(&skillTypeSlice).Error; err != nil {
 		return nil, err
 	}
 	skillTypeIDMap := make(map[uint]entities.SkillType)
@@ -54,8 +52,7 @@ func (s SkillNameTableCall) GetAllWithTypeAndAliases() (skillNameListResult []en
 	}
 	// get aliases and attach them to SkillNames
 	var skillNameAliasSlice []entities.SkillNameAlias
-	err = s.db.Model(&skillNameSlice).Association("SkillNameAliases").Find(&skillNameAliasSlice)
-	if err != nil {
+	if err = s.db.Model(&skillNameSlice).Association("SkillNameAliases").Find(&skillNameAliasSlice); err != nil {
 		return nil, err
 	}
 	for _, skillNameAlias := range skillNameAliasSlice {
@@ -71,17 +68,62 @@ func (s SkillNameTableCall) GetAllWithTypeAndAliases() (skillNameListResult []en
 }
 
 func (s SkillNameTableCall) GetByIDWithTypeAndAliases(ID uint) (skillNameResult *entities.SkillName, err error) {
-	err = s.db.First(&skillNameResult, ID).Error
-	if err != nil {
+	if err = s.db.First(&skillNameResult, ID).Error; err != nil {
 		return nil, err
 	}
-	err = s.db.First(&skillNameResult.SkillType, skillNameResult.SkillTypeID).Error
-	if err != nil {
+	if err = s.db.First(&skillNameResult.SkillType, skillNameResult.SkillTypeID).Error; err != nil {
 		return nil, err
 	}
-	err = s.db.Model(&skillNameResult).Association("SkillNameAliases").Find(&skillNameResult.SkillNameAliases)
-	if err != nil {
+	if err = s.db.Model(&skillNameResult).Association("SkillNameAliases").Find(&skillNameResult.SkillNameAliases); err != nil {
 		return nil, err
 	}
 	return skillNameResult, err
+}
+
+func (s SkillNameTableCall) AddOne(skillName entities.SkillName) (skillNameID uint, err error) {
+	if err = s.db.Create(&skillName).Error; err != nil {
+		return 0, err
+	}
+	return skillName.ID, err
+}
+
+func (s SkillNameTableCall) SaveOneWithTypeAndAliases(changedSkillName entities.SkillName) (err error) {
+	var skillNameFromDB *entities.SkillName
+	if skillNameFromDB, err = s.GetByIDWithTypeAndAliases(changedSkillName.ID); err != nil {
+		return err
+	}
+	if skillNameFromDB.SkillTypeID != changedSkillName.SkillTypeID {
+		skillNameFromDB.SkillTypeID = changedSkillName.SkillTypeID
+		if err = s.db.First(&skillNameFromDB.SkillType, skillNameFromDB.SkillTypeID).Error; err != nil {
+			return err
+		}
+	}
+	// modifying aliases
+	changedOrNewAliasIDMap := make(map[uint]entities.SkillNameAlias)
+	for _, alias := range changedSkillName.SkillNameAliases {
+		changedOrNewAliasIDMap[alias.ID] = alias
+	}
+	// decrement because of deleting from skillNameFromDB.SkillNameAliases
+	for index := len(skillNameFromDB.SkillNameAliases) - 1; index >= 0; index-- {
+		alias := skillNameFromDB.SkillNameAliases[index]
+		if changedAlias, ok := changedOrNewAliasIDMap[alias.ID]; ok {
+			// update aliases
+			skillNameFromDB.SkillNameAliases[index].Alias = changedAlias.Alias
+			delete(changedOrNewAliasIDMap, alias.ID)
+			continue
+		}
+		// remove deleted aliases
+		s.db.Delete(&alias)
+		skillNameFromDB.SkillNameAliases = skillNameFromDB.SkillNameAliases[:len(skillNameFromDB.SkillNameAliases)-1]
+	}
+	// add new aliases
+	for _, alias := range changedOrNewAliasIDMap {
+		skillNameFromDB.SkillNameAliases = append(skillNameFromDB.SkillNameAliases, alias)
+	}
+	skillNameFromDB.Name = changedSkillName.Name
+	skillNameFromDB.IsEnabled = changedSkillName.IsEnabled
+	if err = s.db.Save(&skillNameFromDB).Error; err != nil {
+		return err
+	}
+	return err
 }

@@ -6,7 +6,7 @@
         <SkillView v-model="skillName" />
     </div>
     <div>
-        <button>Save</button>
+        <button v-on:click="addNewSKill()">Save</button>
     </div>
 </template>
 
@@ -18,14 +18,9 @@ import { defineComponent, reactive } from 'vue';
 export default defineComponent({
     setup() {
         let skillName: SkillName = reactive({
-            ID: -1,
+            ID: 0,
             SkillTypeID: 0,
-            SkillType: {
-                ID: 0,
-                Name: "",
-                Description: "",
-                SkillNames: []
-            },
+            SkillType: null,
             Name: "",
             IsEnabled: true,
             SkillNameAliases: []
@@ -36,6 +31,20 @@ export default defineComponent({
     },
     components: {
         SkillView
+    },
+    methods: {
+        async addNewSKill(): Promise<void> {
+            console.log(this.skillName);
+            const response = await fetch('http://localhost:3000/skill/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(this.skillName)
+            });
+            const json = await response.json();
+            console.log(json);
+        }
     }
 })
 </script>
