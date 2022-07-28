@@ -1,6 +1,6 @@
 <template>
     <div>
-        <a href="#" @click.prevent="$router.go(-1)">Back</a>
+        <a href="#" @click.prevent="$router.go(-1)" ref="lnkBack">Back</a>
     </div>
     <div>
         <SkillView v-model="skillName" />
@@ -33,17 +33,17 @@ export default defineComponent({
         SkillView
     },
     methods: {
-        async addNewSKill(): Promise<void> {
-            console.log(this.skillName);
-            const response = await fetch('http://localhost:3000/skill/add', {
+        addNewSKill(): void {
+            fetch('http://localhost:3000/skill/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(this.skillName)
+            }).then(response => response.json()).then(json => {
+                console.log(json);
+                this.$router.go(-1);
             });
-            const json = await response.json();
-            console.log(json);
         }
     }
 })
