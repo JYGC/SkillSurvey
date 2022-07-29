@@ -7,8 +7,8 @@
     </div>
     <div>
         <span>
-            <button>Save</button>
-            <button>Delete</button>
+            <button v-on:click="editSkill()">Save</button>
+            <button v-on:click="deleteKill()">Delete</button>
         </span>
     </div>
 </template>
@@ -22,14 +22,9 @@ import { useRoute } from 'vue-router';
 export default defineComponent({
     setup() {
         let skillName: SkillName = reactive({
-            ID: -1,
-            SkillTypeID: -1,
-            SkillType: {
-                ID: 0,
-                Name: "",
-                Description: "",
-                SkillNames: []
-            },
+            ID: 0,
+            SkillTypeID: 0,
+            SkillType: null,
             Name: "",
             IsEnabled: true,
             SkillNameAliases: []
@@ -47,11 +42,38 @@ export default defineComponent({
         ).then(data => {
             this.skillName.ID = data.ID;
             this.skillName.SkillTypeID = data.SkillTypeID;
-            this.skillName.SkillType = data.SkillType;
             this.skillName.Name = data.Name;
             this.skillName.IsEnabled = data.IsEnabled;
             this.skillName.SkillNameAliases = data.SkillNameAliases;
         });
     },
+    methods: {
+        editSkill(): void {
+            this.skillName
+            console.log(this.skillName);
+            fetch('http://localhost:3000/skill/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(this.skillName)
+            }).then(response => response.json()).then(json => {
+                console.log(json);
+                this.$router.go(-1);
+            });
+        },
+        deleteKill(): void {
+            fetch('http://localhost:3000/skill/delete', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(this.skillName)
+            }).then(response => response.json()).then(json => {
+                console.log(json);
+                this.$router.go(-1);
+            });
+        }
+    }
 })
 </script>

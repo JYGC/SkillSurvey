@@ -6,7 +6,7 @@
         <SkillView v-model="skillName" />
     </div>
     <div>
-        <button v-on:click="addNewSKill()">Save</button>
+        <button v-on:click="addNewSKill()">Add</button>
     </div>
 </template>
 
@@ -34,6 +34,7 @@ export default defineComponent({
     },
     methods: {
         addNewSKill(): void {
+            console.log(this.skillName);
             fetch('http://localhost:3000/skill/add', {
                 method: 'POST',
                 headers: {

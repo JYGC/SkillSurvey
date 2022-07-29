@@ -33,6 +33,8 @@ func main() {
 	http.HandleFunc("/skill/getall", getSkillListAPI)
 	http.HandleFunc("/skill/getbyid", getSkillByIDAPI)
 	http.HandleFunc("/skill/add", addSkillAPI)
+	http.HandleFunc("/skill/save", saveSkillAPI)
+	http.HandleFunc("/skill/delete", deleteSkillAPI)
 	fmt.Printf("Server listening on port %s\n", configSettings.ServerPort)
 	exception.ErrorLogger.Panic(
 		http.ListenAndServe(fmt.Sprintf(":%s", configSettings.ServerPort), nil),
@@ -118,7 +120,7 @@ func addSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {
 	var err error
 	var ok bool
 	var uint64SkillTypeID uint64
-	if uint64SkillTypeID, err = strconv.ParseUint(requestBody["SkillTypeID"].(string), 10, 64); err != nil {
+	if uint64SkillTypeID, err = strconv.ParseUint(fmt.Sprintf("%v", requestBody["SkillTypeID"]), 10, 64); err != nil {
 		panic(err)
 	}
 	newSkillName.SkillTypeID = uint(uint64SkillTypeID)
@@ -143,6 +145,45 @@ func addSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {
 	makeResponse(responseWriter, request, map[string]interface{}{"ID": skillNameID})
 }
 
-func saveSkillAPI(w http.ResponseWriter, request *http.Request) {
+func saveSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {
+	var requestBody map[string]interface{}
+	if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
+		panic(err)
+	}
+	changedSkillName := entities.SkillName{}
+	var err error
+	var ok bool
+	var uint64SkillNameID uint64
+	if uint64SkillNameID, err = strconv.ParseUint(fmt.Sprintf("%v", requestBody["ID"]), 10, 64); err != nil {
+		panic(err)
+	}
+	changedSkillName.ID = uint(uint64SkillNameID)
+	var uint64SkillTypeID uint64
+	if uint64SkillTypeID, err = strconv.ParseUint(fmt.Sprintf("%v", requestBody["SkillTypeID"]), 10, 64); err != nil {
+		panic(err)
+	}
+	changedSkillName.SkillTypeID = uint(uint64SkillTypeID)
+	if changedSkillName.Name, ok = requestBody["Name"].(string); !ok {
+		panic("can't convert Name to string")
+	}
+	changedSkillName.IsEnabled = true
+	if reflect.TypeOf(requestBody["SkillNameAliases"]).Kind() != reflect.Slice {
+		panic("can't convert SkillNameAliases to slice")
+	}
+	skillNameAliasesValue := reflect.ValueOf(requestBody["SkillNameAliases"])
+	for index := 0; index < skillNameAliasesValue.Len(); index++ {
+		skillNameAliasInterface := skillNameAliasesValue.Index(index).Interface()
+		skillNameAliasMap := skillNameAliasInterface.(map[string]interface{})
+		changedSkillName.SkillNameAliases = append(changedSkillName.SkillNameAliases, entities.SkillNameAlias{
+			Alias: skillNameAliasMap["Alias"].(string),
+		})
+	}
+	if err = database.DbAdapter.SkillName.SaveOneWithTypeAndAliases(changedSkillName); err != nil {
+		panic(err)
+	}
+	makeResponse(responseWriter, request, "success")
+}
+
+func deleteSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {
 
 }

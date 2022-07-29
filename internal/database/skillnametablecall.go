@@ -95,7 +95,7 @@ func (s SkillNameTableCall) SaveOneWithTypeAndAliases(changedSkillName entities.
 	if skillNameFromDB.SkillTypeID != changedSkillName.SkillTypeID {
 		skillNameFromDB.SkillTypeID = changedSkillName.SkillTypeID
 		if err = s.db.First(&skillNameFromDB.SkillType, skillNameFromDB.SkillTypeID).Error; err != nil {
-			return err
+			return err // CONTINUE HERE!!!!!
 		}
 	}
 	// modifying aliases
@@ -114,7 +114,7 @@ func (s SkillNameTableCall) SaveOneWithTypeAndAliases(changedSkillName entities.
 		}
 		// remove deleted aliases
 		s.db.Delete(&alias)
-		skillNameFromDB.SkillNameAliases = skillNameFromDB.SkillNameAliases[:len(skillNameFromDB.SkillNameAliases)-1]
+		skillNameFromDB.SkillNameAliases = append(skillNameFromDB.SkillNameAliases[:index], skillNameFromDB.SkillNameAliases[index+1:]...)
 	}
 	// add new aliases
 	for _, alias := range changedOrNewAliasIDMap {
