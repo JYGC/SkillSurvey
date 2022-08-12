@@ -1,6 +1,6 @@
 <template>
     <div>
-        <a href="#" @click.prevent="$router.go(-1)" ref="lnkBack">Back</a>
+        <a href="#" @click.prevent="$router.go(-1)">Back</a>
     </div>
     <div>
         <SkillView v-model="skillName" />
@@ -34,7 +34,6 @@ export default defineComponent({
     },
     methods: {
         addNewSKill(): void {
-            console.log(this.skillName);
             fetch('http://localhost:3000/skill/add', {
                 method: 'POST',
                 headers: {

@@ -185,5 +185,17 @@ func saveSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {
 }
 
 func deleteSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {
-
+	var requestBody map[string]interface{}
+	if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
+		panic(err)
+	}
+	var err error
+	var uint64SkillNameID uint64
+	if uint64SkillNameID, err = strconv.ParseUint(fmt.Sprintf("%v", requestBody["ID"]), 10, 64); err != nil {
+		panic(err)
+	}
+	if err = database.DbAdapter.SkillName.DeleteOne(uint(uint64SkillNameID)); err != nil {
+		panic(err)
+	}
+	makeResponse(responseWriter, request, "success")
 }

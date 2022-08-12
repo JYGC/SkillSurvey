@@ -68,9 +68,11 @@ export default defineComponent({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(this.skillName)
+                body: JSON.stringify({
+                    ID: this.skillName.ID
+                })
             }).then(response => response.json()).then(json => {
-                console.log(json);
+                console.log(json); // if json is not int, throw error
                 this.$router.go(-1);
             });
         }

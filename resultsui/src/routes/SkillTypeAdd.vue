@@ -6,7 +6,7 @@
         <SkillTypeView v-model="skillType" />
     </div>
     <div>
-        <button>Save</button>
+        <button v-on:click="addNewSkillType()">Save</button>
     </div>
 </template>
 <script lang="ts">
@@ -17,7 +17,7 @@ import { defineComponent, reactive } from 'vue';
 export default defineComponent({
     setup() {
         let skillType: SkillType = reactive({
-            ID: -1,
+            ID: 0,
             Name: "",
             Description: "",
             SkillNames: []
@@ -28,6 +28,16 @@ export default defineComponent({
     },
     components: {
         SkillTypeView
+    },
+    methods: {
+        addNewSkillType(): void {
+            fetch('http://localhost:3000/skilltype/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+        }
     }
 })
 </script>

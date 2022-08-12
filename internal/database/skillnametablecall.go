@@ -143,3 +143,19 @@ func (s SkillNameTableCall) SaveOneWithTypeAndAliases(changedSkillName entities.
 	}
 	return err
 }
+
+func (s SkillNameTableCall) DeleteOne(ID uint) (err error) {
+	var skillName *entities.SkillName
+	if skillName, err = s.GetByIDWithTypeAndAliases(ID); err != nil {
+		return err
+	}
+	for _, alias := range skillName.SkillNameAliases {
+		if err = s.db.Model(&skillName).Association("SkillNameAliases").Delete(alias); err != nil {
+			return err
+		}
+		if err = s.db.Delete(&alias).Error; err != nil {
+			return err
+		}
+	}
+	return s.db.Delete(&skillName).Error
+}
