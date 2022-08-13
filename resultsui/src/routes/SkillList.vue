@@ -1,6 +1,6 @@
 <template>
     <div class="btn">
-        <router-link :to="{ name: 'skill-add' }">New Skill Type</router-link>
+        <router-link :to="{ name: 'skill-add' }">New Skill</router-link>
     </div>
     <div>
         <table>

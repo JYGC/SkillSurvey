@@ -8,7 +8,7 @@
     <div>
         <span>
             <button v-on:click="editSkill()">Save</button>
-            <button v-on:click="deleteKill()">Delete</button>
+            <button v-on:click="deleteSkill()">Delete</button>
         </span>
     </div>
 </template>
@@ -62,7 +62,7 @@ export default defineComponent({
                 this.$router.go(-1);
             });
         },
-        deleteKill(): void {
+        deleteSkill(): void {
             fetch('http://localhost:3000/skill/delete', {
                 method: 'DELETE',
                 headers: {

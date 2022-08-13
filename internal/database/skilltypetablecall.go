@@ -1,7 +1,10 @@
 package database
 
 import (
+	"errors"
+
 	"github.com/JYGC/SkillSurvey/internal/entities"
+	"github.com/JYGC/SkillSurvey/internal/exception"
 	"gorm.io/gorm"
 )
 
@@ -38,7 +41,7 @@ func (s SkillTypeTableCall) GetAllWithSkillNames() (skillTypeListResult []entiti
 	for _, skillType := range skillTypeIDMap {
 		skillTypeListResult = append(skillTypeListResult, skillType)
 	}
-	return skillTypeListResult, err
+	return skillTypeListResult, nil
 }
 
 func (s SkillTypeTableCall) GetByIDWithSkillNames(ID uint) (skillTypeResult *entities.SkillType, err error) {
@@ -48,7 +51,7 @@ func (s SkillTypeTableCall) GetByIDWithSkillNames(ID uint) (skillTypeResult *ent
 	if err = s.db.Model(&skillTypeResult).Association("SkillNames").Find(&skillTypeResult.SkillNames); err != nil {
 		return nil, err
 	}
-	return skillTypeResult, err
+	return skillTypeResult, nil
 }
 
 func (s SkillTypeTableCall) GetAllIDAndName() (skillTypeMapResult map[uint]string, err error) {
@@ -60,5 +63,33 @@ func (s SkillTypeTableCall) GetAllIDAndName() (skillTypeMapResult map[uint]strin
 	for _, skillType := range skillTypeSlice {
 		skillTypeMapResult[skillType.ID] = skillType.Name
 	}
-	return skillTypeMapResult, err
+	return skillTypeMapResult, nil
+}
+
+func (s SkillTypeTableCall) AddOne(skillType entities.SkillType) (skillNameID uint, err error) {
+	if err = s.db.Create(&skillType).Error; err != nil {
+		return 0, err
+	}
+	return skillType.ID, nil
+}
+
+func (s SkillTypeTableCall) SaveOne(changedSkillType entities.SkillType) (err error) {
+	var skillTypeFromDB *entities.SkillType
+	if skillTypeFromDB, err = s.GetByIDWithSkillNames(changedSkillType.ID); err != nil {
+		return err
+	}
+	skillTypeFromDB.Name = changedSkillType.Name
+	skillTypeFromDB.Description = changedSkillType.Description
+	return s.db.Save(&skillTypeFromDB).Error
+}
+
+func (s SkillTypeTableCall) DeleteOne(ID uint) (err error) {
+	var skillTypeFromDB *entities.SkillType
+	if skillTypeFromDB, err = s.GetByIDWithSkillNames(ID); err != nil {
+		return err
+	}
+	if s.db.Model(&skillTypeFromDB).Association("SkillNames").Count() > 0 {
+		return errors.New(exception.DeleteTypeHasSkillMsg)
+	}
+	return s.db.Delete(&skillTypeFromDB).Error
 }

@@ -20,8 +20,8 @@
     </div>
     <div>
         <span>
-            <button>Save</button>
-            <button>Delete</button>
+            <button v-on:click="saveSkillType()">Save</button>
+            <button v-on:click="deleteSkillType()">Delete</button>
         </span>
     </div>
 </template>
@@ -55,6 +55,34 @@ export default defineComponent({
             this.skillType.Description = data.Description;
             this.skillType.SkillNames = data.SkillNames;
         });
+    },
+    methods: {
+        saveSkillType(): void {
+            fetch('http://localhost:3000/skilltype/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(this.skillType)
+            }).then(response => response.json()).then(json => {
+                console.log(json);
+                this.$router.go(-1);
+            });
+        },
+        deleteSkillType(): void {
+            fetch('http://localhost:3000/skilltype/delete', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ID: this.skillType.ID
+                })
+            }).then(response => response.json()).then(json => {
+                console.log(json); // if json is not int, throw error
+                this.$router.go(-1);
+            });
+        }
     }
 })
 </script>

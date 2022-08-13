@@ -35,7 +35,11 @@ export default defineComponent({
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify(this.skillType)
+            }).then(response => response.json()).then(json => {
+                console.log(json);
+                this.$router.go(-1);
             });
         }
     }

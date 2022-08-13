@@ -45,8 +45,7 @@ func (m MonthlyCountReportTableCall) BulkUpdateOrInsert(
 	for i := range mounthlyCountReportMap {
 		newMonthlyCount = append(newMonthlyCount, mounthlyCountReportMap[i])
 	}
-	err = m.db.Create(&newMonthlyCount).Error
-	return err
+	return m.db.Create(&newMonthlyCount).Error
 }
 
 func (m MonthlyCountReportTableCall) GetReport() (result []entities.MonthlyCountReport, err error) {

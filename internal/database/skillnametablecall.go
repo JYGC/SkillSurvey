@@ -64,7 +64,7 @@ func (s SkillNameTableCall) GetAllWithTypeAndAliases() (skillNameListResult []en
 	for _, skillName := range skillNameIDMap {
 		skillNameListResult = append(skillNameListResult, skillName)
 	}
-	return skillNameListResult, err
+	return skillNameListResult, nil
 }
 
 func (s SkillNameTableCall) GetByIDWithTypeAndAliases(ID uint) (skillNameResult *entities.SkillName, err error) {
@@ -77,7 +77,7 @@ func (s SkillNameTableCall) GetByIDWithTypeAndAliases(ID uint) (skillNameResult 
 	if err = s.db.Model(&skillNameResult).Association("SkillNameAliases").Find(&skillNameResult.SkillNameAliases); err != nil {
 		return nil, err
 	}
-	return skillNameResult, err
+	return skillNameResult, nil
 }
 
 func (s SkillNameTableCall) AddOne(skillName entities.SkillName) (skillNameID uint, err error) {
@@ -138,24 +138,21 @@ func (s SkillNameTableCall) SaveOneWithTypeAndAliases(changedSkillName entities.
 	// change other skillname details
 	skillNameFromDB.Name = changedSkillName.Name
 	skillNameFromDB.IsEnabled = changedSkillName.IsEnabled
-	if err = s.db.Save(&skillNameFromDB).Error; err != nil {
-		return err
-	}
-	return err
+	return s.db.Save(&skillNameFromDB).Error
 }
 
 func (s SkillNameTableCall) DeleteOne(ID uint) (err error) {
-	var skillName *entities.SkillName
-	if skillName, err = s.GetByIDWithTypeAndAliases(ID); err != nil {
+	var skillNameFromDB *entities.SkillName
+	if skillNameFromDB, err = s.GetByIDWithTypeAndAliases(ID); err != nil {
 		return err
 	}
-	for _, alias := range skillName.SkillNameAliases {
-		if err = s.db.Model(&skillName).Association("SkillNameAliases").Delete(alias); err != nil {
+	for _, alias := range skillNameFromDB.SkillNameAliases {
+		if err = s.db.Model(&skillNameFromDB).Association("SkillNameAliases").Delete(alias); err != nil {
 			return err
 		}
 		if err = s.db.Delete(&alias).Error; err != nil {
 			return err
 		}
 	}
-	return s.db.Delete(&skillName).Error
+	return s.db.Delete(&skillNameFromDB).Error
 }
