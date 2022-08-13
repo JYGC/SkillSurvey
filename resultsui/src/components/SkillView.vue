@@ -9,7 +9,7 @@
         <label>Skill type:</label>
     </div>
     <div>
-        <select name="skill-types" id="skill-types" v-model="skillName.SkillTypeID">
+        <select name="skill-types" id="skill-types" v-model="skillName.SkillTypeID" :disabled="typeof forSkillTypeID !== 'undefined'">
             <option v-for="(value, propertyName) in skillTypes" :value="propertyName" v-bind:key="propertyName">{{value}}</option>
         </select>
     </div>
@@ -35,7 +35,8 @@ export default defineComponent({
     props: {
         modelValue: {
             type: Object as () => SkillName
-        }
+        },
+        forSkillTypeID: Number
     },
     emit: ['update:modelValue'],
     setup(props, { emit }) {
@@ -59,6 +60,9 @@ export default defineComponent({
         ).then(data => {
             for (let key in data) {
                 this.skillTypes[parseInt(key)] = data[key];
+            }
+            if (typeof this.skillName !== 'undefined' && typeof this.forSkillTypeID !== 'undefined') {
+                this.skillName.SkillTypeID = this.forSkillTypeID;
             }
         });
     },

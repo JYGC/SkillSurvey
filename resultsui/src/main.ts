@@ -20,7 +20,7 @@ const routes = [
         component: MonthlyCountReport
     },
     {
-        path: '/skill-add/',
+        path: '/skill-add/:skilltypeid?',
         name: 'skill-add',
         component: SkillAdd
     },

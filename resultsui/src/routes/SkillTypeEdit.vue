@@ -15,7 +15,7 @@
             </router-link>
         </div>
         <div>
-            <router-link :to="{ name: 'skill-add' }">New Skill</router-link>
+            <router-link :to="{ name: 'skill-add', params: { skilltypeid: skillType.ID } }">New Skill</router-link>
         </div>
     </div>
     <div>

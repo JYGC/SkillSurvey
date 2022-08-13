@@ -3,7 +3,7 @@
         <a href="#" @click.prevent="$router.go(-1)">Back</a>
     </div>
     <div>
-        <SkillView v-model="skillName" />
+        <SkillView v-model="skillName" :forSkillTypeID="forSkillTypeID" />
     </div>
     <div>
         <button v-on:click="addNewSKill()">Add</button>
@@ -14,6 +14,7 @@
 import SkillView from '@/components/SkillView.vue';
 import { SkillName } from '@/schemas/skills';
 import { defineComponent, reactive } from 'vue';
+import { useRoute } from 'vue-router';
 
 export default defineComponent({
     setup() {
@@ -25,8 +26,10 @@ export default defineComponent({
             IsEnabled: true,
             SkillNameAliases: []
         });
+        let forSkillTypeID = useRoute().params.skilltypeid;
         return {
-            skillName
+            skillName,
+            forSkillTypeID
         };
     },
     components: {
