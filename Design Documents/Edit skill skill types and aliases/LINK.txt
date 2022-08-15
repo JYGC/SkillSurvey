@@ -1,5 +1,0 @@
-https://stackoverflow.com/questions/40957008/how-to-access-to-a-child-method-from-the-parent-in-vue-js
-https://softauthor.com/vuejs-compositionapi-input-field-reactivity-between-components/
-https://vuex.vuejs.org/guide/#the-simplest-store
-https://forum.vuejs.org/t/vue3-accessing-child-component-data-values-and-methods/111329
-https://stackoverflow.com/questions/66757403/send-data-variable-from-child-to-parent-using-vuejs
