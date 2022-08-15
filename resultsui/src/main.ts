@@ -1,6 +1,6 @@
 // Declare routes
 import { createRouter, createWebHistory } from 'vue-router';
-import HelloWorld from '@/routes/HelloWorld.vue';
+import HomeRoute from '@/routes/HomeRoute.vue';
 import MonthlyCountReport from '@/routes/MonthlyCountReport.vue';
 import SkillAdd from '@/routes/SkillAdd.vue';
 import SkillEdit from '@/routes/SkillEdit.vue';
@@ -12,7 +12,7 @@ const routes = [
     {
         path: '/',
         name: 'home',
-        component: HelloWorld
+        component: HomeRoute
     },
     {
         path: '/monthly-count-report',
