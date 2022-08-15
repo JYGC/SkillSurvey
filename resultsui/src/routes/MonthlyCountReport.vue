@@ -13,7 +13,7 @@ export default defineComponent({
     components: { LineChart },
     data() {
         return {
-            getData: {},
+            getData: { labels: new Array<String>(), datasets: {} },
             windowHeight: window.innerHeight
         }
     },
@@ -31,9 +31,7 @@ export default defineComponent({
                 pointerYearMonth.getFullYear() + "-" + ("0" + (pointerYearMonth.getMonth() + 1)).slice(-2)
             );
         }
-        this.getData = {
-            labels: chartLabels,
-        };
+        this.getData.labels = chartLabels;
         // get data from API and put them on chart
         fetch('http://localhost:3000/report/getmonthlycount').then(
             response => response.json()
@@ -56,9 +54,7 @@ export default defineComponent({
                     hidden: true,
                 });
             }
-            this.getData = {
-                datasets: processedDataSet,
-            };
+            this.getData.datasets = processedDataSet;
         }).catch(error => {
             alert(error)
             console.log(error)
