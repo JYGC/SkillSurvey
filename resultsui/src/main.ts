@@ -1,3 +1,8 @@
+// Declare app
+import { createApp } from 'vue';
+import App from './App.vue';
+const app = createApp(App);
+
 // Declare routes
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeRoute from '@/routes/HomeRoute.vue';
@@ -54,19 +59,13 @@ const router = createRouter({
     history: createWebHistory(process.env.BASE_URL),
     routes
 });
-
-// Declare state management
-// import { createStore } from 'vuex';
-// const store = createStore({
-//     state: {},
-//     mutations: {},
-//     actions: {}
-// });
-
-// Declare app
-import { createApp } from 'vue';
-import App from './App.vue';
-const app = createApp(App);
 app.use(router);
+
+// Add bootstrap
+import BootstrapVue3 from 'bootstrap-vue-3';
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
+app.use(BootstrapVue3);
+
 //app.use(store);
 app.mount('#app');
