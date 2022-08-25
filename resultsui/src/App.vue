@@ -45,7 +45,7 @@ export default defineComponent({
   background-color: darkslateblue;
 }
 
-.nav-div .nav-item:not(.expand) a:hover {
+.nav-div .nav-item:not(.expand) a:hover, .btn:hover {
   background-color: lightslategray;
 }
 
@@ -55,6 +55,13 @@ export default defineComponent({
 
 .expand button:not(.collapsed) {
   font-weight: bold;
+}
+
+.btn {
+    border: hidden;
+    border-radius: 0;
+    text-decoration-line: none;
+    background-color: darkslateblue;
 }
 
 .expand .nav-link {
@@ -71,7 +78,7 @@ export default defineComponent({
   border-radius: 0;
 }
 
-.nav-div .nav-item.expand button:focus {
+.nav-div .nav-item.expand button:focus, .btn:focus {
   outline: none;
   box-shadow: none;
 }
@@ -82,6 +89,36 @@ export default defineComponent({
 }
 
 #app > .row {
-  height: 98vh;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Affects SkillTypeList needs to be in common file */
+tbody {
+    display: block;
+    height: calc( 100vh - 100px );
+    overflow: auto;
+}
+thead, tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;/* even columns width , fix width of table too*/
+}
+table {
+    width: 100%;
+}
+
+thead tr {
+    font-weight: bold;
+    background-color: darkslateblue;
+    color: white;
+}
+
+table tbody tr:nth-child(odd) {
+    background-color: rgb(239, 240, 248);
+}
+
+.vertical-padding {
+    margin: 10px 0 10px 0;
 }
 </style>

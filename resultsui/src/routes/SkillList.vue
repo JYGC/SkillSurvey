@@ -1,27 +1,31 @@
 <template>
-    <div class="btn">
-        <router-link :to="{ name: 'skill-add' }">New Skill</router-link>
+    <div class="float-end">
+        <b-button class="vertical-padding" :to="{ name: 'skill-add' }">New Skill</b-button>
     </div>
     <div>
         <table>
-            <tr>
-                <td>Skill name</td>
-                <td>Skill type</td>
-                <td>Skill aliases</td>
-                <td></td>
-            </tr>
-            <tr v-for="skillName in skillNames" :key="skillName.ID">
-                <td>{{ skillName.Name }}</td>
-                <td>{{ skillName.SkillType.Name }}</td>
-                <td>
-                    <div v-for="alias in getAliasList(skillName.SkillNameAliases)" :key="alias">
-                        {{ alias }}
-                    </div>
-                </td>
-                <td>
-                    <router-link :to="{ name: 'skill-edit', params: { skillid: skillName.ID } }">Edit</router-link>
-                </td>
-            </tr>
+            <thead>
+                <tr>
+                    <td>Skill name</td>
+                    <td>Skill type</td>
+                    <td>Skill aliases</td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="skillName in skillNames" :key="skillName.ID">
+                    <td>{{ skillName.Name }}</td>
+                    <td>{{ skillName.SkillType.Name }}</td>
+                    <td>
+                        <div v-for="alias in getAliasList(skillName.SkillNameAliases)" :key="alias">
+                            {{ alias }}
+                        </div>
+                    </td>
+                    <td>
+                        <router-link :to="{ name: 'skill-edit', params: { skillid: skillName.ID } }">Edit</router-link>
+                    </td>
+                </tr>
+            </tbody>
         </table>
     </div>
 </template>
@@ -55,8 +59,4 @@ export default defineComponent({
 </script>
 
 <style>
-.btn > a {
-    border: 1px solid;
-    text-decoration-line: none;
-}
 </style>
