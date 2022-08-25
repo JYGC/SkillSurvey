@@ -19,11 +19,11 @@
     <div>
         <div v-for="alias in skillName?.SkillNameAliases" v-bind:key="alias.ID">
             <input type="text" v-model="alias.Alias" />
-            <button v-on:click="deleteNewSkillNameAlias(alias)">Delete</button>
+            <b-button v-on:click="deleteNewSkillNameAlias(alias)">Delete</b-button>
         </div>
         <div>
             <input type="text" v-model="newAlias" />
-            <button v-on:click="addNewSkillNameAlias()">Add</button>
+            <b-button v-on:click="addNewSkillNameAlias()">Add</b-button>
         </div>
     </div>
 </template>
