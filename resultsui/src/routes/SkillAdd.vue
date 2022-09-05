@@ -1,12 +1,12 @@
 <template>
-    <div class="float-start">
-        <b-button class="vertical-padding" @click.prevent="$router.go(-1)">Back</b-button>
+    <div class="row vertical-padding">
+        <div class="col-md-12">
+            <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
+            <b-button class="float-end" v-on:click="addNewSKill()">Add</b-button>
+        </div>
     </div>
-    <div>
+    <div class="row">
         <SkillView v-model="skillName" :forSkillTypeID="forSkillTypeID" />
-    </div>
-    <div>
-        <b-button v-on:click="addNewSKill()">Add</b-button>
     </div>
 </template>
 

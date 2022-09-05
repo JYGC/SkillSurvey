@@ -1,29 +1,43 @@
 <template>
-    <div>
-        <label>Skill name:</label>
-    </div>
-    <div>
-        <input type="text" name="skillName" id="skillName" v-model="skillName.Name" />
-    </div>
-    <div>
-        <label>Skill type:</label>
-    </div>
-    <div>
-        <select name="skill-types" id="skill-types" v-model="skillName.SkillTypeID" :disabled="typeof forSkillTypeID !== 'undefined'">
-            <option v-for="(value, propertyName) in skillTypes" :value="propertyName" v-bind:key="propertyName">{{value}}</option>
-        </select>
-    </div>
-    <div>
-        <label>Alternate phrases:</label>
-    </div>
-    <div>
-        <div v-for="alias in skillName?.SkillNameAliases" v-bind:key="alias.ID">
-            <input type="text" v-model="alias.Alias" />
-            <b-button v-on:click="deleteNewSkillNameAlias(alias)">Delete</b-button>
+    <div class="col-md-6">
+        <div class="row vertical-padding">
+            <div class="col-md-3">
+                <label class="float-start">Skill name:</label>
+            </div>
+            <div class="col-md-9">
+                <input class="float-start fill-parent" type="text" name="skillName" id="skillName" v-model="skillName.Name" />
+            </div>
         </div>
-        <div>
-            <input type="text" v-model="newAlias" />
-            <b-button v-on:click="addNewSkillNameAlias()">Add</b-button>
+        <div class="row vertical-padding">
+            <div class="col-md-3">
+                <label class="float-start">Skill type:</label>
+            </div>
+            <div class="col-md-9">
+                <select class="float-start fill-parent" name="skill-types" id="skill-types" v-model="skillName.SkillTypeID" :disabled="typeof forSkillTypeID !== 'undefined'">
+                    <option v-for="(value, propertyName) in skillTypes" :value="propertyName" v-bind:key="propertyName">{{value}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="row vertical-padding">
+            <div class="col-md-3">
+                <label class="float-start">Alternate phrases:</label>
+            </div>
+            <div class="col-md-9">
+                <div class="row vertical-padding" v-for="alias in skillName?.SkillNameAliases" v-bind:key="alias.ID">
+                    <div class="col-md-12">
+                        <input type="text" v-model="alias.Alias" />
+                        <b-button v-on:click="deleteNewSkillNameAlias(alias)">Delete</b-button>
+                    </div>
+                </div>
+                <div class="row vertical-padding">
+                    <div class="col-md-12">
+                        <input type="text" v-model="newAlias" />
+                        <b-button v-on:click="addNewSkillNameAlias()">Add</b-button> <!-- CONTINUE HERE: Stop save or add if new alias is typed but not added -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>

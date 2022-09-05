@@ -1,6 +1,6 @@
 <template>
   <div class="row">
-    <div class="col-sm-2 nav-div">
+    <div class="col-md-2 nav-div">
       <b-nav vertical>
         <b-nav-item to="/" active>Home</b-nav-item>
         <b-nav-item to="/monthly-count-report">Monthly count report</b-nav-item>
@@ -13,7 +13,7 @@
         </b-nav-item>
       </b-nav>
     </div>
-    <div class="col-sm-10">
+    <div class="col-md-10">
       <router-view />
     </div>
   </div>
@@ -36,6 +36,30 @@ export default defineComponent({
   color: #2c3e50;
 }
 
+.nav > .association * {
+  background-color: rgb(131, 180, 221);
+  color: white;
+}
+
+.nav > .association:nth-child(even) * {
+  background-color: steelblue;
+  color: white;
+}
+
+.nav > .new-association * {
+  background-color: rgb(70, 176, 180);
+  color: white;
+}
+
+.nav > .association:hover *, .nav > .new-association:hover * {
+  background-color: rgb(180, 207, 230);
+  color: #0d6efd;
+}
+
+.margin-left-10 {
+  margin-left: 10px;
+}
+
 .nav-div {
   padding-top: 60px;
   padding-right: 0px;
@@ -53,6 +77,11 @@ export default defineComponent({
   background-color: slateblue;
 }
 
+.fill-parent {
+  width: 100%;
+  height: 100%;
+}
+
 .expand button:not(.collapsed) {
   font-weight: bold;
 }
@@ -62,6 +91,10 @@ export default defineComponent({
     border-radius: 0;
     text-decoration-line: none;
     background-color: darkslateblue;
+}
+
+.btn-danger {
+  background-color: red;
 }
 
 .expand .nav-link {
@@ -114,7 +147,7 @@ thead tr {
     color: white;
 }
 
-table tbody tr:nth-child(odd) {
+table tbody tr:nth-child(even) {
     background-color: rgb(239, 240, 248);
 }
 

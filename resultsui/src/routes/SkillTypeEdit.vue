@@ -1,29 +1,39 @@
 <template>
-    <div>
-        <a href="#" @click.prevent="$router.go(-1)">Back</a>
-    </div>
-    <div>
-        <SkillTypeView v-model="skillType" />
-    </div>
-    <div>
-        <label>Skills of this type:</label>
-    </div>
-    <div>
-        <div v-for="skillName in skillType.SkillNames" :key="skillName.ID">
-            <router-link :to="{ name: 'skill-edit', params: { skillid: skillName.ID } }">
-                {{skillName.Name}}
-            </router-link>
-        </div>
-        <div>
-            <router-link :to="{ name: 'skill-add', params: { skilltypeid: skillType.ID } }">New Skill</router-link>
+    <div class="row vertical-padding">
+        <div class="col-md-12">
+            <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
+            <b-button class="float-end margin-left-10" v-on:click="saveSkillType()">Save</b-button>
+            <b-button class="float-end" v-b-modal.confirm-delete :disabled="skillType.SkillNames.length != 0">Delete</b-button>
         </div>
     </div>
-    <div>
-        <span>
-            <button v-on:click="saveSkillType()">Save</button>
-            <button v-on:click="deleteSkillType()">Delete</button>
-        </span>
+    <div class="row">
+        <div class="col-md-6">
+            <SkillTypeView v-model="skillType" />
+        </div>
+        <div class="col-md-6">
+            <div class="row vertical-padding">
+                <div class="col-md-4">
+                    <label>Skills of this type:</label>
+                </div>
+                <div class="col-md-8">
+                    <b-nav vertical>
+                        <b-nav-item
+                        class="association"
+                          v-for="skillName in skillType.SkillNames" :key="skillName.ID"
+                          :to="{ name: 'skill-edit', params: { skillid: skillName.ID } }">
+                            {{skillName.Name}}
+                        </b-nav-item>
+                        <b-nav-item class="new-association" :to="{ name: 'skill-add', params: { skilltypeid: skillType.ID } }">
+                            New Skill
+                        </b-nav-item>
+                    </b-nav>
+                </div>
+            </div>
+        </div>
     </div>
+    <b-modal id="confirm-delete" hide-header ok-title="Confirm" ok-variant="danger" @ok="deleteSkillType()">
+        <p>Are you sure you want to delete this skill classification?</p>
+    </b-modal>
 </template>
 <script lang="ts">
 import SkillTypeView from '@/components/SkillTypeView.vue';

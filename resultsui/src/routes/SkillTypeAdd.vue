@@ -1,14 +1,19 @@
 <template>
-    <div class="float-start">
-        <b-button class="vertical-padding" @click.prevent="$router.go(-1)">Back</b-button>
-    </div>
-    <div>
-        <SkillTypeView v-model="skillType" />
-    </div>
-    <div>
-        <b-button v-on:click="addNewSkillType()">Save</b-button>
+    <div class="col-md-6">
+        <div class="row vertical-padding">
+            <div class="col-md-12">
+                <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
+                <b-button class="float-end" v-on:click="addNewSkillType()">Add</b-button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="float-start">
+                <SkillTypeView v-model="skillType" />
+            </div>
+        </div>
     </div>
 </template>
+
 <script lang="ts">
 import SkillTypeView from '@/components/SkillTypeView.vue';
 import { SkillType } from '@/schemas/skills';

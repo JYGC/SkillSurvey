@@ -1,16 +1,17 @@
 <template>
-    <div>
-        <a href="#" @click.prevent="$router.go(-1)">Back</a>
+    <div class="row vertical-padding">
+        <div class="col-md-12">
+            <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
+            <b-button class="float-end margin-left-10" v-on:click="saveSkill()">Save</b-button>
+            <b-button class="float-end" v-b-modal.confirm-delete>Delete</b-button>
+        </div>
     </div>
-    <div>
+    <div class="row">
         <SkillView v-model="skillName" />
     </div>
-    <div>
-        <span>
-            <button v-on:click="editSkill()">Save</button>
-            <button v-on:click="deleteSkill()">Delete</button>
-        </span>
-    </div>
+    <b-modal id="confirm-delete" hide-header ok-title="Confirm" ok-variant="danger" @ok="deleteSkill()">
+        <p>Are you sure you want to delete this skill?</p>
+    </b-modal>
 </template>
 
 <script lang="ts">
@@ -48,7 +49,7 @@ export default defineComponent({
         });
     },
     methods: {
-        editSkill(): void {
+        saveSkill(): void {
             this.skillName
             console.log(this.skillName);
             fetch('http://localhost:3000/skill/save', {
