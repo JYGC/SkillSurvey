@@ -3,7 +3,7 @@
         <div class="row vertical-padding">
             <div class="col-md-12">
                 <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
-                <b-button class="float-end" v-on:click="addNewSkillType()">Add</b-button>
+                <b-button class="float-end" :disabled="isAddBlocked()" v-on:click="addNewSkillType()">Add</b-button>
             </div>
         </div>
         <div class="row">
@@ -46,6 +46,11 @@ export default defineComponent({
                 console.log(json);
                 this.$router.go(-1);
             });
+        },
+        isAddBlocked(): boolean {
+            if (this.skillType.Name.trim() === "") return true;
+            if (this.skillType.Description.trim() === "") return true;
+            return false;
         }
     }
 })

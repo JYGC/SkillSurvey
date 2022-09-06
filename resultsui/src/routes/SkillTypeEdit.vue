@@ -2,7 +2,7 @@
     <div class="row vertical-padding">
         <div class="col-md-12">
             <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
-            <b-button class="float-end margin-left-10" v-on:click="saveSkillType()">Save</b-button>
+            <b-button class="float-end margin-left-10" :disabled="isSaveBlocked()" v-on:click="saveSkillType()">Save</b-button>
             <b-button class="float-end" v-b-modal.confirm-delete :disabled="skillType.SkillNames.length != 0">Delete</b-button>
         </div>
     </div>
@@ -92,6 +92,11 @@ export default defineComponent({
                 console.log(json); // if json is not int, throw error
                 this.$router.go(-1);
             });
+        },
+        isSaveBlocked(): boolean {
+            if (this.skillType.Name.trim() === "") return true;
+            if (this.skillType.Description.trim() === "") return true;
+            return false;
         }
     }
 })
