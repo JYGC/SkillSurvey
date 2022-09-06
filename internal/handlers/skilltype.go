@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/JYGC/SkillSurvey/internal/database"
 	"github.com/JYGC/SkillSurvey/internal/entities"
@@ -53,6 +55,9 @@ func addSkillTypeAPI(responseWriter http.ResponseWriter, request *http.Request) 
 	if newSkillType.Description, ok = requestBody["Description"].(string); !ok {
 		panic("can't convert Description to string")
 	}
+	if err = getErrorIfSkillTypeNotValid(newSkillType); err != nil {
+		panic(err)
+	}
 	if skillTypeID, err = database.DbAdapter.SkillType.AddOne(newSkillType); err != nil {
 		panic(err)
 	}
@@ -78,10 +83,23 @@ func saveSkillTypeAPI(responseWriter http.ResponseWriter, request *http.Request)
 	if changedSkillType.Description, ok = requestBody["Description"].(string); !ok {
 		panic("can't convert Description to string")
 	}
+	if err = getErrorIfSkillTypeNotValid(changedSkillType); err != nil {
+		panic(err)
+	}
 	if err = database.DbAdapter.SkillType.SaveOne(changedSkillType); err != nil {
 		panic(err)
 	}
 	makeResponse(responseWriter, request, "success")
+}
+
+func getErrorIfSkillTypeNotValid(skillType entities.SkillType) (err error) {
+	if strings.TrimSpace(skillType.Name) == "" {
+		return errors.New("skill type must have name")
+	}
+	if strings.TrimSpace(skillType.Description) == "" {
+		return errors.New("skill type must have description")
+	}
+	return nil
 }
 
 func deleteSkillTypeAPI(responseWriter http.ResponseWriter, request *http.Request) {
