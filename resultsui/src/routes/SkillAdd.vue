@@ -7,7 +7,7 @@
         </div>
     </div>
     <div class="row">
-        <SkillView v-model="skillViewModalValueData" :forSkillTypeID="forSkillTypeID" />
+        <SkillView v-model="skillModalValue" :forSkillTypeID="forSkillTypeID" />
     </div>
 </template>
 
@@ -19,7 +19,7 @@ import { useRoute } from 'vue-router';
 
 export default defineComponent({
     setup() {
-        let skillViewModalValueData: { skillName: SkillName, newAlias: string } = reactive({
+        let skillModalValue: { skillName: SkillName, newAlias: string } = reactive({
             skillName: {
                 ID: 0,
                 SkillTypeID: 0,
@@ -32,7 +32,7 @@ export default defineComponent({
         });
         let forSkillTypeID = useRoute().params.skilltypeid;
         return {
-            skillViewModalValueData,
+            skillModalValue,
             forSkillTypeID
         };
     },
@@ -46,16 +46,16 @@ export default defineComponent({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(this.skillViewModalValueData.skillName)
+                body: JSON.stringify(this.skillModalValue.skillName)
             }).then(response => response.json()).then(json => {
                 console.log(json);
                 this.$router.go(-1);
             });
         },
         isAddBlocked(): boolean {
-            if (this.skillViewModalValueData.newAlias.trim().length > 0) return true;
-            if (this.skillViewModalValueData.skillName.Name.trim().length === 0) return true;
-            if (this.skillViewModalValueData.skillName.SkillTypeID === 0) return true;
+            if (this.skillModalValue.newAlias.trim().length > 0) return true;
+            if (this.skillModalValue.skillName.Name.trim().length === 0) return true;
+            if (this.skillModalValue.skillName.SkillTypeID === 0) return true;
             return false;
         }
     }

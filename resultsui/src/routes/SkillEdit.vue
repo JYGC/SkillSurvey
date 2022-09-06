@@ -8,7 +8,7 @@
         </div>
     </div>
     <div class="row">
-        <SkillView v-model="skillViewModalValueData" />
+        <SkillView v-model="skillModalValue" />
     </div>
     <b-modal id="confirm-delete" hide-header ok-title="Confirm" ok-variant="danger" @ok="deleteSkill()">
         <p>Are you sure you want to delete this skill?</p>
@@ -23,7 +23,7 @@ import { useRoute } from 'vue-router';
 
 export default defineComponent({
     setup() {
-        let skillViewModalValueData: { skillName: SkillName, newAlias: string } = reactive({
+        let skillModalValue: { skillName: SkillName, newAlias: string } = reactive({
             skillName: {
                 ID: 0,
                 SkillTypeID: 0,
@@ -35,7 +35,7 @@ export default defineComponent({
             newAlias: ""
         });
         return {
-            skillViewModalValueData
+            skillModalValue
         };
     },
     components: {
@@ -45,23 +45,22 @@ export default defineComponent({
         fetch(`http://localhost:3000/skill/getbyid?skillid=${ useRoute().params.skillid }`).then(
             response => response.json()
         ).then(data => {
-            this.skillViewModalValueData.skillName.ID = data.ID;
-            this.skillViewModalValueData.skillName.SkillTypeID = data.SkillTypeID;
-            this.skillViewModalValueData.skillName.Name = data.Name;
-            this.skillViewModalValueData.skillName.IsEnabled = data.IsEnabled;
-            this.skillViewModalValueData.skillName.SkillNameAliases = data.SkillNameAliases;
+            this.skillModalValue.skillName.ID = data.ID;
+            this.skillModalValue.skillName.SkillTypeID = data.SkillTypeID;
+            this.skillModalValue.skillName.Name = data.Name;
+            this.skillModalValue.skillName.IsEnabled = data.IsEnabled;
+            this.skillModalValue.skillName.SkillNameAliases = data.SkillNameAliases;
         });
     },
     methods: {
         saveSkill(): void {
-            this.skillViewModalValueData.skillName
-            console.log(this.skillViewModalValueData.skillName);
+            this.skillModalValue.skillName
             fetch('http://localhost:3000/skill/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(this.skillViewModalValueData.skillName)
+                body: JSON.stringify(this.skillModalValue.skillName)
             }).then(response => response.json()).then(json => {
                 console.log(json);
                 this.$router.go(-1);
@@ -74,7 +73,7 @@ export default defineComponent({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ID: this.skillViewModalValueData.skillName.ID
+                    ID: this.skillModalValue.skillName.ID
                 })
             }).then(response => response.json()).then(json => {
                 console.log(json); // if json is not int, throw error
@@ -82,9 +81,9 @@ export default defineComponent({
             });
         },
         isSaveBlocked(): boolean {
-            if (this.skillViewModalValueData.newAlias.trim().length > 0) return true;
-            if (this.skillViewModalValueData.skillName.Name.trim().length === 0) return true;
-            if (this.skillViewModalValueData.skillName.SkillTypeID === 0) return true;
+            if (this.skillModalValue.newAlias.trim().length > 0) return true;
+            if (this.skillModalValue.skillName.Name.trim().length === 0) return true;
+            if (this.skillModalValue.skillName.SkillTypeID === 0) return true;
             return false;
         }
     }

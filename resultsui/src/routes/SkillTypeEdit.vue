@@ -3,12 +3,12 @@
         <div class="col-md-12">
             <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
             <b-button class="float-end margin-left-10" :disabled="isSaveBlocked()" v-on:click="saveSkillType()">Save</b-button>
-            <b-button class="float-end" v-b-modal.confirm-delete :disabled="skillType.SkillNames.length != 0">Delete</b-button>
+            <b-button class="float-end" v-b-modal.confirm-delete :disabled="skillTypeModelValue.skillType.SkillNames.length != 0">Delete</b-button>
         </div>
     </div>
     <div class="row">
         <div class="col-md-6">
-            <SkillTypeView v-model="skillType" />
+            <SkillTypeView v-model="skillTypeModelValue" />
         </div>
         <div class="col-md-6">
             <div class="row vertical-padding">
@@ -17,14 +17,14 @@
                 </div>
                 <div class="col-md-8">
                     <b-nav vertical>
+                        <b-nav-item class="new-association vertical-padding" :to="{ name: 'skill-add', params: { skilltypeid: skillTypeModelValue.skillType.ID } }">
+                            New Skill
+                        </b-nav-item>
                         <b-nav-item
                         class="association"
-                          v-for="skillName in skillType.SkillNames" :key="skillName.ID"
+                          v-for="skillName in skillTypeModelValue.skillType.SkillNames" :key="skillName.ID"
                           :to="{ name: 'skill-edit', params: { skillid: skillName.ID } }">
                             {{skillName.Name}}
-                        </b-nav-item>
-                        <b-nav-item class="new-association" :to="{ name: 'skill-add', params: { skilltypeid: skillType.ID } }">
-                            New Skill
                         </b-nav-item>
                     </b-nav>
                 </div>
@@ -43,14 +43,16 @@ import { useRoute } from 'vue-router';
 
 export default defineComponent({
     setup() {
-        let skillType: SkillType = reactive({
-            ID: -1,
-            Name: "",
-            Description: "",
-            SkillNames: []
+        let skillTypeModelValue: { skillType: SkillType } = reactive({
+            skillType: {
+                ID: -1,
+                Name: "",
+                Description: "",
+                SkillNames: []
+            }
         });
         return {
-            skillType
+            skillTypeModelValue
         };
     },
     components: {
@@ -60,10 +62,10 @@ export default defineComponent({
         fetch(`http://localhost:3000/skilltype/getbyid?skilltypeid=${ useRoute().params.skilltypeid }`).then(
             response => response.json()
         ).then(data => {
-            this.skillType.ID = data.ID;
-            this.skillType.Name = data.Name;
-            this.skillType.Description = data.Description;
-            this.skillType.SkillNames = data.SkillNames;
+            this.skillTypeModelValue.skillType.ID = data.ID;
+            this.skillTypeModelValue.skillType.Name = data.Name;
+            this.skillTypeModelValue.skillType.Description = data.Description;
+            this.skillTypeModelValue.skillType.SkillNames = data.SkillNames;
         });
     },
     methods: {
@@ -73,7 +75,7 @@ export default defineComponent({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(this.skillType)
+                body: JSON.stringify(this.skillTypeModelValue.skillType)
             }).then(response => response.json()).then(json => {
                 console.log(json);
                 this.$router.go(-1);
@@ -86,7 +88,7 @@ export default defineComponent({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ID: this.skillType.ID
+                    ID: this.skillTypeModelValue.skillType.ID
                 })
             }).then(response => response.json()).then(json => {
                 console.log(json); // if json is not int, throw error
@@ -94,8 +96,8 @@ export default defineComponent({
             });
         },
         isSaveBlocked(): boolean {
-            if (this.skillType.Name.trim() === "") return true;
-            if (this.skillType.Description.trim() === "") return true;
+            if (this.skillTypeModelValue.skillType.Name.trim() === "") return true;
+            if (this.skillTypeModelValue.skillType.Description.trim() === "") return true;
             return false;
         }
     }
