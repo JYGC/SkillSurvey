@@ -25,18 +25,26 @@
                 <label class="float-start">Alternate phrases:</label>
             </div>
             <div class="col-md-9">
-                <div class="row vertical-padding" v-for="alias in modalValueData?.skillName?.SkillNameAliases" v-bind:key="alias.ID">
-                    <div class="col-md-12">
-                        <input type="text" v-model="alias.Alias" />
-                        <b-button v-on:click="deleteNewSkillNameAlias(alias)">Delete</b-button>
-                    </div>
-                </div>
-                <div class="row vertical-padding">
-                    <div class="col-md-12">
-                        <input type="text" v-model="modalValueData.newAlias" />
-                        <b-button v-on:click="addNewSkillNameAlias()" :disabled="isAddNewAliasBlocked()">Add</b-button>
-                    </div>
-                </div>
+                <table>
+                    <tbody>
+                        <tr class="vertical-padding">
+                            <td>
+                                <input type="text" class="fill-parent" placeholder="Add new alternate phrase" v-model="modalValueData.newAlias" />
+                            </td>
+                            <td>
+                                <b-button v-on:click="addNewSkillNameAlias()" :disabled="isAddNewAliasAllowed()">Add</b-button>
+                            </td>
+                        </tr>
+                        <tr v-for="alias in modalValueData?.skillName?.SkillNameAliases"  v-bind:key="alias.ID">
+                            <td>
+                                {{ alias.Alias }}
+                            </td>
+                            <td>
+                                <b-button v-on:click="deleteNewSkillNameAlias(alias)">Delete</b-button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -93,10 +101,17 @@ export default defineComponent({
             if (typeof this.modalValueData === 'undefined') return;
             this.modalValueData.skillName?.SkillNameAliases.splice(this.modalValueData.skillName?.SkillNameAliases.indexOf(skillAlias), 1);
         },
-        isAddNewAliasBlocked(): boolean {
+        isAddNewAliasAllowed(): boolean {
             if (this.modalValueData?.newAlias.trim().length === 0) return true;
             return false;
-        }
+        },
+        // isSubmitDataInvalid(): boolean {
+        //     if (typeof this.modalValueData === 'undefined') return true; 
+        //     if (this.modalValueData.newAlias.trim().length > 0) return true;
+        //     if (this.modalValueData.skillName.Name.trim().length === 0) return true;
+        //     if (this.modalValueData.skillName.SkillTypeID === 0) return true;
+        //     return false;
+        // }
     }
 })
 </script>
