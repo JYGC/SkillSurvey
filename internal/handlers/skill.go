@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/JYGC/SkillSurvey/internal/database"
 	"github.com/JYGC/SkillSurvey/internal/entities"
@@ -60,6 +62,9 @@ func addSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {
 			Alias: skillNameAliasMap["Alias"].(string),
 		})
 	}
+	if err = getErrorIfSkillOrItsAliasesNotValid(newSkillName); err != nil {
+		panic(err)
+	}
 	if skillNameID, err = database.DbAdapter.SkillName.AddOne(newSkillName); err != nil {
 		panic(err)
 	}
@@ -99,10 +104,28 @@ func saveSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {
 			Alias: skillNameAliasMap["Alias"].(string),
 		})
 	}
+	if err = getErrorIfSkillOrItsAliasesNotValid(changedSkillName); err != nil {
+		panic(err)
+	}
 	if err = database.DbAdapter.SkillName.SaveOneWithTypeAndAliases(changedSkillName); err != nil {
 		panic(err)
 	}
 	makeResponse(responseWriter, request, "success")
+}
+
+func getErrorIfSkillOrItsAliasesNotValid(skillName entities.SkillName) (err error) {
+	if strings.TrimSpace(skillName.Name) == "" {
+		return errors.New("skill must have name")
+	}
+	if skillName.SkillTypeID == 0 {
+		return errors.New("skill must have type")
+	}
+	for _, alias := range skillName.SkillNameAliases {
+		if strings.TrimSpace(alias.Alias) == "" {
+			return errors.New("can't allow empty aliases")
+		}
+	}
+	return nil
 }
 
 func deleteSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {

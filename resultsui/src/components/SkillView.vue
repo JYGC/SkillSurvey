@@ -1,29 +1,51 @@
 <template>
-    <div>
-        <label>Skill name:</label>
-    </div>
-    <div>
-        <input type="text" name="skillName" id="skillName" v-model="skillName.Name" />
-    </div>
-    <div>
-        <label>Skill type:</label>
-    </div>
-    <div>
-        <select name="skill-types" id="skill-types" v-model="skillName.SkillTypeID" :disabled="typeof forSkillTypeID !== 'undefined'">
-            <option v-for="(value, propertyName) in skillTypes" :value="propertyName" v-bind:key="propertyName">{{value}}</option>
-        </select>
-    </div>
-    <div>
-        <label>Alternate phrases:</label>
-    </div>
-    <div>
-        <div v-for="alias in skillName?.SkillNameAliases" v-bind:key="alias.ID">
-            <input type="text" v-model="alias.Alias" />
-            <button v-on:click="deleteNewSkillNameAlias(alias)">Delete</button>
+    <div class="col-md-6">
+        <div class="row vertical-padding">
+            <div class="col-md-3">
+                <label class="float-start">Skill name:</label>
+            </div>
+            <div class="col-md-9">
+                <input class="float-start fill-parent" type="text" name="skillName" id="skillName" v-model="modalValueData.skillName.Name" />
+            </div>
         </div>
-        <div>
-            <input type="text" v-model="newAlias" />
-            <button v-on:click="addNewSkillNameAlias()">Add</button>
+        <div class="row vertical-padding">
+            <div class="col-md-3">
+                <label class="float-start">Skill type:</label>
+            </div>
+            <div class="col-md-9">
+                <select class="float-start fill-parent" name="skill-types" id="skill-types" v-model="modalValueData.skillName.SkillTypeID" :disabled="typeof forSkillTypeID !== 'undefined'">
+                    <option v-for="(value, propertyName) in skillTypes" :value="propertyName" v-bind:key="propertyName">{{value}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="row vertical-padding">
+            <div class="col-md-3">
+                <label class="float-start">Alternate phrases:</label>
+            </div>
+            <div class="col-md-9">
+                <table>
+                    <tbody>
+                        <tr class="vertical-padding">
+                            <td>
+                                <input type="text" class="fill-parent" placeholder="Add new alternate phrase" v-model="modalValueData.newAlias" />
+                            </td>
+                            <td>
+                                <b-button v-on:click="addNewSkillNameAlias()" :disabled="isAddNewAliasAllowed()">Add</b-button>
+                            </td>
+                        </tr>
+                        <tr v-for="alias in modalValueData?.skillName?.SkillNameAliases"  v-bind:key="alias.ID">
+                            <td>
+                                {{ alias.Alias }}
+                            </td>
+                            <td>
+                                <b-button v-on:click="deleteNewSkillNameAlias(alias)">Delete</b-button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </template>
@@ -34,23 +56,21 @@ import { computed, defineComponent, reactive } from 'vue';
 export default defineComponent({
     props: {
         modelValue: {
-            type: Object as () => SkillName
+            type: Object as () => { skillName: SkillName, newAlias: string }
         },
         forSkillTypeID: Number
     },
     emit: ['update:modelValue'],
     setup(props, { emit }) {
-        const skillName = computed({
+        const modalValueData = computed({
             get: () => props.modelValue,
             set: (value) => emit('update:modelValue', value)
         });
-        let newAlias: string = "";
         let skillTypes: { [id: number]: string } = reactive({
             "0": "-- Select skill type --"
         });
         return {
-            skillName,
-            newAlias,
+            modalValueData,
             skillTypes
         };
     },
@@ -61,26 +81,37 @@ export default defineComponent({
             for (let key in data) {
                 this.skillTypes[parseInt(key)] = data[key];
             }
-            if (typeof this.skillName !== 'undefined' && typeof this.forSkillTypeID !== 'undefined') {
-                this.skillName.SkillTypeID = this.forSkillTypeID;
-            }
+            if (typeof this.modalValueData === 'undefined' || typeof this.modalValueData.skillName === 'undefined' || typeof this.forSkillTypeID === 'undefined') return;
+            this.modalValueData.skillName.SkillTypeID = this.forSkillTypeID;
         });
     },
     methods: {
         addNewSkillNameAlias(): void {
-            if (typeof this.skillName === 'undefined' || this.skillName === null) return;
+            if (typeof this.modalValueData === 'undefined' || typeof this.modalValueData.skillName === 'undefined' || this.modalValueData.skillName === null) return;
             let newAliasObject: SkillNameAlias = {
                 ID: -1,
-                SkillNameID: this.skillName.ID,
+                SkillNameID: this.modalValueData.skillName.ID,
                 SkillName: null,
-                Alias: this.newAlias
+                Alias: this.modalValueData.newAlias
             };
-            this.skillName.SkillNameAliases.push(newAliasObject);
-            this.newAlias = "";
+            this.modalValueData.skillName.SkillNameAliases.push(newAliasObject);
+            this.modalValueData.newAlias = "";
         },
         deleteNewSkillNameAlias(skillAlias: SkillNameAlias): void {
-            this.skillName?.SkillNameAliases.splice(this.skillName?.SkillNameAliases.indexOf(skillAlias), 1);
-        }
+            if (typeof this.modalValueData === 'undefined') return;
+            this.modalValueData.skillName?.SkillNameAliases.splice(this.modalValueData.skillName?.SkillNameAliases.indexOf(skillAlias), 1);
+        },
+        isAddNewAliasAllowed(): boolean {
+            if (this.modalValueData?.newAlias.trim().length === 0) return true;
+            return false;
+        },
+        // isSubmitDataInvalid(): boolean {
+        //     if (typeof this.modalValueData === 'undefined') return true; 
+        //     if (this.modalValueData.newAlias.trim().length > 0) return true;
+        //     if (this.modalValueData.skillName.Name.trim().length === 0) return true;
+        //     if (this.modalValueData.skillName.SkillTypeID === 0) return true;
+        //     return false;
+        // }
     }
 })
 </script>

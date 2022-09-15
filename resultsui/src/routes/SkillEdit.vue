@@ -1,16 +1,18 @@
 <template>
-    <div>
-        <a href="#" @click.prevent="$router.go(-1)">Back</a>
+    <div class="row vertical-padding">
+        <div class="col-md-12">
+            <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
+            <b-button class="float-end margin-left-10" v-on:click="saveSkill()"
+              :disabled="isSaveBlocked()">Save</b-button>
+            <b-button class="float-end" v-b-modal.confirm-delete>Delete</b-button>
+        </div>
     </div>
-    <div>
-        <SkillView v-model="skillName" />
+    <div class="row">
+        <SkillView v-model="skillModalValue" />
     </div>
-    <div>
-        <span>
-            <button v-on:click="editSkill()">Save</button>
-            <button v-on:click="deleteSkill()">Delete</button>
-        </span>
-    </div>
+    <b-modal id="confirm-delete" hide-header ok-title="Confirm" ok-variant="danger" @ok="deleteSkill()">
+        <p>Are you sure you want to delete this skill?</p>
+    </b-modal>
 </template>
 
 <script lang="ts">
@@ -21,16 +23,19 @@ import { useRoute } from 'vue-router';
 
 export default defineComponent({
     setup() {
-        let skillName: SkillName = reactive({
-            ID: 0,
-            SkillTypeID: 0,
-            SkillType: null,
-            Name: "",
-            IsEnabled: true,
-            SkillNameAliases: []
+        let skillModalValue: { skillName: SkillName, newAlias: string } = reactive({
+            skillName: {
+                ID: 0,
+                SkillTypeID: 0,
+                SkillType: null,
+                Name: "",
+                IsEnabled: true,
+                SkillNameAliases: []
+            },
+            newAlias: ""
         });
         return {
-            skillName
+            skillModalValue
         };
     },
     components: {
@@ -40,23 +45,22 @@ export default defineComponent({
         fetch(`http://localhost:3000/skill/getbyid?skillid=${ useRoute().params.skillid }`).then(
             response => response.json()
         ).then(data => {
-            this.skillName.ID = data.ID;
-            this.skillName.SkillTypeID = data.SkillTypeID;
-            this.skillName.Name = data.Name;
-            this.skillName.IsEnabled = data.IsEnabled;
-            this.skillName.SkillNameAliases = data.SkillNameAliases;
+            this.skillModalValue.skillName.ID = data.ID;
+            this.skillModalValue.skillName.SkillTypeID = data.SkillTypeID;
+            this.skillModalValue.skillName.Name = data.Name;
+            this.skillModalValue.skillName.IsEnabled = data.IsEnabled;
+            this.skillModalValue.skillName.SkillNameAliases = data.SkillNameAliases;
         });
     },
     methods: {
-        editSkill(): void {
-            this.skillName
-            console.log(this.skillName);
+        saveSkill(): void {
+            this.skillModalValue.skillName
             fetch('http://localhost:3000/skill/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(this.skillName)
+                body: JSON.stringify(this.skillModalValue.skillName)
             }).then(response => response.json()).then(json => {
                 console.log(json);
                 this.$router.go(-1);
@@ -69,12 +73,18 @@ export default defineComponent({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ID: this.skillName.ID
+                    ID: this.skillModalValue.skillName.ID
                 })
             }).then(response => response.json()).then(json => {
                 console.log(json); // if json is not int, throw error
                 this.$router.go(-1);
             });
+        },
+        isSaveBlocked(): boolean {
+            if (this.skillModalValue.newAlias.trim().length > 0) return true;
+            if (this.skillModalValue.skillName.Name.trim().length === 0) return true;
+            if (this.skillModalValue.skillName.SkillTypeID === 0) return true;
+            return false;
         }
     }
 })
