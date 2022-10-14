@@ -33,7 +33,7 @@ function createChartLabels() : string[] {
         pointerYearMonth.setMonth(pointerYearMonth.getMonth() + 1)
     ) {
         chartLabels.push(
-            pointerYearMonth.getFullYear() + "-" + ("0" + (pointerYearMonth.getMonth() + 1)).slice(-2)
+            `${pointerYearMonth.getFullYear()}-${(`0${pointerYearMonth.getMonth() + 1}`).slice(-2)}`
         );
     }
     return chartLabels;
@@ -57,7 +57,7 @@ function putReportOnChart(data: any) {
             label: key,
             data: Object.keys(monthYearDict).map((key) => monthYearDict[key]),
             fill: false,
-            borderColor: "#" + Math.floor(Math.random()*16777215).toString(16),
+            borderColor: `#${Math.floor(Math.random()*16777215).toString(16)}`,
             hidden: true,
         });
     }
