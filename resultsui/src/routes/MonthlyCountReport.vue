@@ -16,7 +16,7 @@ let getData = reactive({ labels: new Array<String>(), datasets: {} });
 getData.labels = createChartLabels();
 (async function () {
     try {
-        putReportOnChart(await (await fetch('http://localhost:3000/report/getmonthlycount')).json());
+        getData.datasets = createDataSet(await (await fetch('http://localhost:3000/report/getmonthlycount')).json());
     } catch (error) {
         alert(error);
         console.log(error);
@@ -39,8 +39,8 @@ function createChartLabels() : string[] {
     return chartLabels;
 }
 
-function putReportOnChart(data: { [id: string] : Array<{YearMonth: string, Count: number}> }) {
-    let processedDataSet: Object[] = []
+function createDataSet(data: { [id: string] : Array<{YearMonth: string, Count: number}> }): Object[] {
+    let dataSet: Object[] = []
     // for each skill, use monthYearDictTemplate to create a new monthYearDict
     let monthYearDictTemplate: { [id: string] : Number; } = {};
     for (const dateLabelKey in getData.labels)
@@ -53,7 +53,7 @@ function putReportOnChart(data: { [id: string] : Array<{YearMonth: string, Count
         for (let i = 0; i < data[key].length; i++) {
             monthYearDict[data[key][i].YearMonth] = data[key][i].Count;
         }
-        processedDataSet.push({
+        dataSet.push({
             label: key,
             data: Object.keys(monthYearDict).map((key) => monthYearDict[key]),
             fill: false,
@@ -61,6 +61,6 @@ function putReportOnChart(data: { [id: string] : Array<{YearMonth: string, Count
             hidden: true,
         });
     }
-    getData.datasets = processedDataSet;
+    return dataSet;
 }
 </script>
