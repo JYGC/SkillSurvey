@@ -39,7 +39,7 @@ function createChartLabels() : string[] {
     return chartLabels;
 }
 
-function putReportOnChart(data: any) {
+function putReportOnChart(data: { [id: string] : Array<{YearMonth: string, Count: number}> }) {
     let processedDataSet: Object[] = []
     // for each skill, use monthYearDictTemplate to create a new monthYearDict
     let monthYearDictTemplate: { [id: string] : Number; } = {};
