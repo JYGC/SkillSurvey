@@ -14,7 +14,7 @@
         "JobPostLink": "[data-automation=\"jobTitle\"]",
         "TitleSelector": "[data-automation=\"job-detail-title\"]",
         "BodySelector": "[data-automation=\"jobAdDetails\"]",
-        "PostedDateSelector": ".yvsb870._14uh9944u._1qw3t4i0._1qw3t4i1y._1qw3t4i1._1d0g9qk4._1qw3t4ib",
+        "PostedDateSelector": ".yvsb870.v8nw070.v8nw077 > .yvsb870._14uh9946q > .yvsb870._14uh9944u._1cshjhy0._1cshjhy1._1cshjhy22._1d0g9qk4._1cshjhya",
         "CitySelector": "div.FYwKg._3VxpE_4 > div:nth-child(1)",
         "Country": "Australia",
         "SuburbSelector": "div.FYwKg._3VxpE_4 > div:nth-child(2)",
