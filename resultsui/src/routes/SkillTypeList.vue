@@ -28,6 +28,7 @@
 <script lang="ts">
 import { SkillType } from '@/schemas/skills';
 import { defineComponent, reactive } from 'vue';
+import { sortByProperty } from '../services/arrays';
 
 export default defineComponent({
     setup() {
@@ -41,7 +42,8 @@ export default defineComponent({
         fetch('http://localhost:3000/skilltype/getall').then(
             response => response.json()
         ).then(data => {
-            for (let i: number = 0; i < data.length; i++) this.skillTypes.push(data[i]);
+            let sortedData = sortByProperty<SkillType>(data, (a, b) => [a.Name, b.Name]);
+            for (let i: number = 0; i < sortedData.length; i++) this.skillTypes.push(sortedData[i]);
         });
     }
 });

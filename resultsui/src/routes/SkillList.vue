@@ -32,6 +32,7 @@
 <script lang="ts">
 import { SkillName, SkillNameAlias } from '@/schemas/skills';
 import { defineComponent, reactive } from 'vue';
+import { sortByProperty } from '../services/arrays';
 
 export default defineComponent({
     setup() {
@@ -45,7 +46,8 @@ export default defineComponent({
         fetch('http://localhost:3000/skill/getall').then(
             response => response.json()
         ).then(data => {
-            for (let i: number = 0; i < data.length; i++) this.skillNames.push(data[i]);
+            let sortedData = sortByProperty<SkillName>(data, (a, b) => [a.Name, b.Name]);
+            for (let i: number = 0; i < sortedData.length; i++) this.skillNames.push(sortedData[i]);
         });
     },
     methods: {
