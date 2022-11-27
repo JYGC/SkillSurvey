@@ -13,49 +13,45 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="skillName in skillNames" :key="skillName.ID">
-                    <td>{{ skillName.Name }}</td>
-                    <td>{{ skillName.SkillType.Name }}</td>
+                <tr v-for="skillAndAlias in skillsAndAliases" :key="skillAndAlias.Skill.ID">
+                    <td>{{ skillAndAlias.Skill.Name }}</td>
+                    <td>{{ skillAndAlias.Skill.SkillType?.Name }}</td>
                     <td>
-                        <div v-for="alias in getAliasList(skillName.SkillNameAliases)" :key="alias">
+                        <div v-for="alias in skillAndAlias.Aliases" :key="alias">
                             {{ alias }}
                         </div>
                     </td>
                     <td>
-                        <router-link :to="{ name: 'skill-edit', params: { skillid: skillName.ID } }">Edit</router-link>
+                        <router-link :to="{ name: 'skill-edit', params: { skillid: skillAndAlias.Skill.ID } }">Edit</router-link>
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup>
 import { SkillName, SkillNameAlias } from '@/schemas/skills';
-import { defineComponent, reactive } from 'vue';
+import { reactive } from 'vue';
 import { sortByProperty } from '../services/arrays';
 
-export default defineComponent({
-    setup() {
-        let skillNames: Array<SkillName> = reactive([]);
-        return {
-            skillNames
-        };
-    },
-    created() {
-        // get data from API
-        fetch('http://localhost:3000/skill/getall').then(
-            response => response.json()
-        ).then(data => {
-            let sortedData = sortByProperty<SkillName>(data, (element) => element.Name);
-            for (let i: number = 0; i < sortedData.length; i++) this.skillNames.push(sortedData[i]);
+const getAllSkillsUrl = 'http://localhost:3000/skill/getall';
+
+let skillsAndAliases: Array<{Skill: SkillName, Aliases: string[]}> = reactive([]);
+
+(async function() {
+    // get data from API
+    const response = await fetch(getAllSkillsUrl);
+    const sortedData = sortByProperty<SkillName>(await response.json(), skill => skill.Name);
+    for (let i: number = 0; i < sortedData.length; i++)
+        skillsAndAliases.push({
+            Skill: sortedData[i],
+            Aliases: sortByProperty<string>(getAliasList(sortedData[i].SkillNameAliases), alias => alias)
         });
-    },
-    methods: {
-        getAliasList(skillNameAliases: SkillNameAlias[]): string[] {
-            if (skillNameAliases === null) return [];
-            let aliasList: string[] = skillNameAliases.map(s => s.Alias);
-            return aliasList;
-        }
-    }
-});
+})();
+
+function getAliasList(skillNameAliases: SkillNameAlias[]): string[] {
+    if (skillNameAliases === null) return [];
+    let aliasList: string[] = skillNameAliases.map(s => s.Alias);
+    return aliasList;
+}
 </script>

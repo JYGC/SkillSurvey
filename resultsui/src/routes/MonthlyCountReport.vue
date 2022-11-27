@@ -8,7 +8,9 @@ import { Chart, registerables } from "chart.js";
 import { reactive } from 'vue';
 import { LineChart } from 'vue-chart-3';
 
-// make chart fill window heightwise
+const getMonthlyCountUrl = 'http://localhost:3000/report/getmonthlycount';
+
+// make chart fill window height-wise
 const chartHeight = window.innerHeight
 // make chart
 Chart.register(...registerables);
@@ -16,7 +18,8 @@ let getData = reactive({ labels: new Array<String>(), datasets: {} });
 getData.labels = createChartLabels();
 (async function () {
     try {
-        getData.datasets = createDataSet(await (await fetch('http://localhost:3000/report/getmonthlycount')).json());
+        const response = await fetch(getMonthlyCountUrl);
+        getData.datasets = createDataSet(await response.json());
     } catch (error) {
         alert(error);
         console.log(error);

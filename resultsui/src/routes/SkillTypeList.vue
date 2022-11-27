@@ -25,26 +25,19 @@
         </table>
     </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup>
 import { SkillType } from '@/schemas/skills';
-import { defineComponent, reactive } from 'vue';
+import { reactive } from 'vue';
 import { sortByProperty } from '../services/arrays';
 
-export default defineComponent({
-    setup() {
-        let skillTypes: Array<SkillType> = reactive([]);
-        return {
-            skillTypes
-        };
-    },
-    created() {
-        // get data from API
-        fetch('http://localhost:3000/skilltype/getall').then(
-            response => response.json()
-        ).then(data => {
-            let sortedData = sortByProperty<SkillType>(data, (element) => element.Name);
-            for (let i: number = 0; i < sortedData.length; i++) this.skillTypes.push(sortedData[i]);
-        });
-    }
-});
+const getAllSkillTypesUrl = 'http://localhost:3000/skilltype/getall';
+
+let skillTypes: Array<SkillType> = reactive([]);
+
+(async function() {
+    // get data from API
+    const response = await fetch(getAllSkillTypesUrl);
+    const sortedData = sortByProperty<SkillType>(await response.json(), skillType => skillType.Name);
+    for (let i: number = 0; i < sortedData.length; i++) skillTypes.push(sortedData[i]);
+})();
 </script>
