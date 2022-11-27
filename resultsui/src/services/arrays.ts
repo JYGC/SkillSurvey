@@ -1,9 +1,10 @@
 export function sortByProperty<T>(
   skillArray: Array<T>,
-  getSortingProperty: (x: T, y: T) => [any, any]
+  getSortingProperty: (element: T) => any
 ): Array<T> {
     return skillArray.sort((a: T, b: T) => {
-        const [aProperty, bProperty] = getSortingProperty(a, b);
+        const aProperty = getSortingProperty(a);
+        const bProperty = getSortingProperty(b);
         if (aProperty < bProperty) return -1;
         if (aProperty > bProperty) return 1;
         return 0;

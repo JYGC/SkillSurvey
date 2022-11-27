@@ -42,7 +42,7 @@ export default defineComponent({
         fetch('http://localhost:3000/skilltype/getall').then(
             response => response.json()
         ).then(data => {
-            let sortedData = sortByProperty<SkillType>(data, (a, b) => [a.Name, b.Name]);
+            let sortedData = sortByProperty<SkillType>(data, (element) => element.Name);
             for (let i: number = 0; i < sortedData.length; i++) this.skillTypes.push(sortedData[i]);
         });
     }
