@@ -29,18 +29,81 @@ func (s SeekAdapter) GetPostedDate(doc *colly.HTMLElement) time.Time {
 		"Url":       doc.Request.URL.String(),
 		"Variables": variableRef,
 	})
+
 	ageString := doc.ChildText(s.ConfigSettings.SiteSelectors.PostedDateSelector)
 	variableRef["ageString"] = ageString
-	timeAgoIndex := strings.Index(ageString, "Posted ") + 7
-	variableRef["timeAgoIndex"] = timeAgoIndex
-	agoIndex := strings.Index(ageString, " ago")
-	variableRef["agoIndex"] = agoIndex
-	timeAgo := ageString[timeAgoIndex:agoIndex]
+	timeStringIndex := strings.Index(ageString, "Posted ") + 7
+	variableRef["timeAgoIndex"] = timeStringIndex
+	agoWordIndex := strings.Index(ageString, " ago")
+	variableRef["agoWordIndex"] = agoWordIndex
+
+	if agoWordIndex == -1 {
+		// when ageString: Posted 4 Apr 2023
+		return turnAgeStringToTime(ageString, timeStringIndex)
+	}
+	return turnTimeAgoFormatAgeStringToTime(ageString, timeStringIndex, agoWordIndex)
+}
+
+var shortMonthNumMap map[string]int = map[string]int{
+	"Jan": 1,
+	"Feb": 2,
+	"Mar": 3,
+	"Apr": 4,
+	"May": 5,
+	"Jun": 6,
+	"Jul": 7,
+	"Aug": 8,
+	"Sep": 9,
+	"Oct": 10,
+	"Nov": 11,
+	"Dec": 12,
+}
+
+func turnAgeStringToTime(ageString string, timeStringIndex int) time.Time {
+	variableRef := make(map[string]interface{})
+	defer exception.ReportErrorIfPanic(map[string]interface{}{
+		"func": "getPostDateFromTimeAgoFormat",
+		"parameters": map[string]interface{}{
+			"ageString":       ageString,
+			"timeStringIndex": timeStringIndex,
+		},
+		"Variables": variableRef,
+	})
+
+	stringPartsToTurnToTime := strings.Split(ageString[timeStringIndex:], " ")
+	variableRef["stringToTurnToTimeParts"] = strings.Join(stringPartsToTurnToTime, ",")
+
+	var err error
+	day, err := strconv.Atoi(stringPartsToTurnToTime[1])
+	if err != nil {
+		panic(err)
+	}
+	monthCode := stringPartsToTurnToTime[1]
+	year, err := strconv.Atoi(stringPartsToTurnToTime[2])
+	if err != nil {
+		panic(err)
+	}
+	return time.Date(year, time.Month(shortMonthNumMap[monthCode]), day, 0, 0, 0, 0, time.Local)
+}
+
+func turnTimeAgoFormatAgeStringToTime(ageString string, timeStringIndex int, agoWordIndex int) time.Time {
+	variableRef := make(map[string]interface{})
+	defer exception.ReportErrorIfPanic(map[string]interface{}{
+		"func": "getPostDateFromTimeAgoFormat",
+		"parameters": map[string]interface{}{
+			"ageString":       ageString,
+			"timeStringIndex": timeStringIndex,
+			"agoWordIndex":    agoWordIndex,
+		},
+		"Variables": variableRef,
+	})
+
+	timeAgo := ageString[timeStringIndex:agoWordIndex]
 	variableRef["timeAgo"] = timeAgo
 	currentDate := time.Now()
 	var postedDate time.Time
 	var err error
-	switch timeAgoUnit := ageString[agoIndex-1 : agoIndex]; timeAgoUnit {
+	switch timeAgoUnit := ageString[agoWordIndex-1 : agoWordIndex]; timeAgoUnit {
 	case "d":
 		var day int
 		day, err = strconv.Atoi(timeAgo[:len(timeAgo)-1])
