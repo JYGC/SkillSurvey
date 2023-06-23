@@ -61,7 +61,7 @@ var shortMonthNumMap map[string]int = map[string]int{
 
 func turnAgeStringToTime(ageString string, timeStringIndex int) time.Time {
 	variableRef := make(map[string]interface{})
-	defer exception.ReportErrorIfPanic(map[string]interface{}{
+	defer exception.ReportErrorIfPanicThenPanicAgain(map[string]interface{}{
 		"func": "getPostDateFromTimeAgoFormat",
 		"parameters": map[string]interface{}{
 			"ageString":       ageString,
@@ -88,7 +88,7 @@ func turnAgeStringToTime(ageString string, timeStringIndex int) time.Time {
 
 func turnTimeAgoFormatAgeStringToTime(ageString string, timeStringIndex int, agoWordIndex int) time.Time {
 	variableRef := make(map[string]interface{})
-	defer exception.ReportErrorIfPanic(map[string]interface{}{
+	defer exception.ReportErrorIfPanicThenPanicAgain(map[string]interface{}{
 		"func": "getPostDateFromTimeAgoFormat",
 		"parameters": map[string]interface{}{
 			"ageString":       ageString,
