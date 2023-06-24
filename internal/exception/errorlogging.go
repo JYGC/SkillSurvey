@@ -37,10 +37,6 @@ func init() {
 	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func ReportErrorIfPanicThenPanicAgain(extraData map[string]interface{}) (err error) {
-	panic(ReportErrorIfPanic(extraData))
-}
-
 func ReportErrorIfPanic(extraData map[string]interface{}) (err error) {
 	if errInterface := recover(); errInterface != nil {
 		ReportError(extraData)

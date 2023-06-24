@@ -60,18 +60,7 @@ var shortMonthNumMap map[string]int = map[string]int{
 }
 
 func turnAgeStringToTime(ageString string, timeStringIndex int) time.Time {
-	variableRef := make(map[string]interface{})
-	defer exception.ReportErrorIfPanicThenPanicAgain(map[string]interface{}{
-		"func": "getPostDateFromTimeAgoFormat",
-		"parameters": map[string]interface{}{
-			"ageString":       ageString,
-			"timeStringIndex": timeStringIndex,
-		},
-		"Variables": variableRef,
-	})
-
 	stringPartsToTurnToTime := strings.Split(ageString[timeStringIndex:], " ")
-	variableRef["stringToTurnToTimeParts"] = strings.Join(stringPartsToTurnToTime, ",")
 
 	var err error
 	day, err := strconv.Atoi(stringPartsToTurnToTime[1])
@@ -87,19 +76,7 @@ func turnAgeStringToTime(ageString string, timeStringIndex int) time.Time {
 }
 
 func turnTimeAgoFormatAgeStringToTime(ageString string, timeStringIndex int, agoWordIndex int) time.Time {
-	variableRef := make(map[string]interface{})
-	defer exception.ReportErrorIfPanicThenPanicAgain(map[string]interface{}{
-		"func": "getPostDateFromTimeAgoFormat",
-		"parameters": map[string]interface{}{
-			"ageString":       ageString,
-			"timeStringIndex": timeStringIndex,
-			"agoWordIndex":    agoWordIndex,
-		},
-		"Variables": variableRef,
-	})
-
 	timeAgo := ageString[timeStringIndex:agoWordIndex]
-	variableRef["timeAgo"] = timeAgo
 	currentDate := time.Now()
 	var postedDate time.Time
 	var err error
