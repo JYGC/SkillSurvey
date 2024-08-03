@@ -1,18 +1,20 @@
 <template>
-    <div class="row vertical-padding">
-        <div class="col-md-12">
-            <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
-            <b-button class="float-end margin-left-10" v-on:click="saveSkill()"
-              :disabled="isSaveBlocked()">Save</b-button>
-            <b-button class="float-end" v-b-modal.confirm-delete>Delete</b-button>
+    <div>
+        <div class="row vertical-padding">
+            <div class="col-md-12">
+                <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
+                <b-button class="float-end margin-left-10" v-on:click="saveSkill()"
+                :disabled="isSaveBlocked()">Save</b-button>
+                <b-button class="float-end" v-b-modal.confirm-delete>Delete</b-button>
+            </div>
         </div>
+        <div class="row">
+            <SkillView v-model="skillModalValue" />
+        </div>
+        <b-modal id="confirm-delete" hide-header ok-title="Confirm" ok-variant="danger" @ok="deleteSkill()">
+            <p>Are you sure you want to delete this skill?</p>
+        </b-modal>
     </div>
-    <div class="row">
-        <SkillView v-model="skillModalValue" />
-    </div>
-    <b-modal id="confirm-delete" hide-header ok-title="Confirm" ok-variant="danger" @ok="deleteSkill()">
-        <p>Are you sure you want to delete this skill?</p>
-    </b-modal>
 </template>
 
 <script lang="ts">

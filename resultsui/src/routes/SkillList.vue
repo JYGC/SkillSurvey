@@ -1,8 +1,8 @@
 <template>
-    <div class="float-end">
-        <b-button class="vertical-padding" :to="{ name: 'skill-add' }">New Skill</b-button>
-    </div>
     <div>
+        <div class="float-end">
+            <b-button class="vertical-padding" :to="{ name: 'skill-add' }">New Skill</b-button>
+        </div>
         <table>
             <thead>
                 <tr>

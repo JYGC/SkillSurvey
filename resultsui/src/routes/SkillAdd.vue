@@ -1,13 +1,15 @@
 <template>
-    <div class="row vertical-padding">
-        <div class="col-md-12">
-            <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
-            <b-button class="float-end" v-on:click="addNewSKill()"
-              :disabled="isAddBlocked()">Add</b-button>
+    <div>
+        <div class="row vertical-padding">
+            <div class="col-md-12">
+                <b-button class="float-start" @click.prevent="$router.go(-1)">Back</b-button>
+                <b-button class="float-end" v-on:click="addNewSKill()"
+                :disabled="isAddBlocked()">Add</b-button>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <SkillView v-model="skillModalValue" :forSkillTypeID="forSkillTypeID" />
+        <div class="row">
+            <SkillView v-model="skillModalValue" :forSkillTypeID="forSkillTypeID" />
+        </div>
     </div>
 </template>
 
