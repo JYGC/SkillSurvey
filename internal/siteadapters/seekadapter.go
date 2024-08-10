@@ -2,6 +2,7 @@ package siteadapters
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -30,18 +31,25 @@ func (s SeekAdapter) GetPostedDate(doc *colly.HTMLElement) time.Time {
 		"Variables": variableRef,
 	})
 
-	ageString := doc.ChildText(s.ConfigSettings.SiteSelectors.PostedDateSelector)
-	variableRef["ageString"] = ageString
-	timeStringIndex := strings.Index(ageString, "Posted ") + 7
-	variableRef["timeAgoIndex"] = timeStringIndex
-	agoWordIndex := strings.Index(ageString, " ago")
-	variableRef["agoWordIndex"] = agoWordIndex
+	const startString = "Posted "
+	const endString = " ago"
 
-	if agoWordIndex == -1 {
-		// when ageString: Posted 4 Apr 2023
-		return turnAgeStringToTime(ageString, timeStringIndex)
+	textFromDocument := doc.Text
+	startStringStartIndex := strings.Index(textFromDocument, startString)
+	variableRef["startStringStartIndex"] = startStringStartIndex
+	if startStringStartIndex == -1 {
+		panic(fmt.Errorf("can't find %v", startString))
 	}
-	return turnTimeAgoFormatAgeStringToTime(ageString, timeStringIndex, agoWordIndex)
+	startStringEndIndex := startStringStartIndex + len(startString)
+	variableRef["startStringEndIndex"] = startStringEndIndex
+	endStringStartIndex := startStringEndIndex + strings.Index(textFromDocument[startStringEndIndex:], endString)
+	variableRef["endStringStartIndex"] = endStringStartIndex
+
+	if endStringStartIndex == -1 {
+		// when ageString: Posted 4 Apr 2023
+		return turnAgeStringToTime(textFromDocument, startStringEndIndex)
+	}
+	return turnTimeAgoFormatAgeStringToTime(textFromDocument, startStringEndIndex, endStringStartIndex)
 }
 
 var shortMonthNumMap map[string]int = map[string]int{
@@ -59,8 +67,8 @@ var shortMonthNumMap map[string]int = map[string]int{
 	"Dec": 12,
 }
 
-func turnAgeStringToTime(ageString string, timeStringIndex int) time.Time {
-	stringPartsToTurnToTime := strings.Split(ageString[timeStringIndex:], " ")
+func turnAgeStringToTime(textFromDocument string, timeStringIndex int) time.Time {
+	stringPartsToTurnToTime := strings.Split(textFromDocument[timeStringIndex:], " ")
 
 	var err error
 	day, err := strconv.Atoi(stringPartsToTurnToTime[1])
@@ -68,19 +76,19 @@ func turnAgeStringToTime(ageString string, timeStringIndex int) time.Time {
 		panic(err)
 	}
 	monthCode := stringPartsToTurnToTime[1]
-	year, err := strconv.Atoi(stringPartsToTurnToTime[2])
+	year, err := strconv.Atoi(stringPartsToTurnToTime[2][:4])
 	if err != nil {
 		panic(err)
 	}
 	return time.Date(year, time.Month(shortMonthNumMap[monthCode]), day, 0, 0, 0, 0, time.Local)
 }
 
-func turnTimeAgoFormatAgeStringToTime(ageString string, timeStringIndex int, agoWordIndex int) time.Time {
-	timeAgo := ageString[timeStringIndex:agoWordIndex]
+func turnTimeAgoFormatAgeStringToTime(textFromDocument string, startStringEndIndex int, endStringStartIndex int) time.Time {
+	timeAgo := textFromDocument[startStringEndIndex:endStringStartIndex]
 	currentDate := time.Now()
 	var postedDate time.Time
 	var err error
-	switch timeAgoUnit := ageString[agoWordIndex-1 : agoWordIndex]; timeAgoUnit {
+	switch timeAgoUnit := textFromDocument[endStringStartIndex-1 : endStringStartIndex]; timeAgoUnit {
 	case "d":
 		var day int
 		day, err = strconv.Atoi(timeAgo[:len(timeAgo)-1])
