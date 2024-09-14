@@ -84,10 +84,16 @@ func turnAgeStringToTime(textFromDocument string, timeStringIndex int) time.Time
 }
 
 func turnTimeAgoFormatAgeStringToTime(textFromDocument string, startStringEndIndex int, endStringStartIndex int) time.Time {
+	postedDate, err := getPostedDateFromDateTimeCalculation(textFromDocument, startStringEndIndex, endStringStartIndex)
+	if err != nil {
+		panic(err)
+	}
+	return postedDate
+}
+
+func getPostedDateFromDateTimeCalculation(textFromDocument string, startStringEndIndex int, endStringStartIndex int) (postedDate time.Time, err error) {
 	timeAgo := textFromDocument[startStringEndIndex:endStringStartIndex]
 	currentDate := time.Now()
-	var postedDate time.Time
-	var err error
 	switch timeAgoUnit := textFromDocument[endStringStartIndex-1 : endStringStartIndex]; timeAgoUnit {
 	case "d":
 		var day int
@@ -97,11 +103,11 @@ func turnTimeAgoFormatAgeStringToTime(textFromDocument string, startStringEndInd
 		var timeAgoDuration time.Duration
 		timeAgoDuration, err = time.ParseDuration(timeAgo)
 		postedDate = currentDate.Add(-timeAgoDuration)
+	case "+":
+		postedDate, err = getPostedDateFromDateTimeCalculation(textFromDocument, startStringEndIndex, endStringStartIndex-1)
 	default:
 		err = errors.New("cannot determine posted time")
 	}
-	if err != nil {
-		panic(err)
-	}
-	return postedDate
+
+	return postedDate, err
 }
