@@ -6,25 +6,39 @@ import (
 	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/config"
+	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/exception"
+	"github.com/JYGC/SkillSurvey/internal/webscraper"
 	"github.com/gocolly/colly/v2"
 )
 
-const joraConfigPath = "./jora.json"
+const joraConfigFileName = "jora.json"
+const userAgent = "node-spider"
 
 type JoraAdapter struct {
-	UrlJobPathDayDateSite
+	SiteAdapterBase
+	webScraper *webscraper.WebScraper
 }
 
 func NewJoraAdapter() *JoraAdapter {
 	jora := new(JoraAdapter)
-	config.JsonToConfig(&jora.ConfigSettings, joraConfigPath)
+	config.JsonToConfig(&jora.ConfigSettings, joraConfigFileName)
+	jora.webScraper = webscraper.NewWebScraper(
+		jora.ConfigSettings,
+		userAgent,
+		jora.getJobSiteNumber,
+		jora.getPostedDate,
+	)
 	return jora
+}
+
+func (j JoraAdapter) RunSurvey() []entities.InboundJobPost {
+	return j.webScraper.Scrape()
 }
 
 // Advertisement's post date can calculated by subtracting how old the advert is in days from
 // the current date.
-func (j JoraAdapter) GetPostedDate(doc *colly.HTMLElement) time.Time {
+func (j JoraAdapter) getPostedDate(doc *colly.HTMLElement) time.Time {
 	variableRef := make(map[string]interface{})
 	defer exception.ReportErrorIfPanic(map[string]interface{}{
 		"Url":       doc.Request.URL.String(),
@@ -50,4 +64,9 @@ func (j JoraAdapter) GetPostedDate(doc *colly.HTMLElement) time.Time {
 	// current month
 	postedDate = currentDate.AddDate(0, 0, -daysOld)
 	return postedDate
+}
+
+func (j JoraAdapter) getJobSiteNumber(doc *colly.HTMLElement) string {
+	url := doc.Request.URL.String()
+	return url[strings.Index(url, "/job/")+5 : strings.LastIndex(url, "?")]
 }

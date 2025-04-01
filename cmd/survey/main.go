@@ -5,21 +5,18 @@ import (
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/JYGC/SkillSurvey/internal/siteadapters"
-	"github.com/JYGC/SkillSurvey/internal/webscraper"
 )
-
-const userAgent = "node-spider"
 
 func main() {
 	variableRef := make(map[string]interface{})
 	defer exception.ReportErrorIfPanic(map[string]interface{}{"Variables": variableRef})
 	// get jobposts from websites
 	var newInboundJobPostSlice []entities.InboundJobPost
-	for _, webScraperSite := range []webscraper.WebScraper{
-		*webscraper.NewWebScraper(siteadapters.NewJoraAdapter(), userAgent),
-		*webscraper.NewWebScraper(siteadapters.NewSeekAdapter(), userAgent),
+	for _, webScraperSite := range []siteadapters.ISiteAdapter{
+		//*siteadapters.NewJoraAdapter(),
+		*siteadapters.NewSeekAdapter(),
 	} {
-		newInboundJobPostSlice = append(newInboundJobPostSlice, webScraperSite.Scrape()...)
+		newInboundJobPostSlice = append(newInboundJobPostSlice, webScraperSite.RunSurvey()...)
 	}
 	existingSites, err := database.DbAdapter.Site.GetAll()
 	if err != nil {

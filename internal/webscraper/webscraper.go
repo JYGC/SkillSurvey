@@ -3,27 +3,37 @@ package webscraper
 import (
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/exception"
-	"github.com/JYGC/SkillSurvey/internal/siteadapters"
 	"github.com/gocolly/colly/v2"
 )
 
 type WebScraper struct {
-	siteAdapter   siteadapters.ISiteAdapter
-	scraperEngine colly.Collector
+	configSettings   config.SiteAdapterConfig
+	scraperEngine    colly.Collector
+	getJobSiteNumber func(doc *colly.HTMLElement) string
+	getPostedDate    func(doc *colly.HTMLElement) time.Time
 }
 
-func NewWebScraper(siteadapter siteadapters.ISiteAdapter, userAgent string) *WebScraper {
+func NewWebScraper(
+	configSettings config.SiteAdapterConfig,
+	userAgent string,
+	getJobSiteNumber func(doc *colly.HTMLElement) string,
+	getPostedDate func(doc *colly.HTMLElement) time.Time,
+) *WebScraper {
 	newWebScraper := new(WebScraper)
-	newWebScraper.siteAdapter = siteadapter
+	newWebScraper.configSettings = configSettings
 	newWebScraper.scraperEngine = *colly.NewCollector(
 		colly.UserAgent(userAgent),
 		colly.AllowedDomains(
-			newWebScraper.siteAdapter.GetConfigSettings().AllowedDomains...,
+			newWebScraper.configSettings.AllowedDomains...,
 		),
 	)
+	newWebScraper.getJobSiteNumber = getJobSiteNumber
+	newWebScraper.getPostedDate = getPostedDate
 	return newWebScraper
 }
 
@@ -33,17 +43,17 @@ func (w WebScraper) Scrape() []entities.InboundJobPost {
 
 func (w *WebScraper) getJobPostLinks() (jobPostLinks []string) {
 	w.scraperEngine.OnHTML(
-		w.siteAdapter.GetConfigSettings().SiteSelectors.JobPostLink,
+		w.configSettings.SiteSelectors.JobPostLink,
 		func(e *colly.HTMLElement) {
 			link := e.Attr("href")
 			jobPostLinks = append(jobPostLinks, link)
 		},
 	)
-	for _, searchCriteria := range w.siteAdapter.GetConfigSettings().SearchCriterias {
-		for searchPage := 1; searchPage <= w.siteAdapter.GetConfigSettings().Pages; searchPage++ {
+	for _, searchCriteria := range w.configSettings.SearchCriterias {
+		for searchPage := 1; searchPage <= w.configSettings.Pages; searchPage++ {
 			fullUrl := strings.ReplaceAll(
 				searchCriteria.Url,
-				w.siteAdapter.GetConfigSettings().PageFlag,
+				w.configSettings.PageFlag,
 				strconv.Itoa(searchPage),
 			)
 			w.scraperEngine.Visit(fullUrl)
@@ -59,24 +69,24 @@ func (w WebScraper) getJobPosts(jobPostLinksSlice []string) (newInboundJobPostSl
 			"Url":               doc.Request.URL.String(),
 			"newInboundJobPost": newInboundJobPost,
 		})
-		newInboundJobPost.SiteName = w.siteAdapter.GetConfigSettings().SiteSelectors.SiteName
-		newInboundJobPost.JobSiteNumber = w.siteAdapter.GetJobSiteNumber(doc)
-		newInboundJobPost.Title = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.TitleSelector)
-		newInboundJobPost.Body = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.BodySelector)
-		newInboundJobPost.PostedDate = w.siteAdapter.GetPostedDate(doc)
-		newInboundJobPost.City = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.CitySelector)
-		newInboundJobPost.Country = w.siteAdapter.GetConfigSettings().SiteSelectors.Country
-		newInboundJobPost.Suburb = doc.ChildText(w.siteAdapter.GetConfigSettings().SiteSelectors.SuburbSelector)
+		newInboundJobPost.SiteName = w.configSettings.SiteSelectors.SiteName
+		newInboundJobPost.JobSiteNumber = w.getJobSiteNumber(doc)
+		newInboundJobPost.Title = doc.ChildText(w.configSettings.SiteSelectors.TitleSelector)
+		newInboundJobPost.Body = doc.ChildText(w.configSettings.SiteSelectors.BodySelector)
+		newInboundJobPost.PostedDate = w.getPostedDate(doc)
+		newInboundJobPost.City = doc.ChildText(w.configSettings.SiteSelectors.CitySelector)
+		newInboundJobPost.Country = w.configSettings.SiteSelectors.Country
+		newInboundJobPost.Suburb = doc.ChildText(w.configSettings.SiteSelectors.SuburbSelector)
 		newInboundJobPostSlice = append(newInboundJobPostSlice, *newInboundJobPost)
 	})
 	if len(jobPostLinksSlice) == 0 {
 		exception.ReportError(map[string]interface{}{
 			"Message":  "No job post links found. Possible site selector error",
-			"SiteName": w.siteAdapter.GetConfigSettings().SiteSelectors.SiteName,
+			"SiteName": w.configSettings.SiteSelectors.SiteName,
 		})
 	}
 	for _, jobPostLink := range jobPostLinksSlice {
-		link := w.siteAdapter.GetConfigSettings().BaseUrl + jobPostLink
+		link := w.configSettings.BaseUrl + jobPostLink
 		w.scraperEngine.Visit(link)
 	}
 	return newInboundJobPostSlice

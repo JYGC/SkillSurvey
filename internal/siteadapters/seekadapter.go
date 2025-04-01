@@ -3,28 +3,45 @@ package siteadapters
 import (
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/config"
+	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/gocolly/colly/v2"
 )
 
-const seekConfigPath = "./seek.json"
+const seekConfigFilename = "./seek.json"
 
 type SeekAdapter struct {
-	UrlJobPathDayDateSite
+	SiteAdapterBase
 }
 
 func NewSeekAdapter() *SeekAdapter {
 	seek := new(SeekAdapter)
-	config.JsonToConfig(&seek.ConfigSettings, seekConfigPath)
+	config.JsonToConfig(&seek.ConfigSettings, seekConfigFilename)
 	return seek
 }
 
-func (s SeekAdapter) GetPostedDate(doc *colly.HTMLElement) time.Time {
+func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
+	httpResponse, httpResponseError := http.Get("https://www.seek.com.au/api/jobsearch/v5/search?newSince=1742971081&siteKey=AU-Main&sourcesystem=houston&userqueryid=aeb5109edbfc379e2a97d0dd748fd81f-1099727&userid=bd4c5bde-f33f-4ea4-9257-eb590762f52e&usersessionid=bd4c5bde-f33f-4ea4-9257-eb590762f52e&eventCaptureSessionId=bd4c5bde-f33f-4ea4-9257-eb590762f52e&where=All+Melbourne+VIC&page=1&classification=6281&pageSize=10&include=seodata,relatedsearches,joracrosslink,gptTargeting,pills&locale=en-AU&solId=78fc4265-7367-48f8-b9b4-dae834474999&relatedSearchesCount=12&baseKeywords=")
+	if httpResponseError != nil {
+		fmt.Printf("httpResponseError: %v\n", httpResponseError)
+	}
+	defer httpResponse.Body.Close()
+	body, readAllErr := io.ReadAll(httpResponse.Body)
+	if readAllErr != nil {
+		fmt.Printf("readAllErr: %v\n", readAllErr)
+	}
+	fmt.Printf("body: %v\n", string(body))
+	return []entities.InboundJobPost{}
+}
+
+func (s SeekAdapter) getPostedDate(doc *colly.HTMLElement) time.Time {
 	variableRef := make(map[string]interface{})
 	defer exception.ReportErrorIfPanic(map[string]interface{}{
 		"Url":       doc.Request.URL.String(),
