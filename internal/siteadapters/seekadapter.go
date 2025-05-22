@@ -3,8 +3,6 @@ package siteadapters
 import (
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -12,6 +10,8 @@ import (
 	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/exception"
+	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/input"
 	"github.com/gocolly/colly/v2"
 )
 
@@ -28,16 +28,61 @@ func NewSeekAdapter() *SeekAdapter {
 }
 
 func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
-	httpResponse, httpResponseError := http.Get("https://www.seek.com.au/api/jobsearch/v5/search?newSince=1742971081&siteKey=AU-Main&sourcesystem=houston&userqueryid=aeb5109edbfc379e2a97d0dd748fd81f-1099727&userid=bd4c5bde-f33f-4ea4-9257-eb590762f52e&usersessionid=bd4c5bde-f33f-4ea4-9257-eb590762f52e&eventCaptureSessionId=bd4c5bde-f33f-4ea4-9257-eb590762f52e&where=All+Melbourne+VIC&page=1&classification=6281&pageSize=10&include=seodata,relatedsearches,joracrosslink,gptTargeting,pills&locale=en-AU&solId=78fc4265-7367-48f8-b9b4-dae834474999&relatedSearchesCount=12&baseKeywords=")
-	if httpResponseError != nil {
-		fmt.Printf("httpResponseError: %v\n", httpResponseError)
-	}
-	defer httpResponse.Body.Close()
-	body, readAllErr := io.ReadAll(httpResponse.Body)
-	if readAllErr != nil {
-		fmt.Printf("readAllErr: %v\n", readAllErr)
-	}
-	fmt.Printf("body: %v\n", string(body))
+	// httpResponse, httpResponseError := http.Get("https://www.seek.com.au/api/jobsearch/v5/search?newSince=1742971081&siteKey=AU-Main&sourcesystem=houston&userqueryid=aeb5109edbfc379e2a97d0dd748fd81f-1099727&userid=bd4c5bde-f33f-4ea4-9257-eb590762f52e&usersessionid=bd4c5bde-f33f-4ea4-9257-eb590762f52e&eventCaptureSessionId=bd4c5bde-f33f-4ea4-9257-eb590762f52e&where=All+Melbourne+VIC&page=1&classification=6281&pageSize=10&include=seodata,relatedsearches,joracrosslink,gptTargeting,pills&locale=en-AU&solId=78fc4265-7367-48f8-b9b4-dae834474999&relatedSearchesCount=12&baseKeywords=")
+	// if httpResponseError != nil {
+	// 	fmt.Printf("httpResponseError: %v\n", httpResponseError)
+	// }
+	// defer httpResponse.Body.Close()
+	// body, readAllErr := io.ReadAll(httpResponse.Body)
+	// if readAllErr != nil {
+	// 	fmt.Printf("readAllErr: %v\n", readAllErr)
+	// }
+	// fmt.Printf("body: %v\n", string(body))
+
+	// var query struct {
+	// 	JobDetails struct {
+	// 		JobId     graphql.ID
+	// 		SessionId graphql.String
+	// 	}
+	// }
+	// client := graphql.NewClient("https://www.seek.com.au/graphql", nil)
+
+	// requestPayload := map[string]interface{}{
+	// 	"jobId":                         graphql.ID("83066340"),
+	// 	"jobDetailsViewedCorrelationId": graphql.String("95098f02-628a-4e11-ab02-822719e48b51"),
+	// 	"sessionId":                     graphql.String("bd4c5bde-f33f-4ea4-9257-eb590762f52e"),
+	// 	"zone":                          graphql.String("anz-1"),
+	// 	"locale":                        graphql.String("en-AU"),
+	// 	"languageCode":                  graphql.String("en"),
+	// 	"countryCode":                   graphql.String("AU"),
+	// 	"timezone":                      graphql.String("Australia/Melbourne"),
+	// }
+
+	// err := client.Query(context.Background(), &query, requestPayload)
+	// if err != nil {
+	// 	fmt.Printf("err: %v\n", err)
+	// }
+
+	// bin, err := launcher.NewBrowser().Get()
+	// args := launcher.New().Leakless(false).FormatArgs()
+
+	// parser := launcher.NewURLParser()
+
+	// cmd := exec.Command(bin, args...)
+	// cmd.Stderr = parser
+	// err = cmd.Start()
+	// utils.E(err)
+
+	browser := rod.New().MustConnect()
+	defer browser.MustClose()
+
+	page := browser.MustPage("https://www.seek.com.au/job/83878134").MustWaitStable()
+	page.Keyboard.MustType(input.Slash)
+	//page.MustElement("[data-automation=\"job-detail-title\"]")
+
+	text := page.MustElement("[data-automation=\"job-detail-title\"]").MustText()
+	fmt.Println(text)
+
 	return []entities.InboundJobPost{}
 }
 
