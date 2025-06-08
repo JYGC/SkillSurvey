@@ -1,8 +1,10 @@
 package siteadapters
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -10,8 +12,7 @@ import (
 	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/exception"
-	"github.com/go-rod/rod"
-	"github.com/go-rod/rod/lib/input"
+	"github.com/chromedp/chromedp"
 	"github.com/gocolly/colly/v2"
 )
 
@@ -73,15 +74,38 @@ func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 	// err = cmd.Start()
 	// utils.E(err)
 
-	browser := rod.New().MustConnect()
-	defer browser.MustClose()
+	opts := []chromedp.ExecAllocatorOption{
+		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"),
+		chromedp.WindowSize(1920, 1080),
+		chromedp.NoFirstRun,
+		chromedp.NoDefaultBrowserCheck,
+		chromedp.Flag("headless", true),                                 // Headless mode; set to false for headful if needed
+		chromedp.Flag("disable-blink-features", "AutomationControlled"), // Hide automation signals
+	}
+	allocatorCtx, AllocatorCancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer AllocatorCancel()
 
-	page := browser.MustPage("https://www.seek.com.au/job/83878134").MustWaitStable()
-	page.Keyboard.MustType(input.Slash)
-	//page.MustElement("[data-automation=\"job-detail-title\"]")
+	ctx, cancel := chromedp.NewContext(allocatorCtx)
+	defer cancel()
 
-	text := page.MustElement("[data-automation=\"job-detail-title\"]").MustText()
-	fmt.Println(text)
+	ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+
+	url := "https://www.seek.com.au/job/84652820"
+	var html string
+	err := chromedp.Run(
+		ctx,
+		chromedp.Evaluate(`Object.defineProperty(navigator, 'webdriver', {get: () => undefined});`, nil),
+		chromedp.Evaluate(`Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});`, nil),
+		chromedp.Navigate(url),
+		chromedp.WaitVisible("body", chromedp.ByQueryAll),
+		chromedp.Text("[data-automation=\"jobTitle\"]", &html),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(strings.TrimSpace(html))
 
 	return []entities.InboundJobPost{}
 }

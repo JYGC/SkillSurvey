@@ -3,13 +3,13 @@ package main
 import (
 	"github.com/JYGC/SkillSurvey/internal/database"
 	"github.com/JYGC/SkillSurvey/internal/entities"
-	"github.com/JYGC/SkillSurvey/internal/exception"
+  //"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/JYGC/SkillSurvey/internal/siteadapters"
 )
 
 func main() {
 	variableRef := make(map[string]interface{})
-	defer exception.ReportErrorIfPanic(map[string]interface{}{"Variables": variableRef})
+	//defer exception.ReportErrorIfPanic(map[string]interface{}{"Variables": variableRef})
 	// get jobposts from websites
 	var newInboundJobPostSlice []entities.InboundJobPost
 	for _, webScraperSite := range []siteadapters.ISiteAdapter{
