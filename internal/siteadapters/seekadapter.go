@@ -32,17 +32,6 @@ func NewSeekAdapter() *SeekAdapter {
 }
 
 func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
-	// httpResponse, httpResponseError := http.Get("https://www.seek.com.au/api/jobsearch/v5/search?newSince=1742971081&siteKey=AU-Main&sourcesystem=houston&userqueryid=aeb5109edbfc379e2a97d0dd748fd81f-1099727&userid=bd4c5bde-f33f-4ea4-9257-eb590762f52e&usersessionid=bd4c5bde-f33f-4ea4-9257-eb590762f52e&eventCaptureSessionId=bd4c5bde-f33f-4ea4-9257-eb590762f52e&where=All+Melbourne+VIC&page=1&classification=6281&pageSize=10&include=seodata,relatedsearches,joracrosslink,gptTargeting,pills&locale=en-AU&solId=78fc4265-7367-48f8-b9b4-dae834474999&relatedSearchesCount=12&baseKeywords=")
-	// if httpResponseError != nil {
-	// 	fmt.Printf("httpResponseError: %v\n", httpResponseError)
-	// }
-	// defer httpResponse.Body.Close()
-	// body, readAllErr := io.ReadAll(httpResponse.Body)
-	// if readAllErr != nil {
-	// 	fmt.Printf("readAllErr: %v\n", readAllErr)
-	// }
-	// fmt.Printf("body: %v\n", string(body))
-
 	s.ApiClient.Get(seekApiGetParameters{
 		NewSince:              "1742971081",
 		SiteKey:               "AU-Main",
