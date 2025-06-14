@@ -51,40 +51,6 @@ func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 		BaseKeywords:          "",
 	})
 
-	// var query struct {
-	// 	JobDetails struct {
-	// 		JobId     graphql.ID
-	// 		SessionId graphql.String
-	// 	}
-	// }
-	// client := graphql.NewClient("https://www.seek.com.au/graphql", nil)
-
-	// requestPayload := map[string]interface{}{
-	// 	"jobId":                         graphql.ID("83066340"),
-	// 	"jobDetailsViewedCorrelationId": graphql.String("95098f02-628a-4e11-ab02-822719e48b51"),
-	// 	"sessionId":                     graphql.String("bd4c5bde-f33f-4ea4-9257-eb590762f52e"),
-	// 	"zone":                          graphql.String("anz-1"),
-	// 	"locale":                        graphql.String("en-AU"),
-	// 	"languageCode":                  graphql.String("en"),
-	// 	"countryCode":                   graphql.String("AU"),
-	// 	"timezone":                      graphql.String("Australia/Melbourne"),
-	// }
-
-	// err := client.Query(context.Background(), &query, requestPayload)
-	// if err != nil {
-	// 	fmt.Printf("err: %v\n", err)
-	// }
-
-	// bin, err := launcher.NewBrowser().Get()
-	// args := launcher.New().Leakless(false).FormatArgs()
-
-	// parser := launcher.NewURLParser()
-
-	// cmd := exec.Command(bin, args...)
-	// cmd.Stderr = parser
-	// err = cmd.Start()
-	// utils.E(err)
-
 	// opts := []chromedp.ExecAllocatorOption{
 	// 	chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"),
 	// 	chromedp.WindowSize(1920, 1080),
