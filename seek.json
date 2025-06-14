@@ -1,5 +1,6 @@
 {
     "BaseUrl": "https://www.seek.com.au",
+    "SearchApiUrl": "https://www.seek.com.au/api/jobsearch/v5/search",
     "AllowedDomains": ["www.seek.com.au"],
     "SearchCriterias": [
         {

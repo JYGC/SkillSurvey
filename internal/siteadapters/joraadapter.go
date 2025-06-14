@@ -13,11 +13,10 @@ import (
 )
 
 const joraConfigFileName = "jora.json"
-const userAgent = "node-spider"
 
 type JoraAdapter struct {
-	SiteAdapterBase
-	webScraper *webscraper.WebScraper
+	ConfigSettings config.SiteAdapterConfig
+	webScraper     *webscraper.WebScraper
 }
 
 func NewJoraAdapter() *JoraAdapter {
@@ -25,7 +24,6 @@ func NewJoraAdapter() *JoraAdapter {
 	config.JsonToConfig(&jora.ConfigSettings, joraConfigFileName)
 	jora.webScraper = webscraper.NewWebScraper(
 		jora.ConfigSettings,
-		userAgent,
 		jora.getJobSiteNumber,
 		jora.getPostedDate,
 	)

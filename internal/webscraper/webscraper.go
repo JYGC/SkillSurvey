@@ -11,6 +11,8 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
+const userAgent = "node-spider"
+
 type WebScraper struct {
 	configSettings   config.SiteAdapterConfig
 	scraperEngine    colly.Collector
@@ -20,7 +22,6 @@ type WebScraper struct {
 
 func NewWebScraper(
 	configSettings config.SiteAdapterConfig,
-	userAgent string,
 	getJobSiteNumber func(doc *colly.HTMLElement) string,
 	getPostedDate func(doc *colly.HTMLElement) time.Time,
 ) *WebScraper {

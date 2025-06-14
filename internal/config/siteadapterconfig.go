@@ -10,6 +10,11 @@ type SiteAdapterConfig struct {
 	SiteSelectors   Selectors
 }
 
+type SearchApiSiteAdapterConfig struct {
+	SiteAdapterConfig
+	SearchApiUrl string
+}
+
 type SearchCriteria struct {
 	Name string
 	Url  string

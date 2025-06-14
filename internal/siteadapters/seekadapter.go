@@ -1,30 +1,33 @@
 package siteadapters
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/JYGC/SkillSurvey/internal/apiclient"
 	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/exception"
-	"github.com/chromedp/chromedp"
+
 	"github.com/gocolly/colly/v2"
 )
 
 const seekConfigFilename = "./seek.json"
 
 type SeekAdapter struct {
-	SiteAdapterBase
+	ConfigSettings config.SearchApiSiteAdapterConfig
+	ApiClient      *apiclient.ApiClient
 }
 
 func NewSeekAdapter() *SeekAdapter {
 	seek := new(SeekAdapter)
 	config.JsonToConfig(&seek.ConfigSettings, seekConfigFilename)
+	seek.ApiClient = apiclient.NewApiClient(
+		seek.ConfigSettings,
+	)
 	return seek
 }
 
@@ -39,6 +42,25 @@ func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 	// 	fmt.Printf("readAllErr: %v\n", readAllErr)
 	// }
 	// fmt.Printf("body: %v\n", string(body))
+
+	s.ApiClient.Get(seekApiGetParameters{
+		NewSince:              "1742971081",
+		SiteKey:               "AU-Main",
+		SourceSystem:          "houstob",
+		UserQueryId:           "aeb5109edbfc379e2a97d0dd748fd81f-1099727",
+		UserId:                "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+		UserSessionId:         "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+		EventCaptureSessionId: "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+		Where:                 "All+Melbourne+VIC",
+		Page:                  "1",
+		Classification:        "6281",
+		PageSize:              "10",
+		Include:               "seodata,relatedsearches,joracrosslink,gptTargeting,pills",
+		Locale:                "en-AU",
+		SolId:                 "78fc4265-7367-48f8-b9b4-dae834474999",
+		RelatedSearchesCount:  "12",
+		BaseKeywords:          "",
+	})
 
 	// var query struct {
 	// 	JobDetails struct {
@@ -74,38 +96,38 @@ func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 	// err = cmd.Start()
 	// utils.E(err)
 
-	opts := []chromedp.ExecAllocatorOption{
-		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"),
-		chromedp.WindowSize(1920, 1080),
-		chromedp.NoFirstRun,
-		chromedp.NoDefaultBrowserCheck,
-		chromedp.Flag("headless", true),                                 // Headless mode; set to false for headful if needed
-		chromedp.Flag("disable-blink-features", "AutomationControlled"), // Hide automation signals
-	}
-	allocatorCtx, AllocatorCancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer AllocatorCancel()
+	// opts := []chromedp.ExecAllocatorOption{
+	// 	chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"),
+	// 	chromedp.WindowSize(1920, 1080),
+	// 	chromedp.NoFirstRun,
+	// 	chromedp.NoDefaultBrowserCheck,
+	// 	chromedp.Flag("headless", true),                                 // Headless mode; set to false for headful if needed
+	// 	chromedp.Flag("disable-blink-features", "AutomationControlled"), // Hide automation signals
+	// }
+	// allocatorCtx, AllocatorCancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	// defer AllocatorCancel()
 
-	ctx, cancel := chromedp.NewContext(allocatorCtx)
-	defer cancel()
+	// ctx, cancel := chromedp.NewContext(allocatorCtx)
+	// defer cancel()
 
-	ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
-	defer cancel()
+	// ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
+	// defer cancel()
 
-	url := "https://www.seek.com.au/job/84652820"
-	var html string
-	err := chromedp.Run(
-		ctx,
-		chromedp.Evaluate(`Object.defineProperty(navigator, 'webdriver', {get: () => undefined});`, nil),
-		chromedp.Evaluate(`Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});`, nil),
-		chromedp.Navigate(url),
-		chromedp.WaitVisible("body", chromedp.ByQueryAll),
-		chromedp.Text("[data-automation=\"jobTitle\"]", &html),
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// url := "https://www.seek.com.au/job/84647179"
+	// var html string
+	// err := chromedp.Run(
+	// 	ctx,
+	// 	chromedp.Evaluate(`Object.defineProperty(navigator, 'webdriver', {get: () => undefined});`, nil),
+	// 	chromedp.Evaluate(`Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});`, nil),
+	// 	chromedp.Navigate(url),
+	// 	chromedp.WaitVisible("body", chromedp.ByQueryAll),
+	// 	chromedp.Text("[data-automation=\"job-detail-title\"]", &html),
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	log.Println(strings.TrimSpace(html))
+	// fmt.Println(strings.TrimSpace(html))
 
 	return []entities.InboundJobPost{}
 }
