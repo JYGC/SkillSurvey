@@ -1,4 +1,4 @@
-package apiclient
+package getapiscraper
 
 import (
 	"errors"
@@ -11,31 +11,31 @@ import (
 	"github.com/JYGC/SkillSurvey/internal/entities"
 )
 
-type ApiClient struct {
+type GetApiScraper struct {
 	configSettings config.SearchApiSiteAdapterConfig
 	endpointPath   string
 }
 
-func NewApiClient(
+func NewGetApiScraper(
 	configSettings config.SearchApiSiteAdapterConfig,
-) *ApiClient {
-	apiClient := &ApiClient{
+) *GetApiScraper {
+	apiClient := &GetApiScraper{
 		configSettings: configSettings,
 		endpointPath:   configSettings.SearchApiUrl,
 	}
 	return apiClient
 }
 
-func (a ApiClient) convertUrlParameterStructToString(
-	urlParameterInterface interface{},
+func (a GetApiScraper) convertUrlParameterStructToString(
+	apiParameters any,
 ) (
 	string,
 	error,
 ) {
 	parameterString := ""
 
-	valueOfUrlParameterInterface := reflect.ValueOf(urlParameterInterface)
-	typeOfUrlParameterInterface := reflect.TypeOf(urlParameterInterface)
+	valueOfUrlParameterInterface := reflect.ValueOf(apiParameters)
+	typeOfUrlParameterInterface := reflect.TypeOf(apiParameters)
 
 	if valueOfUrlParameterInterface.Kind() == reflect.Ptr {
 		valueOfUrlParameterInterface = valueOfUrlParameterInterface.Elem()
@@ -60,14 +60,14 @@ func (a ApiClient) convertUrlParameterStructToString(
 	return parameterString, nil
 }
 
-func (a ApiClient) Get(
-	urlParameterStruct interface{},
+func (a GetApiScraper) Scrape(
+	getApiParameters func(int) any,
 ) (
 	[]entities.InboundJobPost,
 	error,
 ) {
 	urlParameterString, urlParamStringErr := a.convertUrlParameterStructToString(
-		urlParameterStruct,
+		getApiParameters(1),
 	)
 	if urlParamStringErr != nil {
 		return nil, urlParamStringErr

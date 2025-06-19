@@ -1,6 +1,7 @@
 package siteadapters
 
-type seekApiGetParameters struct {
+type SeekGetApiParameters struct {
+	Page                  int
 	NewSince              string
 	SiteKey               string
 	SourceSystem          string
@@ -9,7 +10,6 @@ type seekApiGetParameters struct {
 	UserSessionId         string
 	EventCaptureSessionId string
 	Where                 string
-	Page                  string
 	Classification        string
 	PageSize              string
 	Include               string

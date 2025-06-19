@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JYGC/SkillSurvey/internal/apiclient"
 	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/exception"
+	"github.com/JYGC/SkillSurvey/internal/getapiscraper"
 
 	"github.com/gocolly/colly/v2"
 )
@@ -19,36 +19,39 @@ const seekConfigFilename = "./seek.json"
 
 type SeekAdapter struct {
 	ConfigSettings config.SearchApiSiteAdapterConfig
-	ApiClient      *apiclient.ApiClient
+	ApiClient      *getapiscraper.GetApiScraper
 }
 
 func NewSeekAdapter() *SeekAdapter {
 	seek := new(SeekAdapter)
 	config.JsonToConfig(&seek.ConfigSettings, seekConfigFilename)
-	seek.ApiClient = apiclient.NewApiClient(
+	seek.ApiClient = getapiscraper.NewGetApiScraper(
 		seek.ConfigSettings,
 	)
 	return seek
 }
 
 func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
-	s.ApiClient.Get(seekApiGetParameters{
-		NewSince:              "1742971081",
-		SiteKey:               "AU-Main",
-		SourceSystem:          "houstob",
-		UserQueryId:           "aeb5109edbfc379e2a97d0dd748fd81f-1099727",
-		UserId:                "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
-		UserSessionId:         "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
-		EventCaptureSessionId: "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
-		Where:                 "All+Melbourne+VIC",
-		Page:                  "1",
-		Classification:        "6281",
-		PageSize:              "10",
-		Include:               "seodata,relatedsearches,joracrosslink,gptTargeting,pills",
-		Locale:                "en-AU",
-		SolId:                 "78fc4265-7367-48f8-b9b4-dae834474999",
-		RelatedSearchesCount:  "12",
-		BaseKeywords:          "",
+	s.ApiClient.Scrape(func(page int) any {
+		seekApiParameters := SeekGetApiParameters{
+			Page:                  1,
+			NewSince:              "1742971081",
+			SiteKey:               "AU-Main",
+			SourceSystem:          "houstob",
+			UserQueryId:           "aeb5109edbfc379e2a97d0dd748fd81f-1099727",
+			UserId:                "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+			UserSessionId:         "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+			EventCaptureSessionId: "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+			Where:                 "All+Melbourne+VIC",
+			Classification:        "6281",
+			PageSize:              "10",
+			Include:               "seodata,relatedsearches,joracrosslink,gptTargeting,pills",
+			Locale:                "en-AU",
+			SolId:                 "78fc4265-7367-48f8-b9b4-dae834474999",
+			RelatedSearchesCount:  "12",
+			BaseKeywords:          "",
+		}
+		return seekApiParameters
 	})
 
 	// opts := []chromedp.ExecAllocatorOption{
