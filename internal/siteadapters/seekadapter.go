@@ -1,6 +1,7 @@
 package siteadapters
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/config"
+	"github.com/JYGC/SkillSurvey/internal/dynamiccontentextractor"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/JYGC/SkillSurvey/internal/getapiscraper"
@@ -18,26 +20,59 @@ import (
 const seekConfigFilename = "./seek.json"
 
 type SeekAdapter struct {
-	ConfigSettings config.SearchApiSiteAdapterConfig
-	ApiClient      *getapiscraper.GetApiScraper
+	configSettings          config.SearchApiSiteAdapterConfig
+	apiScraper              *getapiscraper.GetApiScraper
+	dynamicContentExtractor dynamiccontentextractor.DynamicContentExtractor
 }
 
 func NewSeekAdapter() *SeekAdapter {
 	seek := new(SeekAdapter)
-	config.JsonToConfig(&seek.ConfigSettings, seekConfigFilename)
-	seek.ApiClient = getapiscraper.NewGetApiScraper(
-		seek.ConfigSettings,
+	config.JsonToConfig(&seek.configSettings, seekConfigFilename)
+	seek.dynamicContentExtractor =
+		dynamiccontentextractor.NewDynamicContentExtractor(seek.configSettings)
+	seek.apiScraper = getapiscraper.NewGetApiScraper(
+		seek.configSettings,
+		func(
+			body []byte,
+		) (
+			newInboundJobPosts []entities.InboundJobPost,
+			err error,
+		) {
+			var bodyJsonMap map[string]any
+			json.Unmarshal(body, &bodyJsonMap)
+			dataBytes, dataBytesErr := json.Marshal(bodyJsonMap["data"])
+			if dataBytesErr != nil {
+				return nil, dataBytesErr
+			}
+			var dataJsonMaps []map[string]any
+			json.Unmarshal(dataBytes, &dataJsonMaps)
+			for _, dataJsonMap := range dataJsonMaps {
+				metadataBytes, metadataNytesErr := json.Marshal(dataJsonMap["solMetadata"])
+				if metadataNytesErr != nil {
+					return nil, metadataNytesErr
+				}
+				var metadataJsonMap map[string]any
+				json.Unmarshal(metadataBytes, &metadataJsonMap)
+				url := fmt.Sprintf("%s/job/%s", seek.configSettings.BaseUrl, metadataJsonMap["jobId"])
+				newInboundJobPost, newInboundJobPostErr := seek.dynamicContentExtractor.GetInboundJobPost(url)
+				if newInboundJobPostErr != nil {
+					return nil, newInboundJobPostErr
+				}
+				fmt.Printf("newInboundJobPost: %v\n", newInboundJobPost)
+			}
+			return newInboundJobPosts, nil
+		},
 	)
 	return seek
 }
 
 func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
-	s.ApiClient.Scrape(func(page int) any {
+	s.apiScraper.Scrape(func(page int) any {
 		seekApiParameters := SeekGetApiParameters{
-			Page:                  1,
+			Page:                  page,
 			NewSince:              "1742971081",
 			SiteKey:               "AU-Main",
-			SourceSystem:          "houstob",
+			SourceSystem:          "houston",
 			UserQueryId:           "aeb5109edbfc379e2a97d0dd748fd81f-1099727",
 			UserId:                "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
 			UserSessionId:         "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
@@ -45,11 +80,11 @@ func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 			Where:                 "All+Melbourne+VIC",
 			Classification:        "6281",
 			PageSize:              "10",
-			Include:               "seodata,relatedsearches,joracrosslink,gptTargeting,pills",
-			Locale:                "en-AU",
-			SolId:                 "78fc4265-7367-48f8-b9b4-dae834474999",
-			RelatedSearchesCount:  "12",
-			BaseKeywords:          "",
+			//Include:               "", //"seodata,relatedsearches,joracrosslink,gptTargeting,pills",
+			Locale:               "en-AU",
+			SolId:                "78fc4265-7367-48f8-b9b4-dae834474999",
+			RelatedSearchesCount: "12",
+			BaseKeywords:         "",
 		}
 		return seekApiParameters
 	})

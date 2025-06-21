@@ -12,16 +12,23 @@ import (
 )
 
 type GetApiScraper struct {
-	configSettings config.SearchApiSiteAdapterConfig
-	endpointPath   string
+	configSettings                     config.SearchApiSiteAdapterConfig
+	getInboundJobPostsFromResponseBody func([]byte) (
+		[]entities.InboundJobPost,
+		error,
+	)
 }
 
 func NewGetApiScraper(
 	configSettings config.SearchApiSiteAdapterConfig,
+	getInboundJobPostsFromResponseBody func([]byte) (
+		[]entities.InboundJobPost,
+		error,
+	),
 ) *GetApiScraper {
 	apiClient := &GetApiScraper{
-		configSettings: configSettings,
-		endpointPath:   configSettings.SearchApiUrl,
+		configSettings:                     configSettings,
+		getInboundJobPostsFromResponseBody: getInboundJobPostsFromResponseBody,
 	}
 	return apiClient
 }
@@ -60,24 +67,26 @@ func (a GetApiScraper) convertUrlParameterStructToString(
 	return parameterString, nil
 }
 
-func (a GetApiScraper) Scrape(
+func (a GetApiScraper) getInboundJobPostsFromPage(
 	getApiParameters func(int) any,
+	page int,
 ) (
-	[]entities.InboundJobPost,
-	error,
+	inboundJobPosts []entities.InboundJobPost,
+	err error,
 ) {
-	urlParameterString, urlParamStringErr := a.convertUrlParameterStructToString(
-		getApiParameters(1),
-	)
+	urlParameterString, urlParamStringErr :=
+		a.convertUrlParameterStructToString(
+			getApiParameters(page),
+		)
 	if urlParamStringErr != nil {
 		return nil, urlParamStringErr
 	}
-	test := fmt.Sprintf(
+	apiUrl := fmt.Sprintf(
 		"%s?%s",
-		a.endpointPath,
+		a.configSettings.SearchApiUrl,
 		urlParameterString,
 	)
-	response, responseErr := http.Get(test)
+	response, responseErr := http.Get(apiUrl)
 	if responseErr != nil {
 		return nil, responseErr
 	}
@@ -86,7 +95,39 @@ func (a GetApiScraper) Scrape(
 	if readBodyErr != nil {
 		return nil, readBodyErr
 	}
-	fmt.Printf("body: %v\n", string(body))
+	inboundJobPostsFromResponseBody, fromResponseBodyErr :=
+		a.getInboundJobPostsFromResponseBody(body)
+	if fromResponseBodyErr != nil {
+		return nil, fromResponseBodyErr
+	}
+	inboundJobPosts = append(
+		inboundJobPosts,
+		inboundJobPostsFromResponseBody...,
+	)
 
-	return []entities.InboundJobPost{}, nil
+	return inboundJobPosts, err
+}
+
+func (a GetApiScraper) Scrape(
+	getApiParameters func(int) any,
+) (
+	inboundJobPosts []entities.InboundJobPost,
+	err error,
+) {
+	var pageErrors []error
+	for page := 1; page <= a.configSettings.Pages; page++ {
+		pageResults, pageError := a.getInboundJobPostsFromPage(
+			getApiParameters,
+			page,
+		)
+
+		pageErrors = append(pageErrors, pageError)
+		inboundJobPosts = append(inboundJobPosts, pageResults...)
+	}
+
+	if len(pageErrors) > 0 {
+		err = fmt.Errorf("Page errors: %v", pageErrors)
+	}
+
+	return inboundJobPosts, err
 }
