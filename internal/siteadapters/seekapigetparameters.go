@@ -1,7 +1,7 @@
 package siteadapters
 
 type SeekGetApiParameters struct {
-	Page                  int
+	Page                  string
 	NewSince              string
 	SiteKey               string
 	SourceSystem          string

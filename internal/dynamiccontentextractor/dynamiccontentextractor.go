@@ -71,24 +71,24 @@ func (d DynamicContentExtractor) GetInboundJobPost(
 		chromedp.WaitVisible("body", chromedp.ByQueryAll),
 		chromedp.Text(
 			d.configSettings.SiteSelectors.TitleSelector,
-			&newInboundJobPost.Title,
+			&(newInboundJobPost.Title),
 		),
 		chromedp.Text(
 			d.configSettings.SiteSelectors.BodySelector,
 			&newInboundJobPost.Body,
 		),
-		chromedp.Text(
-			d.configSettings.SiteSelectors.CitySelector,
-			&newInboundJobPost.City,
-		),
-		chromedp.Text(
-			d.configSettings.SiteSelectors.Country,
-			&newInboundJobPost.Country,
-		),
-		chromedp.Text(
-			d.configSettings.SiteSelectors.SuburbSelector,
-			&newInboundJobPost.Suburb,
-		),
+		// chromedp.Text(
+		// 	d.configSettings.SiteSelectors.CitySelector,
+		// 	&newInboundJobPost.City,
+		// ),
+		// chromedp.Text(
+		// 	d.configSettings.SiteSelectors.Country,
+		// 	&newInboundJobPost.Country,
+		// ),
+		// chromedp.Text(
+		// 	d.configSettings.SiteSelectors.SuburbSelector,
+		// 	&newInboundJobPost.Suburb,
+		// ),
 	)
 
 	if err != nil {

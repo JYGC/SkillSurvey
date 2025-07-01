@@ -53,8 +53,15 @@ func NewSeekAdapter() *SeekAdapter {
 				}
 				var metadataJsonMap map[string]any
 				json.Unmarshal(metadataBytes, &metadataJsonMap)
-				url := fmt.Sprintf("%s/job/%s", seek.configSettings.BaseUrl, metadataJsonMap["jobId"])
-				newInboundJobPost, newInboundJobPostErr := seek.dynamicContentExtractor.GetInboundJobPost(url)
+				url := fmt.Sprintf(
+					"%s/job/%s",
+					seek.configSettings.BaseUrl,
+					metadataJsonMap["jobId"],
+				)
+				fmt.Printf("url: %v\n", url)
+
+				newInboundJobPost, newInboundJobPostErr :=
+					seek.dynamicContentExtractor.GetInboundJobPost(url)
 				if newInboundJobPostErr != nil {
 					return nil, newInboundJobPostErr
 				}
@@ -69,7 +76,7 @@ func NewSeekAdapter() *SeekAdapter {
 func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 	s.apiScraper.Scrape(func(page int) any {
 		seekApiParameters := SeekGetApiParameters{
-			Page:                  page,
+			Page:                  strconv.Itoa(page),
 			NewSince:              "1742971081",
 			SiteKey:               "AU-Main",
 			SourceSystem:          "houston",
