@@ -3,7 +3,8 @@ package main
 import (
 	"github.com/JYGC/SkillSurvey/internal/database"
 	"github.com/JYGC/SkillSurvey/internal/entities"
-  //"github.com/JYGC/SkillSurvey/internal/exception"
+
+	//"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/JYGC/SkillSurvey/internal/siteadapters"
 )
 
@@ -24,12 +25,12 @@ func main() {
 	}
 	// insert jobposts to database
 	siteMap := entities.MakeSiteMap(existingSites)
-	newJobPostSlice := entities.CreateJobPosts(siteMap, newInboundJobPostSlice)
-	if err := database.DbAdapter.JobPost.BulkUpdateOrInsert(newJobPostSlice); err != nil {
+	newJobPosts := entities.CreateJobPosts(siteMap, newInboundJobPostSlice)
+	if err := database.DbAdapter.JobPost.BulkUpdateOrInsert(newJobPosts); err != nil {
 		variableRef["existingSites"] = existingSites
 		variableRef["siteMap"] = siteMap
 		variableRef["newInboundJobPostSlice"] = newInboundJobPostSlice
-		variableRef["newJobPostSlice"] = newJobPostSlice
+		variableRef["newJobPostSlice"] = newJobPosts
 		panic(err)
 	}
 }

@@ -53,7 +53,7 @@ func NewSeekAdapter() *SeekAdapter {
 					seek.configSettings.BaseUrl,
 					jobSiteNumber,
 				)
-				fmt.Printf("dataJsonMap: %v\n", dataJsonMap)
+				//fmt.Printf("dataJsonMap: %v\n", dataJsonMap)
 
 				newInboundJobPost, newInboundJobPostErr :=
 					seek.dynamicContentExtractor.GetInboundJobPost(url)
@@ -62,13 +62,9 @@ func NewSeekAdapter() *SeekAdapter {
 				}
 				newInboundJobPost.SiteName = seek.configSettings.SiteSelectors.SiteName
 				newInboundJobPost.JobSiteNumber = jobSiteNumber
-				fmt.Printf("dataJsonMap[\"locations\"]: %v\n", dataJsonMap["locations"])
 				tt := dataJsonMap["locations"].([]any)[0].(map[string]any)
-				fmt.Printf("tt: %v\n", tt)
 				countryCode := tt["countryCode"]
 				label := tt["label"]
-				fmt.Printf("countryCode: %v\n", countryCode)
-				fmt.Printf("label: %v\n", label)
 				newInboundJobPost.Country = countryCode.(string)
 				newInboundJobPost.Suburb = label.(string)
 				postedDate, postedDateErr := time.Parse(time.RFC3339, dataJsonMap["listingDate"].(string))
@@ -76,7 +72,7 @@ func NewSeekAdapter() *SeekAdapter {
 					return nil, postedDateErr
 				}
 				newInboundJobPost.PostedDate = postedDate
-				fmt.Printf("newInboundJobPost: %v\n", newInboundJobPost)
+				newInboundJobPosts = append(newInboundJobPosts, newInboundJobPost)
 			}
 			return newInboundJobPosts, nil
 		},
@@ -85,8 +81,8 @@ func NewSeekAdapter() *SeekAdapter {
 }
 
 func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
-	s.apiScraper.Scrape(func(page int) any {
-		seekApiParameters := SeekGetApiParameters{
+	inboundJobPosts, scrapeErr := s.apiScraper.Scrape(func(page int) any {
+		return SeekGetApiParameters{
 			Page:                  strconv.Itoa(page),
 			NewSince:              "1742971081",
 			SiteKey:               "AU-Main",
@@ -104,43 +100,11 @@ func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 			RelatedSearchesCount: "12",
 			BaseKeywords:         "",
 		}
-		return seekApiParameters
 	})
-
-	// opts := []chromedp.ExecAllocatorOption{
-	// 	chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"),
-	// 	chromedp.WindowSize(1920, 1080),
-	// 	chromedp.NoFirstRun,
-	// 	chromedp.NoDefaultBrowserCheck,
-	// 	chromedp.Flag("headless", true),                                 // Headless mode; set to false for headful if needed
-	// 	chromedp.Flag("disable-blink-features", "AutomationControlled"), // Hide automation signals
-	// }
-	// allocatorCtx, AllocatorCancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	// defer AllocatorCancel()
-
-	// ctx, cancel := chromedp.NewContext(allocatorCtx)
-	// defer cancel()
-
-	// ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
-	// defer cancel()
-
-	// url := "https://www.seek.com.au/job/84647179"
-	// var html string
-	// err := chromedp.Run(
-	// 	ctx,
-	// 	chromedp.Evaluate(`Object.defineProperty(navigator, 'webdriver', {get: () => undefined});`, nil),
-	// 	chromedp.Evaluate(`Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});`, nil),
-	// 	chromedp.Navigate(url),
-	// 	chromedp.WaitVisible("body", chromedp.ByQueryAll),
-	// 	chromedp.Text("[data-automation=\"job-detail-title\"]", &html),
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(strings.TrimSpace(html))
-
-	return []entities.InboundJobPost{}
+	if scrapeErr != nil {
+		panic(scrapeErr)
+	}
+	return inboundJobPosts
 }
 
 func (s SeekAdapter) getPostedDate(doc *colly.HTMLElement) time.Time {

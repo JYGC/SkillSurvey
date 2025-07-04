@@ -109,7 +109,7 @@ func (a GetApiScraper) getInboundJobPostsFromPage(
 }
 
 func (a GetApiScraper) Scrape(
-	getApiParameters func(int) any,
+	getApiParametersForPage func(int) any,
 ) (
 	inboundJobPosts []entities.InboundJobPost,
 	err error,
@@ -117,14 +117,14 @@ func (a GetApiScraper) Scrape(
 	var pageErrors []error
 	for page := 1; page <= a.configSettings.Pages; page++ {
 		pageResults, pageError := a.getInboundJobPostsFromPage(
-			getApiParameters,
+			getApiParametersForPage,
 			page,
 		)
-
-		pageErrors = append(pageErrors, pageError)
+		if pageError != nil {
+			pageErrors = append(pageErrors, pageError)
+		}
 		inboundJobPosts = append(inboundJobPosts, pageResults...)
 	}
-
 	if len(pageErrors) > 0 {
 		err = fmt.Errorf("Page errors: %v", pageErrors)
 	}
