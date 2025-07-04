@@ -47,24 +47,35 @@ func NewSeekAdapter() *SeekAdapter {
 			var dataJsonMaps []map[string]any
 			json.Unmarshal(dataBytes, &dataJsonMaps)
 			for _, dataJsonMap := range dataJsonMaps {
-				metadataBytes, metadataNytesErr := json.Marshal(dataJsonMap["solMetadata"])
-				if metadataNytesErr != nil {
-					return nil, metadataNytesErr
-				}
-				var metadataJsonMap map[string]any
-				json.Unmarshal(metadataBytes, &metadataJsonMap)
+				jobSiteNumber := dataJsonMap["id"].(string)
 				url := fmt.Sprintf(
 					"%s/job/%s",
 					seek.configSettings.BaseUrl,
-					metadataJsonMap["jobId"],
+					jobSiteNumber,
 				)
-				fmt.Printf("url: %v\n", url)
+				fmt.Printf("dataJsonMap: %v\n", dataJsonMap)
 
 				newInboundJobPost, newInboundJobPostErr :=
 					seek.dynamicContentExtractor.GetInboundJobPost(url)
 				if newInboundJobPostErr != nil {
 					return nil, newInboundJobPostErr
 				}
+				newInboundJobPost.SiteName = seek.configSettings.SiteSelectors.SiteName
+				newInboundJobPost.JobSiteNumber = jobSiteNumber
+				fmt.Printf("dataJsonMap[\"locations\"]: %v\n", dataJsonMap["locations"])
+				tt := dataJsonMap["locations"].([]any)[0].(map[string]any)
+				fmt.Printf("tt: %v\n", tt)
+				countryCode := tt["countryCode"]
+				label := tt["label"]
+				fmt.Printf("countryCode: %v\n", countryCode)
+				fmt.Printf("label: %v\n", label)
+				newInboundJobPost.Country = countryCode.(string)
+				newInboundJobPost.Suburb = label.(string)
+				postedDate, postedDateErr := time.Parse(time.RFC3339, dataJsonMap["listingDate"].(string))
+				if postedDateErr != nil {
+					return nil, postedDateErr
+				}
+				newInboundJobPost.PostedDate = postedDate
 				fmt.Printf("newInboundJobPost: %v\n", newInboundJobPost)
 			}
 			return newInboundJobPosts, nil
