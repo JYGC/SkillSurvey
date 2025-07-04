@@ -53,6 +53,7 @@ func NewSeekAdapter() *SeekAdapter {
 					seek.configSettings.BaseUrl,
 					jobSiteNumber,
 				)
+				fmt.Printf("url: %v\n", url)
 				//fmt.Printf("dataJsonMap: %v\n", dataJsonMap)
 
 				newInboundJobPost, newInboundJobPostErr :=
@@ -82,9 +83,12 @@ func NewSeekAdapter() *SeekAdapter {
 
 func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 	inboundJobPosts, scrapeErr := s.apiScraper.Scrape(func(page int) any {
+		newSince := time.Now().Add(-time.Hour * 24 * 90)
+		newSinceUnix := newSince.Unix()
 		return SeekGetApiParameters{
+			// Move to config
 			Page:                  strconv.Itoa(page),
-			NewSince:              "1742971081",
+			NewSince:              strconv.FormatInt(newSinceUnix, 10),
 			SiteKey:               "AU-Main",
 			SourceSystem:          "houston",
 			UserQueryId:           "aeb5109edbfc379e2a97d0dd748fd81f-1099727",

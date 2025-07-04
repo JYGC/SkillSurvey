@@ -86,6 +86,7 @@ func (a GetApiScraper) getInboundJobPostsFromPage(
 		a.configSettings.SearchApiUrl,
 		urlParameterString,
 	)
+	fmt.Printf("apiUrl: %v\n", apiUrl)
 	response, responseErr := http.Get(apiUrl)
 	if responseErr != nil {
 		return nil, responseErr
