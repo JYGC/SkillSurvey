@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/JYGC/SkillSurvey/internal/database"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 
@@ -9,15 +11,15 @@ import (
 )
 
 func main() {
-	variableRef := make(map[string]interface{})
+	variableRef := make(map[string]any)
 	//defer exception.ReportErrorIfPanic(map[string]interface{}{"Variables": variableRef})
 	// get jobposts from websites
-	var newInboundJobPostSlice []entities.InboundJobPost
+	var newInboundJobPosts []entities.InboundJobPost
 	for _, webScraperSite := range []siteadapters.ISiteAdapter{
-		//*siteadapters.NewJoraAdapter(),
+		*siteadapters.NewJoraAdapter(),
 		*siteadapters.NewSeekAdapter(),
 	} {
-		newInboundJobPostSlice = append(newInboundJobPostSlice, webScraperSite.RunSurvey()...)
+		newInboundJobPosts = append(newInboundJobPosts, webScraperSite.RunSurvey()...)
 	}
 	existingSites, err := database.DbAdapter.Site.GetAll()
 	if err != nil {
@@ -25,11 +27,11 @@ func main() {
 	}
 	// insert jobposts to database
 	siteMap := entities.MakeSiteMap(existingSites)
-	newJobPosts := entities.CreateJobPosts(siteMap, newInboundJobPostSlice)
+	newJobPosts := entities.CreateJobPosts(siteMap, newInboundJobPosts)
 	if err := database.DbAdapter.JobPost.BulkUpdateOrInsert(newJobPosts); err != nil {
 		variableRef["existingSites"] = existingSites
 		variableRef["siteMap"] = siteMap
-		variableRef["newInboundJobPostSlice"] = newInboundJobPostSlice
+		variableRef["newInboundJobPostSlice"] = newInboundJobPosts
 		variableRef["newJobPostSlice"] = newJobPosts
 		panic(err)
 	}

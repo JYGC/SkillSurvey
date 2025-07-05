@@ -8,7 +8,7 @@
         }
     ],
     "PageFlag": "{p}",
-    "Pages": 5,
+    "Pages": 2,
     "SiteSelectors": {
         "SiteName": "au.jora.com",
         "JobPostLink": ".job-link",
