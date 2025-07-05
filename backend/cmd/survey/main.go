@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/JYGC/SkillSurvey/internal/database"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 

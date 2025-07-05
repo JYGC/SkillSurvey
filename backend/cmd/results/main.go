@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os/exec"
 
 	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/exception"
@@ -12,16 +11,6 @@ import (
 
 func main() {
 	configSettings := config.LoadMainConfig()
-	err := exec.Command(
-		"rundll32",
-		"url.dll,FileProtocolHandler",
-		fmt.Sprintf("http://localhost:%s", configSettings.ServerPort),
-	).Start()
-	if err != nil {
-		exception.ErrorLogger.Println(err)
-	}
-	fs := http.FileServer(http.Dir(configSettings.ResultUiRoot))
-	http.Handle("/", fs)
 	handlers.SetReportHandlers()
 	handlers.SetSkillTypeHandlers()
 	handlers.SetSkillHandlers()

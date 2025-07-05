@@ -63,9 +63,9 @@ func NewSeekAdapter() *SeekAdapter {
 				}
 				newInboundJobPost.SiteName = seek.configSettings.SiteSelectors.SiteName
 				newInboundJobPost.JobSiteNumber = jobSiteNumber
-				tt := dataJsonMap["locations"].([]any)[0].(map[string]any)
-				countryCode := tt["countryCode"]
-				label := tt["label"]
+				locationJsonMap := dataJsonMap["locations"].([]any)[0].(map[string]any)
+				countryCode := locationJsonMap["countryCode"]
+				label := locationJsonMap["label"]
 				newInboundJobPost.Country = countryCode.(string)
 				newInboundJobPost.Suburb = label.(string)
 				postedDate, postedDateErr := time.Parse(time.RFC3339, dataJsonMap["listingDate"].(string))
