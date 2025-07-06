@@ -10,13 +10,16 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
+const webdriverProperty = `Object.defineProperty(navigator, 'webdriver', {get: () => undefined});`
+const pluginsProperty = `Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});`
+
 type DynamicContentExtractor struct {
-	configSettings  config.SiteAdapterConfig
 	chromedpOptions []chromedp.ExecAllocatorOption
 }
 
 func NewDynamicContentExtractor(
-	configSettingsInterface interface{},
+	configSettingsInterface any,
 ) DynamicContentExtractor {
 	var configSettings config.SiteAdapterConfig
 	configSettingsBytes, configSettingsBytesErr := json.Marshal(configSettingsInterface)
@@ -25,7 +28,7 @@ func NewDynamicContentExtractor(
 	}
 	json.Unmarshal(configSettingsBytes, &configSettings)
 	chromedpOptions := []chromedp.ExecAllocatorOption{
-		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"),
+		chromedp.UserAgent(userAgent),
 		chromedp.WindowSize(1920, 1080),
 		chromedp.NoFirstRun,
 		chromedp.NoDefaultBrowserCheck,
@@ -33,13 +36,15 @@ func NewDynamicContentExtractor(
 		chromedp.Flag("disable-blink-features", "AutomationControlled"), // Hide automation signals
 	}
 	return DynamicContentExtractor{
-		configSettings,
 		chromedpOptions,
 	}
 }
 
 func (d DynamicContentExtractor) GetInboundJobPost(
 	url string,
+	matchSiteSelectorToProperties func(
+		newInboundJobPost *entities.InboundJobPost,
+	) map[string]*string,
 ) (
 	newInboundJobPost entities.InboundJobPost,
 	err error,
@@ -57,27 +62,20 @@ func (d DynamicContentExtractor) GetInboundJobPost(
 	defer timeoutCancel()
 
 	newInboundJobPost = entities.InboundJobPost{}
-	err = chromedp.Run(
-		timeoutCtx,
-		chromedp.Evaluate(
-			`Object.defineProperty(navigator, 'webdriver', {get: () => undefined});`,
-			nil,
-		),
-		chromedp.Evaluate(
-			`Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});`,
-			nil,
-		),
+	chromedpActions := []chromedp.Action{
+		chromedp.Evaluate(webdriverProperty, nil),
+		chromedp.Evaluate(pluginsProperty, nil),
 		chromedp.Navigate(url),
 		chromedp.WaitVisible("body", chromedp.ByQueryAll),
-		chromedp.Text(
-			d.configSettings.SiteSelectors.TitleSelector,
-			&(newInboundJobPost.Title),
-		),
-		chromedp.Text(
-			d.configSettings.SiteSelectors.BodySelector,
-			&newInboundJobPost.Body,
-		),
-	)
+	}
+	matchedSiteSelectors := matchSiteSelectorToProperties(&newInboundJobPost)
+	for selector, propertyPointer := range matchedSiteSelectors {
+		chromedpActions = append(
+			chromedpActions,
+			chromedp.Text(selector, propertyPointer),
+		)
+	}
+	err = chromedp.Run(timeoutCtx, chromedpActions...)
 
 	if err != nil {
 		return entities.InboundJobPost{}, err

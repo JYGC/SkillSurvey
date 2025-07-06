@@ -20,7 +20,7 @@ import (
 const seekConfigFilename = "./seek.json"
 
 type SeekAdapter struct {
-	configSettings          config.SearchApiSiteAdapterConfig
+	configSettings          SeekAdapterConfig
 	apiScraper              *getapiscraper.GetApiScraper
 	dynamicContentExtractor dynamiccontentextractor.DynamicContentExtractor
 }
@@ -31,10 +31,8 @@ func NewSeekAdapter() *SeekAdapter {
 	seek.dynamicContentExtractor =
 		dynamiccontentextractor.NewDynamicContentExtractor(seek.configSettings)
 	seek.apiScraper = getapiscraper.NewGetApiScraper(
-		seek.configSettings,
-		func(
-			body []byte,
-		) (
+		seek.configSettings.SearchApiUrl,
+		func(body []byte) (
 			newInboundJobPosts []entities.InboundJobPost,
 			err error,
 		) {
@@ -57,7 +55,17 @@ func NewSeekAdapter() *SeekAdapter {
 				//fmt.Printf("dataJsonMap: %v\n", dataJsonMap)
 
 				newInboundJobPost, newInboundJobPostErr :=
-					seek.dynamicContentExtractor.GetInboundJobPost(url)
+					seek.dynamicContentExtractor.GetInboundJobPost(
+						url,
+						func(
+							newInboundJobPost *entities.InboundJobPost,
+						) map[string]*string {
+							return map[string]*string{
+								seek.configSettings.SiteSelectors.TitleSelector: &newInboundJobPost.Title,
+								seek.configSettings.SiteSelectors.BodySelector:  &newInboundJobPost.Body,
+							}
+						},
+					)
 				if newInboundJobPostErr != nil {
 					return nil, newInboundJobPostErr
 				}
@@ -68,7 +76,10 @@ func NewSeekAdapter() *SeekAdapter {
 				label := locationJsonMap["label"]
 				newInboundJobPost.Country = countryCode.(string)
 				newInboundJobPost.Suburb = label.(string)
-				postedDate, postedDateErr := time.Parse(time.RFC3339, dataJsonMap["listingDate"].(string))
+				postedDate, postedDateErr := time.Parse(
+					time.RFC3339,
+					dataJsonMap["listingDate"].(string),
+				)
 				if postedDateErr != nil {
 					return nil, postedDateErr
 				}
@@ -82,29 +93,32 @@ func NewSeekAdapter() *SeekAdapter {
 }
 
 func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
-	inboundJobPosts, scrapeErr := s.apiScraper.Scrape(func(page int) any {
-		newSince := time.Now().Add(-time.Hour * 24 * 90)
-		newSinceUnix := newSince.Unix()
-		return SeekGetApiParameters{
-			// Move to config
-			Page:                  strconv.Itoa(page),
-			NewSince:              strconv.FormatInt(newSinceUnix, 10),
-			SiteKey:               "AU-Main",
-			SourceSystem:          "houston",
-			UserQueryId:           "aeb5109edbfc379e2a97d0dd748fd81f-1099727",
-			UserId:                "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
-			UserSessionId:         "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
-			EventCaptureSessionId: "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
-			Where:                 "All+Melbourne+VIC",
-			Classification:        "6281",
-			PageSize:              "10",
-			//Include:               "", //"seodata,relatedsearches,joracrosslink,gptTargeting,pills",
-			Locale:               "en-AU",
-			SolId:                "78fc4265-7367-48f8-b9b4-dae834474999",
-			RelatedSearchesCount: "12",
-			BaseKeywords:         "",
-		}
-	})
+	inboundJobPosts, scrapeErr := s.apiScraper.Scrape(
+		s.configSettings.Pages,
+		func(page int) any {
+			newSince := time.Now().Add(-time.Hour * 24 * 90)
+			newSinceUnix := newSince.Unix()
+			return SeekGetApiParameters{
+				// Move to config
+				Page:                  strconv.Itoa(page),
+				NewSince:              strconv.FormatInt(newSinceUnix, 10),
+				SiteKey:               "AU-Main",
+				SourceSystem:          "houston",
+				UserQueryId:           "aeb5109edbfc379e2a97d0dd748fd81f-1099727",
+				UserId:                "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+				UserSessionId:         "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+				EventCaptureSessionId: "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+				Where:                 "All+Melbourne+VIC",
+				Classification:        "6281",
+				PageSize:              "10",
+				//Include:               "", //"seodata,relatedsearches,joracrosslink,gptTargeting,pills",
+				Locale:               "en-AU",
+				SolId:                "78fc4265-7367-48f8-b9b4-dae834474999",
+				RelatedSearchesCount: "12",
+				BaseKeywords:         "",
+			}
+		},
+	)
 	if scrapeErr != nil {
 		panic(scrapeErr)
 	}

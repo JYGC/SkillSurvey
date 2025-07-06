@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 )
 
-type IConfig interface{}
-
 type ConfigBase struct{}
 
 func attachToExecutableDir(fileName string) string {
@@ -21,7 +19,7 @@ func attachToExecutableDir(fileName string) string {
 	return fullFilePath
 }
 
-func JsonToConfig(config IConfig, fileName string) {
+func JsonToConfig(config any, fileName string) {
 	fullFilePath := attachToExecutableDir(fileName)
 	fileContents, err := os.ReadFile(fullFilePath)
 	if err != nil {

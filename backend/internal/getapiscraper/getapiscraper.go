@@ -7,12 +7,11 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 )
 
 type GetApiScraper struct {
-	configSettings                     config.SearchApiSiteAdapterConfig
+	SearchApiUrl                       string
 	getInboundJobPostsFromResponseBody func([]byte) (
 		[]entities.InboundJobPost,
 		error,
@@ -20,14 +19,14 @@ type GetApiScraper struct {
 }
 
 func NewGetApiScraper(
-	configSettings config.SearchApiSiteAdapterConfig,
+	searchApiUrl string,
 	getInboundJobPostsFromResponseBody func([]byte) (
 		[]entities.InboundJobPost,
 		error,
 	),
 ) *GetApiScraper {
 	apiClient := &GetApiScraper{
-		configSettings:                     configSettings,
+		SearchApiUrl:                       searchApiUrl,
 		getInboundJobPostsFromResponseBody: getInboundJobPostsFromResponseBody,
 	}
 	return apiClient
@@ -83,7 +82,7 @@ func (a GetApiScraper) getInboundJobPostsFromPage(
 	}
 	apiUrl := fmt.Sprintf(
 		"%s?%s",
-		a.configSettings.SearchApiUrl,
+		a.SearchApiUrl,
 		urlParameterString,
 	)
 	fmt.Printf("apiUrl: %v\n", apiUrl)
@@ -110,13 +109,14 @@ func (a GetApiScraper) getInboundJobPostsFromPage(
 }
 
 func (a GetApiScraper) Scrape(
+	numberOfPages int,
 	getApiParametersForPage func(int) any,
 ) (
 	inboundJobPosts []entities.InboundJobPost,
 	err error,
 ) {
 	var pageErrors []error
-	for page := 1; page <= a.configSettings.Pages; page++ {
+	for page := 1; page <= numberOfPages; page++ {
 		pageResults, pageError := a.getInboundJobPostsFromPage(
 			getApiParametersForPage,
 			page,
