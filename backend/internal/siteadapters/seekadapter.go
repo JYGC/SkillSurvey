@@ -95,27 +95,29 @@ func NewSeekAdapter() *SeekAdapter {
 func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 	inboundJobPosts, scrapeErr := s.apiScraper.Scrape(
 		s.configSettings.Pages,
-		func(page int) any {
-			newSince := time.Now().Add(-time.Hour * 24 * 90)
+		len(s.configSettings.ApiParameters),
+		func(page int, apiParameterSetNumber int) any {
+			newSince := time.Now().Add(-time.Hour * 24 * time.Duration(
+				s.configSettings.ApiParameters[apiParameterSetNumber].NewSinceDaysAgo,
+			))
 			newSinceUnix := newSince.Unix()
 			return SeekGetApiParameters{
-				// Move to config
 				Page:                  strconv.Itoa(page),
 				NewSince:              strconv.FormatInt(newSinceUnix, 10),
-				SiteKey:               "AU-Main",
-				SourceSystem:          "houston",
-				UserQueryId:           "aeb5109edbfc379e2a97d0dd748fd81f-1099727",
-				UserId:                "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
-				UserSessionId:         "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
-				EventCaptureSessionId: "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
-				Where:                 "All+Melbourne+VIC",
-				Classification:        "6281",
-				PageSize:              "10",
-				//Include:               "", //"seodata,relatedsearches,joracrosslink,gptTargeting,pills",
-				Locale:               "en-AU",
-				SolId:                "78fc4265-7367-48f8-b9b4-dae834474999",
-				RelatedSearchesCount: "12",
-				BaseKeywords:         "",
+				SiteKey:               s.configSettings.ApiParameters[apiParameterSetNumber].SiteKey,
+				SourceSystem:          s.configSettings.ApiParameters[apiParameterSetNumber].SourceSystem,
+				UserQueryId:           s.configSettings.ApiParameters[apiParameterSetNumber].UserQueryId,
+				UserId:                s.configSettings.ApiParameters[apiParameterSetNumber].UserId,
+				UserSessionId:         s.configSettings.ApiParameters[apiParameterSetNumber].UserSessionId,
+				EventCaptureSessionId: s.configSettings.ApiParameters[apiParameterSetNumber].EventCaptureSessionId,
+				Where:                 s.configSettings.ApiParameters[apiParameterSetNumber].Where,
+				Classification:        s.configSettings.ApiParameters[apiParameterSetNumber].Classification,
+				PageSize:              s.configSettings.ApiParameters[apiParameterSetNumber].PageSize,
+				Include:               s.configSettings.ApiParameters[apiParameterSetNumber].Include,
+				Locale:                s.configSettings.ApiParameters[apiParameterSetNumber].Locale,
+				SolId:                 s.configSettings.ApiParameters[apiParameterSetNumber].SolId,
+				RelatedSearchesCount:  s.configSettings.ApiParameters[apiParameterSetNumber].RelatedSearchesCount,
+				BaseKeywords:          s.configSettings.ApiParameters[apiParameterSetNumber].BaseKeywords,
 			}
 		},
 	)

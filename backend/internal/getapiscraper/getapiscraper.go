@@ -53,12 +53,15 @@ func (a GetApiScraper) convertUrlParameterStructToString(
 	}
 
 	for i := range typeOfUrlParameterInterface.NumField() {
-		parameterString = fmt.Sprintf(
-			"%s%s=%s&",
-			parameterString,
-			typeOfUrlParameterInterface.Field(i).Name,
-			valueOfUrlParameterInterface.Field(i).Interface(),
-		)
+		parameterValue := valueOfUrlParameterInterface.Field(i).Interface().(string)
+		if len(parameterValue) > 0 {
+			parameterString = fmt.Sprintf(
+				"%s%s=%s&",
+				parameterString,
+				typeOfUrlParameterInterface.Field(i).Name,
+				parameterValue,
+			)
+		}
 	}
 	if len(parameterString) > 0 {
 		parameterString = parameterString[:len(parameterString)-1]
@@ -67,15 +70,16 @@ func (a GetApiScraper) convertUrlParameterStructToString(
 }
 
 func (a GetApiScraper) getInboundJobPostsFromPage(
-	getApiParameters func(int) any,
 	page int,
+	apiParameterSetNumber int,
+	getApiParameters func(int, int) any,
 ) (
 	inboundJobPosts []entities.InboundJobPost,
 	err error,
 ) {
 	urlParameterString, urlParamStringErr :=
 		a.convertUrlParameterStructToString(
-			getApiParameters(page),
+			getApiParameters(page, apiParameterSetNumber),
 		)
 	if urlParamStringErr != nil {
 		return nil, urlParamStringErr
@@ -110,21 +114,25 @@ func (a GetApiScraper) getInboundJobPostsFromPage(
 
 func (a GetApiScraper) Scrape(
 	numberOfPages int,
-	getApiParametersForPage func(int) any,
+	numberOfApiParameterSets int,
+	getApiParametersForPage func(int, int) any,
 ) (
 	inboundJobPosts []entities.InboundJobPost,
 	err error,
 ) {
 	var pageErrors []error
 	for page := 1; page <= numberOfPages; page++ {
-		pageResults, pageError := a.getInboundJobPostsFromPage(
-			getApiParametersForPage,
-			page,
-		)
-		if pageError != nil {
-			pageErrors = append(pageErrors, pageError)
+		for apiParameterSetNumber := 0; apiParameterSetNumber < numberOfApiParameterSets; apiParameterSetNumber++ {
+			pageResults, pageError := a.getInboundJobPostsFromPage(
+				page,
+				apiParameterSetNumber,
+				getApiParametersForPage,
+			)
+			if pageError != nil {
+				pageErrors = append(pageErrors, pageError)
+			}
+			inboundJobPosts = append(inboundJobPosts, pageResults...)
 		}
-		inboundJobPosts = append(inboundJobPosts, pageResults...)
 	}
 	if len(pageErrors) > 0 {
 		err = fmt.Errorf("Page errors: %v", pageErrors)

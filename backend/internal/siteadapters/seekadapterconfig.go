@@ -1,24 +1,32 @@
 package siteadapters
 
 type Selectors struct {
-	SiteName           string
-	JobPostLink        string
-	TitleSelector      string
-	BodySelector       string
-	PostedDateSelector string
-	CitySelector       string
-	Country            string
-	SuburbSelector     string
-	TitleType          string
-	BodyType           string
-	PostedDateType     string
-	CityType           string
-	SuburbType         string
+	SiteName      string
+	TitleSelector string
+	BodySelector  string
 }
 
 type SearchCriteria struct {
 	Name string
 	Url  string
+}
+
+type ApiParameters struct {
+	NewSinceDaysAgo       int
+	SiteKey               string
+	SourceSystem          string
+	UserQueryId           string
+	UserId                string
+	UserSessionId         string
+	EventCaptureSessionId string
+	Where                 string
+	Classification        string
+	PageSize              string
+	Include               string
+	Locale                string
+	SolId                 string
+	RelatedSearchesCount  string
+	BaseKeywords          string
 }
 
 type SeekAdapterConfig struct {
@@ -29,4 +37,5 @@ type SeekAdapterConfig struct {
 	Pages           int
 	SiteSelectors   Selectors
 	SearchApiUrl    string
+	ApiParameters   []ApiParameters
 }
