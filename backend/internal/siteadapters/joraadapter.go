@@ -15,7 +15,7 @@ import (
 const joraConfigFileName = "jora.json"
 
 type JoraAdapter struct {
-	ConfigSettings config.SiteAdapterConfig
+	ConfigSettings JoraAdapterConfig
 	webScraper     *webscraper.WebScraper
 }
 
@@ -23,22 +23,43 @@ func NewJoraAdapter() *JoraAdapter {
 	jora := new(JoraAdapter)
 	config.JsonToConfig(&jora.ConfigSettings, joraConfigFileName)
 	jora.webScraper = webscraper.NewWebScraper(
-		jora.ConfigSettings,
-		jora.getJobSiteNumber,
-		jora.getPostedDate,
+		jora.ConfigSettings.BaseUrl,
+		jora.ConfigSettings.SiteSelectors.SiteName,
+		jora.ConfigSettings.AllowedDomains,
 	)
 	return jora
 }
 
 func (j JoraAdapter) RunSurvey() []entities.InboundJobPost {
-	return j.webScraper.Scrape()
+	searchUrls := []string{}
+	for _, searchCriteria := range j.ConfigSettings.SearchCriterias {
+		searchUrls = append(searchUrls, searchCriteria.Url)
+	}
+	return j.webScraper.Scrape(
+		j.ConfigSettings.SiteSelectors.JobPostLink,
+		j.ConfigSettings.Pages,
+		j.ConfigSettings.PageFlag,
+		searchUrls,
+		func(doc *colly.HTMLElement) entities.InboundJobPost {
+			newInboundJobPost := entities.InboundJobPost{}
+			newInboundJobPost.SiteName = j.ConfigSettings.SiteSelectors.SiteName
+			newInboundJobPost.JobSiteNumber = j.getJobSiteNumber(doc)
+			newInboundJobPost.PostedDate = j.getPostedDate(doc)
+			newInboundJobPost.Title = doc.ChildText(j.ConfigSettings.SiteSelectors.TitleSelector)
+			newInboundJobPost.Body = doc.ChildText(j.ConfigSettings.SiteSelectors.BodySelector)
+			newInboundJobPost.City = doc.ChildText(j.ConfigSettings.SiteSelectors.CitySelector)
+			newInboundJobPost.Country = j.ConfigSettings.SiteSelectors.Country
+			newInboundJobPost.Suburb = doc.ChildText(j.ConfigSettings.SiteSelectors.SuburbSelector)
+			return newInboundJobPost
+		},
+	)
 }
 
 // Advertisement's post date can calculated by subtracting how old the advert is in days from
 // the current date.
 func (j JoraAdapter) getPostedDate(doc *colly.HTMLElement) time.Time {
-	variableRef := make(map[string]interface{})
-	defer exception.ReportErrorIfPanic(map[string]interface{}{
+	variableRef := make(map[string]any)
+	defer exception.ReportErrorIfPanic(map[string]any{
 		"Url":       doc.Request.URL.String(),
 		"Variables": variableRef,
 	})
