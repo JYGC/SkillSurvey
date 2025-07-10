@@ -32,62 +32,6 @@ func NewSeekAdapter() *SeekAdapter {
 		dynamiccontentextractor.NewDynamicContentExtractor(seek.configSettings)
 	seek.apiScraper = getapiscraper.NewGetApiScraper(
 		seek.configSettings.SearchApiUrl,
-		func(body []byte) (
-			newInboundJobPosts []entities.InboundJobPost,
-			err error,
-		) {
-			var bodyJsonMap map[string]any
-			json.Unmarshal(body, &bodyJsonMap)
-			dataBytes, dataBytesErr := json.Marshal(bodyJsonMap["data"])
-			if dataBytesErr != nil {
-				return nil, dataBytesErr
-			}
-			var dataJsonMaps []map[string]any
-			json.Unmarshal(dataBytes, &dataJsonMaps)
-			for _, dataJsonMap := range dataJsonMaps {
-				jobSiteNumber := dataJsonMap["id"].(string)
-				url := fmt.Sprintf(
-					"%s/job/%s",
-					seek.configSettings.BaseUrl,
-					jobSiteNumber,
-				)
-				fmt.Printf("url: %v\n", url)
-				//fmt.Printf("dataJsonMap: %v\n", dataJsonMap)
-
-				newInboundJobPost, newInboundJobPostErr :=
-					seek.dynamicContentExtractor.GetInboundJobPost(
-						url,
-						func(
-							newInboundJobPost *entities.InboundJobPost,
-						) map[string]*string {
-							return map[string]*string{
-								seek.configSettings.SiteSelectors.TitleSelector: &newInboundJobPost.Title,
-								seek.configSettings.SiteSelectors.BodySelector:  &newInboundJobPost.Body,
-							}
-						},
-					)
-				if newInboundJobPostErr != nil {
-					return nil, newInboundJobPostErr
-				}
-				newInboundJobPost.SiteName = seek.configSettings.SiteSelectors.SiteName
-				newInboundJobPost.JobSiteNumber = jobSiteNumber
-				locationJsonMap := dataJsonMap["locations"].([]any)[0].(map[string]any)
-				countryCode := locationJsonMap["countryCode"]
-				label := locationJsonMap["label"]
-				newInboundJobPost.Country = countryCode.(string)
-				newInboundJobPost.Suburb = label.(string)
-				postedDate, postedDateErr := time.Parse(
-					time.RFC3339,
-					dataJsonMap["listingDate"].(string),
-				)
-				if postedDateErr != nil {
-					return nil, postedDateErr
-				}
-				newInboundJobPost.PostedDate = postedDate
-				newInboundJobPosts = append(newInboundJobPosts, newInboundJobPost)
-			}
-			return newInboundJobPosts, nil
-		},
 	)
 	return seek
 }
@@ -119,6 +63,62 @@ func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 				RelatedSearchesCount:  s.configSettings.ApiParameters[apiParameterSetNumber].RelatedSearchesCount,
 				BaseKeywords:          s.configSettings.ApiParameters[apiParameterSetNumber].BaseKeywords,
 			}
+		},
+		func(body []byte) (
+			newInboundJobPosts []entities.InboundJobPost,
+			err error,
+		) {
+			var bodyJsonMap map[string]any
+			json.Unmarshal(body, &bodyJsonMap)
+			dataBytes, dataBytesErr := json.Marshal(bodyJsonMap["data"])
+			if dataBytesErr != nil {
+				return nil, dataBytesErr
+			}
+			var dataJsonMaps []map[string]any
+			json.Unmarshal(dataBytes, &dataJsonMaps)
+			for _, dataJsonMap := range dataJsonMaps {
+				jobSiteNumber := dataJsonMap["id"].(string)
+				url := fmt.Sprintf(
+					"%s/job/%s",
+					s.configSettings.BaseUrl,
+					jobSiteNumber,
+				)
+				fmt.Printf("url: %v\n", url)
+				//fmt.Printf("dataJsonMap: %v\n", dataJsonMap)
+
+				newInboundJobPost, newInboundJobPostErr :=
+					s.dynamicContentExtractor.GetInboundJobPost(
+						url,
+						func(
+							newInboundJobPost *entities.InboundJobPost,
+						) map[string]*string {
+							return map[string]*string{
+								s.configSettings.SiteSelectors.TitleSelector: &newInboundJobPost.Title,
+								s.configSettings.SiteSelectors.BodySelector:  &newInboundJobPost.Body,
+							}
+						},
+					)
+				if newInboundJobPostErr != nil {
+					return nil, newInboundJobPostErr
+				}
+				newInboundJobPost.SiteName = s.configSettings.SiteSelectors.SiteName
+				newInboundJobPost.JobSiteNumber = jobSiteNumber
+				locationJsonMap := dataJsonMap["locations"].([]any)[0].(map[string]any)
+				countryCode := locationJsonMap["countryCode"]
+				label := locationJsonMap["label"]
+				newInboundJobPost.Country = countryCode.(string)
+				newInboundJobPost.Suburb = label.(string)
+				postedDate, postedDateErr := time.Parse(
+					time.RFC3339,
+					dataJsonMap["listingDate"].(string),
+				)
+				if postedDateErr != nil {
+					return nil, postedDateErr
+				}
+				newInboundJobPost.PostedDate = postedDate
+				newInboundJobPosts = append(newInboundJobPosts, newInboundJobPost)
+			}
+			return newInboundJobPosts, nil
 		},
 	)
 	if scrapeErr != nil {

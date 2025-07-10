@@ -11,23 +11,15 @@ import (
 )
 
 type GetApiScraper struct {
-	SearchApiUrl                       string
-	getInboundJobPostsFromResponseBody func([]byte) (
-		[]entities.InboundJobPost,
-		error,
-	)
+	SearchApiUrl string
 }
 
 func NewGetApiScraper(
 	searchApiUrl string,
-	getInboundJobPostsFromResponseBody func([]byte) (
-		[]entities.InboundJobPost,
-		error,
-	),
+
 ) *GetApiScraper {
 	apiClient := &GetApiScraper{
-		SearchApiUrl:                       searchApiUrl,
-		getInboundJobPostsFromResponseBody: getInboundJobPostsFromResponseBody,
+		SearchApiUrl: searchApiUrl,
 	}
 	return apiClient
 }
@@ -73,6 +65,10 @@ func (a GetApiScraper) getInboundJobPostsFromPage(
 	page int,
 	apiParameterSetNumber int,
 	getApiParameters func(int, int) any,
+	getInboundJobPostsFromResponseBody func([]byte) (
+		[]entities.InboundJobPost,
+		error,
+	),
 ) (
 	inboundJobPosts []entities.InboundJobPost,
 	err error,
@@ -100,7 +96,7 @@ func (a GetApiScraper) getInboundJobPostsFromPage(
 		return nil, readBodyErr
 	}
 	inboundJobPostsFromResponseBody, fromResponseBodyErr :=
-		a.getInboundJobPostsFromResponseBody(body)
+		getInboundJobPostsFromResponseBody(body)
 	if fromResponseBodyErr != nil {
 		return nil, fromResponseBodyErr
 	}
@@ -116,17 +112,22 @@ func (a GetApiScraper) Scrape(
 	numberOfPages int,
 	numberOfApiParameterSets int,
 	getApiParametersForPage func(int, int) any,
+	getInboundJobPostsFromResponseBody func([]byte) (
+		[]entities.InboundJobPost,
+		error,
+	),
 ) (
 	inboundJobPosts []entities.InboundJobPost,
 	err error,
 ) {
 	var pageErrors []error
 	for page := 1; page <= numberOfPages; page++ {
-		for apiParameterSetNumber := 0; apiParameterSetNumber < numberOfApiParameterSets; apiParameterSetNumber++ {
+		for apiParameterSetNumber := range numberOfApiParameterSets {
 			pageResults, pageError := a.getInboundJobPostsFromPage(
 				page,
 				apiParameterSetNumber,
 				getApiParametersForPage,
+				getInboundJobPostsFromResponseBody,
 			)
 			if pageError != nil {
 				pageErrors = append(pageErrors, pageError)

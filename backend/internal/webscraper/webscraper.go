@@ -1,7 +1,6 @@
 package webscraper
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
