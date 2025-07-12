@@ -40,14 +40,14 @@ func (w WebScraper) Scrape(
 	searchUrls []string,
 	createNewInboundJobPost func(doc *colly.HTMLElement) entities.InboundJobPost,
 ) (jobPosts []entities.InboundJobPost, err error) {
-	jobPostLinks, jobPostLinkErr := w.getJobPostLinks(
+	jobPostLinks, jobPostLinksErr := w.getJobPostLinks(
 		jobPostLinkSelector,
 		numberOfPages,
 		pageFlag,
 		searchUrls,
 	)
-	if jobPostLinkErr != nil {
-		err = fmt.Errorf("jobPostLinkErr: %v", jobPostLinkErr)
+	if jobPostLinksErr != nil {
+		err = fmt.Errorf("jobPostLinksErr: %v", jobPostLinksErr)
 	}
 	if len(jobPostLinks) > 0 {
 		var jobPostErr error
