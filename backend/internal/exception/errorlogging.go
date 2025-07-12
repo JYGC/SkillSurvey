@@ -37,9 +37,9 @@ func init() {
 	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func ReportErrorIfPanic(extraData map[string]interface{}) (err error) {
+func ReportErrorIfPanic(extraData map[string]any) (err error) {
 	if errInterface := recover(); errInterface != nil {
-		ReportError(extraData)
+		LogExtraData(extraData)
 		switch x := errInterface.(type) {
 		case string:
 			err = errors.New(x)
@@ -48,15 +48,20 @@ func ReportErrorIfPanic(extraData map[string]interface{}) (err error) {
 		default:
 			err = fmt.Errorf("%v", x)
 		}
+		ErrorLogger.Println(err)
 	}
 	return err
 }
 
-func ReportError(extraData map[string]interface{}) {
-	errorMap := make(map[string]interface{})
+func LogExtraData(extraData map[string]any) {
+	errorMap := make(map[string]any)
 	if extraData != nil {
 		errorMap["Extra data"] = extraData
 	}
 	errorMap["Stacktrace"] = string(debug.Stack())
 	ErrorLogger.Println(errorMap)
+}
+
+func LogErrorWithLabel(label string, err error) {
+	ErrorLogger.Printf("%s: %v\n", label, err)
 }

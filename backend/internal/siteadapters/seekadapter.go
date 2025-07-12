@@ -104,6 +104,7 @@ func (s SeekAdapter) RunSurvey() (
 					)
 				if newInboundJobPostErr != nil {
 					jobPostErrors = append(jobPostErrors, newInboundJobPostErr)
+					exception.LogErrorWithLabel("newInboundJobPostErr", newInboundJobPostErr)
 					continue
 				}
 				newInboundJobPost.SiteName = s.configSettings.SiteSelectors.SiteName
@@ -119,6 +120,7 @@ func (s SeekAdapter) RunSurvey() (
 				)
 				if postedDateErr != nil {
 					jobPostErrors = append(jobPostErrors, postedDateErr)
+					exception.LogErrorWithLabel("postedDateErr", postedDateErr)
 					continue
 				}
 				newInboundJobPost.PostedDate = postedDate

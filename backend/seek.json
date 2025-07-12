@@ -9,7 +9,7 @@
         }
     ],
     "PageFlag": "{p}",
-    "Pages": 60,
+    "Pages": 40,
     "SiteSelectors": {
         "SiteName": "seek.com.au",
         "TitleSelector": "[data-automation=\"job-detail-title\"]",

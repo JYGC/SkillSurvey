@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/JYGC/SkillSurvey/internal/entities"
+	"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/gocolly/colly/v2"
 )
 
@@ -49,10 +50,6 @@ func (w WebScraper) Scrape(
 		err = fmt.Errorf("jobPostLinkErr: %v", jobPostLinkErr)
 	}
 	if len(jobPostLinks) > 0 {
-		// exception.ReportError(map[string]any{
-		// 	"Message":  "No job post links found. Possible site selector error",
-		// 	"SiteName": w.siteName,
-		// })
 		var jobPostErr error
 		jobPosts, jobPostErr = w.getJobPosts(
 			jobPostLinks,
@@ -67,6 +64,7 @@ func (w WebScraper) Scrape(
 			err,
 			w.siteName,
 		)
+		exception.ErrorLogger.Println(err)
 	}
 
 	return jobPosts, err
@@ -96,6 +94,7 @@ func (w *WebScraper) getJobPostLinks(
 			pageError := w.scraperEngine.Visit(fullUrl)
 			if pageError != nil {
 				pageErrors = append(pageErrors, pageError)
+				exception.LogErrorWithLabel("pageError", pageError)
 			}
 		}
 	}
@@ -109,7 +108,7 @@ func (w WebScraper) getJobPosts(
 	jobPostLinksSlice []string,
 	createNewInboundJobPost func(doc *colly.HTMLElement) entities.InboundJobPost,
 ) (
-	newInboundJobPostSlice []entities.InboundJobPost,
+	newInboundJobPosts []entities.InboundJobPost,
 	err error,
 ) {
 	w.scraperEngine.OnHTML("html", func(doc *colly.HTMLElement) {
@@ -128,7 +127,7 @@ func (w WebScraper) getJobPosts(
 			}
 		})()
 		newInboundJobPost = createNewInboundJobPost(doc)
-		newInboundJobPostSlice = append(newInboundJobPostSlice, newInboundJobPost)
+		newInboundJobPosts = append(newInboundJobPosts, newInboundJobPost)
 	})
 	var jobPostLinkErrs []error
 	for _, jobPostLink := range jobPostLinksSlice {
@@ -136,10 +135,11 @@ func (w WebScraper) getJobPosts(
 		jobPostLinkErr := w.scraperEngine.Visit(link)
 		if jobPostLinkErr != nil {
 			jobPostLinkErrs = append(jobPostLinkErrs, jobPostLinkErr)
+			exception.LogErrorWithLabel("jobPostLinkErr", jobPostLinkErr)
 		}
 	}
 	if len(jobPostLinkErrs) > 0 {
 		err = fmt.Errorf("%v\njobPostLinkErrs: %v", err, jobPostLinkErrs)
 	}
-	return newInboundJobPostSlice, err
+	return newInboundJobPosts, err
 }
