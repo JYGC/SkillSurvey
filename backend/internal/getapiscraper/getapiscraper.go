@@ -64,7 +64,7 @@ func (a GetApiScraper) convertUrlParameterStructToString(
 func (a GetApiScraper) getInboundJobPostsFromPage(
 	page int,
 	apiParameterSetNumber int,
-	getApiParameters func(int, int) any,
+	getApiParametersForPage func(int, int) any,
 	getInboundJobPostsFromResponseBody func([]byte) (
 		[]entities.InboundJobPost,
 		error,
@@ -75,7 +75,7 @@ func (a GetApiScraper) getInboundJobPostsFromPage(
 ) {
 	urlParameterString, urlParamStringErr :=
 		a.convertUrlParameterStructToString(
-			getApiParameters(page, apiParameterSetNumber),
+			getApiParametersForPage(page, apiParameterSetNumber),
 		)
 	if urlParamStringErr != nil {
 		return nil, urlParamStringErr

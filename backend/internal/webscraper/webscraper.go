@@ -1,11 +1,11 @@
 package webscraper
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/JYGC/SkillSurvey/internal/entities"
-	"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/gocolly/colly/v2"
 )
 
@@ -37,17 +37,39 @@ func (w WebScraper) Scrape(
 	numberOfPages int,
 	pageFlag string,
 	searchUrls []string,
-	createnewInboundJobPost func(doc *colly.HTMLElement) entities.InboundJobPost,
-) []entities.InboundJobPost {
-	return w.getJobPosts(
-		w.getJobPostLinks(
-			jobPostLinkSelector,
-			numberOfPages,
-			pageFlag,
-			searchUrls,
-		),
-		createnewInboundJobPost,
+	createNewInboundJobPost func(doc *colly.HTMLElement) entities.InboundJobPost,
+) (jobPosts []entities.InboundJobPost, err error) {
+	jobPostLinks, jobPostLinkErr := w.getJobPostLinks(
+		jobPostLinkSelector,
+		numberOfPages,
+		pageFlag,
+		searchUrls,
 	)
+	if jobPostLinkErr != nil {
+		err = fmt.Errorf("jobPostLinkErr: %v", jobPostLinkErr)
+	}
+	if len(jobPostLinks) > 0 {
+		// exception.ReportError(map[string]any{
+		// 	"Message":  "No job post links found. Possible site selector error",
+		// 	"SiteName": w.siteName,
+		// })
+		var jobPostErr error
+		jobPosts, jobPostErr = w.getJobPosts(
+			jobPostLinks,
+			createNewInboundJobPost,
+		)
+		if jobPostErr != nil {
+			err = fmt.Errorf("%v\njobPostErr: %v", err, jobPostErr)
+		}
+	} else {
+		err = fmt.Errorf(
+			"%v\nNo job post links found. Possible site selector error. SiteName: %s",
+			err,
+			w.siteName,
+		)
+	}
+
+	return jobPosts, err
 }
 
 func (w *WebScraper) getJobPostLinks(
@@ -55,7 +77,7 @@ func (w *WebScraper) getJobPostLinks(
 	numberOfPages int,
 	pageFlag string,
 	searchUrls []string,
-) (jobPostLinks []string) {
+) (jobPostLinks []string, err error) {
 	w.scraperEngine.OnHTML(
 		jobPostLinkSelector,
 		func(e *colly.HTMLElement) {
@@ -63,6 +85,7 @@ func (w *WebScraper) getJobPostLinks(
 			jobPostLinks = append(jobPostLinks, link)
 		},
 	)
+	var pageErrors []error
 	for searchPage := 1; searchPage <= numberOfPages; searchPage++ {
 		for _, searchUrl := range searchUrls {
 			fullUrl := strings.ReplaceAll(
@@ -70,34 +93,53 @@ func (w *WebScraper) getJobPostLinks(
 				pageFlag,
 				strconv.Itoa(searchPage),
 			)
-			w.scraperEngine.Visit(fullUrl)
+			pageError := w.scraperEngine.Visit(fullUrl)
+			if pageError != nil {
+				pageErrors = append(pageErrors, pageError)
+			}
 		}
 	}
-	return jobPostLinks
+	if len(pageErrors) > 0 {
+		err = fmt.Errorf("Page errors: %v", pageErrors)
+	}
+	return jobPostLinks, err
 }
 
 func (w WebScraper) getJobPosts(
 	jobPostLinksSlice []string,
-	createnewInboundJobPost func(doc *colly.HTMLElement) entities.InboundJobPost,
-) (newInboundJobPostSlice []entities.InboundJobPost) {
+	createNewInboundJobPost func(doc *colly.HTMLElement) entities.InboundJobPost,
+) (
+	newInboundJobPostSlice []entities.InboundJobPost,
+	err error,
+) {
 	w.scraperEngine.OnHTML("html", func(doc *colly.HTMLElement) {
 		var newInboundJobPost entities.InboundJobPost
-		defer exception.ReportErrorIfPanic(map[string]any{
-			"Url":               doc.Request.URL.String(),
-			"newInboundJobPost": newInboundJobPost,
-		})
-		newInboundJobPost = createnewInboundJobPost(doc)
+		defer (func() {
+			extraVariables := fmt.Sprintf(
+				"(Url: %s)",
+				doc.Request.URL.String(),
+			)
+			errInterface := recover()
+			switch x := errInterface.(type) {
+			case string:
+				err = fmt.Errorf("%v scraperErr: %s %s", err, x, extraVariables)
+			default:
+				err = fmt.Errorf("%v scraperErr: %v %s", err, x, extraVariables)
+			}
+		})()
+		newInboundJobPost = createNewInboundJobPost(doc)
 		newInboundJobPostSlice = append(newInboundJobPostSlice, newInboundJobPost)
 	})
-	if len(jobPostLinksSlice) == 0 {
-		exception.ReportError(map[string]any{
-			"Message":  "No job post links found. Possible site selector error",
-			"SiteName": w.siteName,
-		})
-	}
+	var jobPostLinkErrs []error
 	for _, jobPostLink := range jobPostLinksSlice {
 		link := w.baseUrl + jobPostLink
-		w.scraperEngine.Visit(link)
+		jobPostLinkErr := w.scraperEngine.Visit(link)
+		if jobPostLinkErr != nil {
+			jobPostLinkErrs = append(jobPostLinkErrs, jobPostLinkErr)
+		}
 	}
-	return newInboundJobPostSlice
+	if len(jobPostLinkErrs) > 0 {
+		err = fmt.Errorf("%v\njobPostLinkErrs: %v", err, jobPostLinkErrs)
+	}
+	return newInboundJobPostSlice, err
 }

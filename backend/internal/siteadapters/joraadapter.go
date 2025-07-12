@@ -30,7 +30,10 @@ func NewJoraAdapter() *JoraAdapter {
 	return jora
 }
 
-func (j JoraAdapter) RunSurvey() []entities.InboundJobPost {
+func (j JoraAdapter) RunSurvey() (
+	[]entities.InboundJobPost,
+	error,
+) {
 	searchUrls := []string{}
 	for _, searchCriteria := range j.ConfigSettings.SearchCriterias {
 		searchUrls = append(searchUrls, searchCriteria.Url)

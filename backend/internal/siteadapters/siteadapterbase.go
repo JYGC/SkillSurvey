@@ -5,5 +5,5 @@ import (
 )
 
 type ISiteAdapter interface {
-	RunSurvey() []entities.InboundJobPost
+	RunSurvey() ([]entities.InboundJobPost, error)
 }

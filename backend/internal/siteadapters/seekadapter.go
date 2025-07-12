@@ -36,8 +36,11 @@ func NewSeekAdapter() *SeekAdapter {
 	return seek
 }
 
-func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
-	inboundJobPosts, scrapeErr := s.apiScraper.Scrape(
+func (s SeekAdapter) RunSurvey() (
+	[]entities.InboundJobPost,
+	error,
+) {
+	return s.apiScraper.Scrape(
 		s.configSettings.Pages,
 		len(s.configSettings.ApiParameters),
 		func(page int, apiParameterSetNumber int) any {
@@ -76,6 +79,7 @@ func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 			}
 			var dataJsonMaps []map[string]any
 			json.Unmarshal(dataBytes, &dataJsonMaps)
+			var jobPostErrors []error
 			for _, dataJsonMap := range dataJsonMaps {
 				jobSiteNumber := dataJsonMap["id"].(string)
 				url := fmt.Sprintf(
@@ -99,7 +103,8 @@ func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 						},
 					)
 				if newInboundJobPostErr != nil {
-					return nil, newInboundJobPostErr
+					jobPostErrors = append(jobPostErrors, newInboundJobPostErr)
+					continue
 				}
 				newInboundJobPost.SiteName = s.configSettings.SiteSelectors.SiteName
 				newInboundJobPost.JobSiteNumber = jobSiteNumber
@@ -113,18 +118,18 @@ func (s SeekAdapter) RunSurvey() []entities.InboundJobPost {
 					dataJsonMap["listingDate"].(string),
 				)
 				if postedDateErr != nil {
-					return nil, postedDateErr
+					jobPostErrors = append(jobPostErrors, postedDateErr)
+					continue
 				}
 				newInboundJobPost.PostedDate = postedDate
 				newInboundJobPosts = append(newInboundJobPosts, newInboundJobPost)
 			}
-			return newInboundJobPosts, nil
+			if len(jobPostErrors) > 0 {
+				err = fmt.Errorf("jobPostErrors: %v", jobPostErrors)
+			}
+			return newInboundJobPosts, err
 		},
 	)
-	if scrapeErr != nil {
-		panic(scrapeErr)
-	}
-	return inboundJobPosts
 }
 
 func (s SeekAdapter) getPostedDate(doc *colly.HTMLElement) time.Time {
@@ -133,7 +138,6 @@ func (s SeekAdapter) getPostedDate(doc *colly.HTMLElement) time.Time {
 		"Url":       doc.Request.URL.String(),
 		"Variables": variableRef,
 	})
-
 	const startString = "Posted "
 	const endString = " ago"
 
