@@ -5,28 +5,19 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"runtime/debug"
 
-	"github.com/JYGC/SkillSurvey/internal/config"
-	"github.com/JYGC/SkillSurvey/internal/readonlysettings"
+	"github.com/JYGC/SkillSurvey/internal/environment"
 )
 
-const errorLogFile = "error.log"
+const errorLogFile = "./error.log"
 
 var ErrorLogger *log.Logger
 
 func init() {
-	configSettings := config.LoadMainConfig()
 	var err error
-	var appDataFolder string
-	appDataFolder, err = readonlysettings.GetAppDataFolder(configSettings.IsProduction)
-	if err != nil {
-		log.Fatal(err)
-		panic(err)
-	}
 	file, err := os.OpenFile(
-		filepath.Join(appDataFolder, errorLogFile),
+		environment.AttachToExecutableDir(errorLogFile),
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY,
 		0666,
 	)

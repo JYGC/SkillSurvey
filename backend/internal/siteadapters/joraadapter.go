@@ -7,6 +7,7 @@ import (
 
 	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/entities"
+	"github.com/JYGC/SkillSurvey/internal/environment"
 	"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/JYGC/SkillSurvey/internal/webscraper"
 	"github.com/gocolly/colly/v2"
@@ -21,7 +22,10 @@ type JoraAdapter struct {
 
 func NewJoraAdapter() *JoraAdapter {
 	jora := new(JoraAdapter)
-	config.JsonToConfig(&jora.ConfigSettings, joraConfigFileName)
+	config.JsonToConfig(
+		&jora.ConfigSettings,
+		environment.AttachToExecutableDir(joraConfigFileName),
+	)
 	jora.webScraper = webscraper.NewWebScraper(
 		jora.ConfigSettings.BaseUrl,
 		jora.ConfigSettings.SiteSelectors.SiteName,

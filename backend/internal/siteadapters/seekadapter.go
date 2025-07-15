@@ -11,6 +11,7 @@ import (
 	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/dynamiccontentextractor"
 	"github.com/JYGC/SkillSurvey/internal/entities"
+	"github.com/JYGC/SkillSurvey/internal/environment"
 	"github.com/JYGC/SkillSurvey/internal/exception"
 	"github.com/JYGC/SkillSurvey/internal/getapiscraper"
 
@@ -27,7 +28,10 @@ type SeekAdapter struct {
 
 func NewSeekAdapter() *SeekAdapter {
 	seek := new(SeekAdapter)
-	config.JsonToConfig(&seek.configSettings, seekConfigFilename)
+	config.JsonToConfig(
+		&seek.configSettings,
+		environment.AttachToExecutableDir(seekConfigFilename),
+	)
 	seek.dynamicContentExtractor =
 		dynamiccontentextractor.NewDynamicContentExtractor(seek.configSettings)
 	seek.apiScraper = getapiscraper.NewGetApiScraper(
