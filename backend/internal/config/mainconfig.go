@@ -2,6 +2,8 @@ package config
 
 import (
 	"flag"
+
+	"github.com/JYGC/SkillSurvey/internal/environment"
 )
 
 const (
@@ -19,9 +21,9 @@ type MainConfig struct {
 func LoadMainConfig() MainConfig {
 	var mainConfig MainConfig
 	if flag.Lookup("test.v") == nil {
-		JsonToConfig(&mainConfig, configPath)
+		JsonToConfig(&mainConfig, environment.AttachToExecutableDir(configPath))
 	} else {
-		JsonToConfig(&mainConfig, testConfigPath)
+		JsonToConfig(&mainConfig, environment.AttachToExecutableDir(testConfigPath))
 	}
 	return mainConfig
 }

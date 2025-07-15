@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/exception"
@@ -37,6 +38,7 @@ func (w WebScraper) Scrape(
 	jobPostLinkSelector string,
 	numberOfPages int,
 	pageFlag string,
+	secondsBetweenJobPosts int,
 	searchUrls []string,
 	createNewInboundJobPost func(doc *colly.HTMLElement) entities.InboundJobPost,
 ) (jobPosts []entities.InboundJobPost, err error) {
@@ -52,6 +54,7 @@ func (w WebScraper) Scrape(
 	if len(jobPostLinks) > 0 {
 		var jobPostErr error
 		jobPosts, jobPostErr = w.getJobPosts(
+			secondsBetweenJobPosts,
 			jobPostLinks,
 			createNewInboundJobPost,
 		)
@@ -105,6 +108,7 @@ func (w *WebScraper) getJobPostLinks(
 }
 
 func (w WebScraper) getJobPosts(
+	secondsBetweenJobPosts int,
 	jobPostLinksSlice []string,
 	createNewInboundJobPost func(doc *colly.HTMLElement) entities.InboundJobPost,
 ) (
@@ -132,11 +136,13 @@ func (w WebScraper) getJobPosts(
 	var jobPostLinkErrs []error
 	for _, jobPostLink := range jobPostLinksSlice {
 		link := w.baseUrl + jobPostLink
+		fmt.Printf("link: %v\n", link)
 		jobPostLinkErr := w.scraperEngine.Visit(link)
 		if jobPostLinkErr != nil {
 			jobPostLinkErrs = append(jobPostLinkErrs, jobPostLinkErr)
 			exception.LogErrorWithLabel("jobPostLinkErr", jobPostLinkErr)
 		}
+		time.Sleep(time.Duration(secondsBetweenJobPosts) * time.Second)
 	}
 	if len(jobPostLinkErrs) > 0 {
 		err = fmt.Errorf("%v\njobPostLinkErrs: %v", err, jobPostLinkErrs)

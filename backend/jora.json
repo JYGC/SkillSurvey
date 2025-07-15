@@ -23,5 +23,6 @@
         "PostedDateType": "text",
         "CityType": "text",
         "SuburbType": "text"
-    }
+    },
+    "SecondsBetweenJobPosts": 2
 }

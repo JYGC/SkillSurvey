@@ -46,6 +46,7 @@ func (j JoraAdapter) RunSurvey() (
 		j.ConfigSettings.SiteSelectors.JobPostLink,
 		j.ConfigSettings.Pages,
 		j.ConfigSettings.PageFlag,
+		j.ConfigSettings.SecondsBetweenJobPosts,
 		searchUrls,
 		func(doc *colly.HTMLElement) entities.InboundJobPost {
 			newInboundJobPost := entities.InboundJobPost{}
