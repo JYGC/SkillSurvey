@@ -136,7 +136,6 @@ func (w WebScraper) getJobPosts(
 	var jobPostLinkErrs []error
 	for _, jobPostLink := range jobPostLinksSlice {
 		link := w.baseUrl + jobPostLink
-		fmt.Printf("link: %v\n", link)
 		jobPostLinkErr := w.scraperEngine.Visit(link)
 		if jobPostLinkErr != nil {
 			jobPostLinkErrs = append(jobPostLinkErrs, jobPostLinkErr)

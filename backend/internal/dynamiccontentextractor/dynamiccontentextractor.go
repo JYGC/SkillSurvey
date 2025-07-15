@@ -2,10 +2,8 @@ package dynamiccontentextractor
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
-	"github.com/JYGC/SkillSurvey/internal/config"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/chromedp/chromedp"
 )
@@ -18,15 +16,7 @@ type DynamicContentExtractor struct {
 	chromedpOptions []chromedp.ExecAllocatorOption
 }
 
-func NewDynamicContentExtractor(
-	configSettingsInterface any,
-) DynamicContentExtractor {
-	var configSettings config.SiteAdapterConfig
-	configSettingsBytes, configSettingsBytesErr := json.Marshal(configSettingsInterface)
-	if configSettingsBytesErr != nil {
-		configSettings = config.SiteAdapterConfig{}
-	}
-	json.Unmarshal(configSettingsBytes, &configSettings)
+func NewDynamicContentExtractor() DynamicContentExtractor {
 	chromedpOptions := []chromedp.ExecAllocatorOption{
 		chromedp.UserAgent(userAgent),
 		chromedp.WindowSize(1920, 1080),
