@@ -122,12 +122,13 @@ func (w WebScraper) getJobPosts(
 				"(Url: %s)",
 				doc.Request.URL.String(),
 			)
-			errInterface := recover()
-			switch x := errInterface.(type) {
-			case string:
-				err = fmt.Errorf("%v scraperErr: %s %s", err, x, extraVariables)
-			default:
-				err = fmt.Errorf("%v scraperErr: %v %s", err, x, extraVariables)
+			if errInterface := recover(); errInterface != nil {
+				switch x := errInterface.(type) {
+				case string:
+					err = fmt.Errorf("%v scraperErr: %s %s", err, x, extraVariables)
+				default:
+					err = fmt.Errorf("%v scraperErr: %v %s", err, x, extraVariables)
+				}
 			}
 		})()
 		newInboundJobPost = createNewInboundJobPost(doc)
