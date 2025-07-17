@@ -1,0 +1,37 @@
+{
+    "BaseUrl": "https://www.seek.com.au",
+    "AllowedDomains": ["www.seek.com.au"],
+    "SearchApiUrl": "https://www.seek.com.au/api/jobsearch/v5/search",
+    "SearchCriterias": [
+        {
+            "Name": "All TechJobs Melbourne",
+            "Url": "https://www.seek.com.au/jobs-in-information-communication-technology/in-All-Melbourne-VIC?page={p}"
+        }
+    ],
+    "PageFlag": "{p}",
+    "Pages": 40,
+    "SiteSelectors": {
+        "SiteName": "seek.com.au",
+        "TitleSelector": "[data-automation=\"job-detail-title\"]",
+        "BodySelector": "[data-automation=\"jobAdDetails\"]"
+    },
+    "ApiParameters": [
+        {
+            "NewSinceDaysAgo": 90,
+            "SiteKey": "AU-Main",
+            "SourceSystem": "houston",
+            "UserQueryId": "aeb5109edbfc379e2a97d0dd748fd81f-1099727",
+            "UserId": "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+            "UserSessionId": "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+            "EventCaptureSessionId": "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
+            "Where": "All+Melbourne+VIC",
+            "Classification": "6281",
+            "PageSize": "100",
+            "Include": "",
+            "Locale": "en-AU",
+            "SolId": "78fc4265-7367-48f8-b9b4-dae834474999",
+            "RelatedSearchesCount": "12",
+            "BaseKeywords": ""
+        }
+    ]
+}
