@@ -1,5 +1,3 @@
 {
-    "ServerPort": "3000",
-    "IsProduction": false,
-    "ResultUiRoot": "./resultsui/dist"
+    "ServerPort": "3000"
 }

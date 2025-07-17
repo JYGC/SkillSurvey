@@ -13,9 +13,7 @@ const (
 
 type MainConfig struct {
 	ConfigBase
-	ServerPort   string
-	IsProduction bool
-	ResultUiRoot string
+	ServerPort string
 }
 
 func LoadMainConfig() MainConfig {
