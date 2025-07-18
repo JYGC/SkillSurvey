@@ -39,11 +39,13 @@ func (w WebScraper) Scrape(
 	numberOfPages int,
 	pageFlag string,
 	secondsBetweenJobPosts int,
+	secondsBetweenLinkPages int,
 	searchUrls []string,
 	createNewInboundJobPost func(doc *colly.HTMLElement) entities.InboundJobPost,
 ) (jobPosts []entities.InboundJobPost, err error) {
 	jobPostLinks, jobPostLinksErr := w.getJobPostLinks(
 		jobPostLinkSelector,
+		secondsBetweenLinkPages,
 		numberOfPages,
 		pageFlag,
 		searchUrls,
@@ -75,6 +77,7 @@ func (w WebScraper) Scrape(
 
 func (w *WebScraper) getJobPostLinks(
 	jobPostLinkSelector string,
+	secondsBetweenLinkPages int,
 	numberOfPages int,
 	pageFlag string,
 	searchUrls []string,
@@ -99,6 +102,7 @@ func (w *WebScraper) getJobPostLinks(
 				pageErrors = append(pageErrors, pageError)
 				exception.LogErrorWithLabel("pageError", pageError)
 			}
+			time.Sleep(time.Duration(secondsBetweenLinkPages) * time.Second)
 		}
 	}
 	if len(pageErrors) > 0 {

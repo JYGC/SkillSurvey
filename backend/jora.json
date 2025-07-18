@@ -24,5 +24,6 @@
         "CityType": "text",
         "SuburbType": "text"
     },
-    "SecondsBetweenJobPosts": 2
+    "SecondsBetweenJobPosts": 1,
+    "SecondsBetweenLinkPages": 1
 }

@@ -22,11 +22,12 @@ type JoraSelectors struct {
 }
 
 type JoraAdapterConfig struct {
-	BaseUrl                string
-	AllowedDomains         []string
-	SearchCriterias        []JoraSearchCriteria
-	PageFlag               string
-	Pages                  int
-	SiteSelectors          JoraSelectors
-	SecondsBetweenJobPosts int
+	BaseUrl                 string
+	AllowedDomains          []string
+	SearchCriterias         []JoraSearchCriteria
+	PageFlag                string
+	Pages                   int
+	SiteSelectors           JoraSelectors
+	SecondsBetweenJobPosts  int
+	SecondsBetweenLinkPages int
 }
