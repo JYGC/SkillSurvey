@@ -1,4 +1,5 @@
 OUTPUT_DIR=./build
+DEPLOY_DIR=${HOME}/Testing/SkillSurvey
 
 mk_output_dir:
 	mkdir -p ${OUTPUT_DIR}
@@ -23,3 +24,10 @@ build_results: cp_config
 
 run_results: build_results
 	${OUTPUT_DIR}/results
+
+deploy: build_survey build_reports build_results
+	mkdir -p ${DEPLOY_DIR}
+	cp ${OUTPUT_DIR}/survey ${DEPLOY_DIR}/
+	cp ${OUTPUT_DIR}/reports ${DEPLOY_DIR}/
+	cp ${OUTPUT_DIR}/results ${DEPLOY_DIR}/
+	cp ${OUTPUT_DIR}/*.json ${DEPLOY_DIR}/
