@@ -10,14 +10,14 @@ import (
 	"github.com/JYGC/SkillSurvey/internal/environment"
 )
 
-const errorLogFile = "./error.log"
+const errorLogFileName = "./error.log"
 
 var ErrorLogger *log.Logger
 
 func init() {
 	var err error
 	file, err := os.OpenFile(
-		environment.AttachToExecutableDir(errorLogFile),
+		environment.AttachToExecutableDir(errorLogFileName),
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY,
 		0666,
 	)
@@ -55,4 +55,22 @@ func LogExtraData(extraData map[string]any) {
 
 func LogErrorWithLabel(label string, err error) {
 	ErrorLogger.Printf("%s: %v\n", label, err)
+}
+
+func GetAllLogs() (allLogs string, err error) {
+	logContentBytes, err := os.ReadFile(
+		environment.AttachToExecutableDir(errorLogFileName),
+	)
+	if err != nil {
+		return "", err
+	}
+	allLogs = string(logContentBytes)
+	return allLogs, nil
+}
+
+func ClearLogs() error {
+	return os.Truncate(
+		environment.AttachToExecutableDir(errorLogFileName),
+		0,
+	)
 }
