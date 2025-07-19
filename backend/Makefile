@@ -31,7 +31,7 @@ build_housekeeping:
 run_housekeeping: build_housekeeping
 	${OUTPUT_DIR}/housekeeping
 
-deploy: build_survey build_reports build_results
+deploy: build_survey build_reports build_results build_housekeeping
 	mkdir -p ${DEPLOY_DIR}
 	cp ${OUTPUT_DIR}/survey ${DEPLOY_DIR}/
 	cp ${OUTPUT_DIR}/reports ${DEPLOY_DIR}/
