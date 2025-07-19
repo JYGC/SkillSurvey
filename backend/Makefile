@@ -25,9 +25,16 @@ build_results: cp_config
 run_results: build_results
 	${OUTPUT_DIR}/results
 
+build_housekeeping:
+	go build -o ${OUTPUT_DIR}/housekeeping ./cmd/housekeeping/main.go
+
+run_housekeeping: build_housekeeping
+	${OUTPUT_DIR}/housekeeping
+
 deploy: build_survey build_reports build_results
 	mkdir -p ${DEPLOY_DIR}
 	cp ${OUTPUT_DIR}/survey ${DEPLOY_DIR}/
 	cp ${OUTPUT_DIR}/reports ${DEPLOY_DIR}/
 	cp ${OUTPUT_DIR}/results ${DEPLOY_DIR}/
 	cp ${OUTPUT_DIR}/*.json ${DEPLOY_DIR}/
+	cp ${OUTPUT_DIR}/housekeeping ${DEPLOY_DIR}/
