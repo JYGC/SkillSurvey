@@ -19,6 +19,6 @@ func getMonthlyCountAPI(w http.ResponseWriter, request *http.Request) {
 	makeResponse(w, request, report)
 }
 
-func SetReportHandlers() {
-	http.HandleFunc("/report/getmonthlycount", getMonthlyCountAPI)
+func SetReportHandlers(mux *http.ServeMux) {
+	mux.HandleFunc("/report/getmonthlycount", getMonthlyCountAPI)
 }
