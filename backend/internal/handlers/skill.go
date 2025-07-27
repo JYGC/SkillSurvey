@@ -144,10 +144,10 @@ func deleteSkillAPI(responseWriter http.ResponseWriter, request *http.Request) {
 	makeResponse(responseWriter, request, "success")
 }
 
-func SetSkillHandlers() {
-	http.HandleFunc("/skill/getall", getSkillListAPI)
-	http.HandleFunc("/skill/getbyid", getSkillByIDAPI)
-	http.HandleFunc("/skill/add", addSkillAPI)
-	http.HandleFunc("/skill/save", saveSkillAPI)
-	http.HandleFunc("/skill/delete", deleteSkillAPI)
+func SetSkillHandlers(mux *http.ServeMux) {
+	mux.HandleFunc("/skill/getall", getSkillListAPI)
+	mux.HandleFunc("/skill/getbyid", getSkillByIDAPI)
+	mux.HandleFunc("/skill/add", addSkillAPI)
+	mux.HandleFunc("/skill/save", saveSkillAPI)
+	mux.HandleFunc("/skill/delete", deleteSkillAPI)
 }

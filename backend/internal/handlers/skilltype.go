@@ -118,11 +118,11 @@ func deleteSkillTypeAPI(responseWriter http.ResponseWriter, request *http.Reques
 	makeResponse(responseWriter, request, "success")
 }
 
-func SetSkillTypeHandlers() {
-	http.HandleFunc("/skilltype/getall", getSkillTypeListAPI)
-	http.HandleFunc("/skilltype/getbyid", getSkillTypeByIDAPI)
-	http.HandleFunc("/skilltype/getallidandname", getAllSkillTypeIDAndNameAPI)
-	http.HandleFunc("/skilltype/add", addSkillTypeAPI)
-	http.HandleFunc("/skilltype/save", saveSkillTypeAPI)
-	http.HandleFunc("/skilltype/delete", deleteSkillTypeAPI)
+func SetSkillTypeHandlers(mux *http.ServeMux) {
+	mux.HandleFunc("/skilltype/getall", getSkillTypeListAPI)
+	mux.HandleFunc("/skilltype/getbyid", getSkillTypeByIDAPI)
+	mux.HandleFunc("/skilltype/getallidandname", getAllSkillTypeIDAndNameAPI)
+	mux.HandleFunc("/skilltype/add", addSkillTypeAPI)
+	mux.HandleFunc("/skilltype/save", saveSkillTypeAPI)
+	mux.HandleFunc("/skilltype/delete", deleteSkillTypeAPI)
 }
