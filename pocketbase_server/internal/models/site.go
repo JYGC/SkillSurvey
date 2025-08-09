@@ -17,10 +17,10 @@ func (s *Site) SetName(name string) {
 	s.Set("name", name)
 }
 
-func (s *Site) Url() string {
-	return s.GetString("url")
+func (s *Site) BaseUrl() string {
+	return s.GetString("base_url")
 }
 
-func (s *Site) SetUrl(url string) {
-	s.Set("url", url)
+func (s *Site) SetBaseUrl(baseUrl string) {
+	s.Set("base_url", baseUrl)
 }
