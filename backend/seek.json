@@ -9,7 +9,7 @@
         }
     ],
     "PageFlag": "{p}",
-    "Pages": 40,
+    "Pages": 0,
     "SiteSelectors": {
         "SiteName": "seek.com.au",
         "TitleSelector": "[data-automation=\"job-detail-title\"]",
@@ -26,7 +26,7 @@
             "EventCaptureSessionId": "bd4c5bde-f33f-4ea4-9257-eb590762f52e",
             "Where": "All+Melbourne+VIC",
             "Classification": "6281",
-            "PageSize": "100",
+            "PageSize": "2",
             "Include": "",
             "Locale": "en-AU",
             "SolId": "78fc4265-7367-48f8-b9b4-dae834474999",

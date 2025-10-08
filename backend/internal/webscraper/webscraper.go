@@ -11,7 +11,7 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-const userAgent = "node-spider"
+const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
 
 type WebScraper struct {
 	baseUrl       string
@@ -55,7 +55,7 @@ func (w WebScraper) Scrape(
 	}
 	if len(jobPostLinks) > 0 {
 		var jobPostErr error
-		jobPosts, jobPostErr = w.getJobPosts(
+		jobPosts, jobPostErr = w.GetJobPosts(
 			secondsBetweenJobPosts,
 			jobPostLinks,
 			createNewInboundJobPost,
@@ -111,7 +111,7 @@ func (w *WebScraper) getJobPostLinks(
 	return jobPostLinks, err
 }
 
-func (w WebScraper) getJobPosts(
+func (w WebScraper) GetJobPosts(
 	secondsBetweenJobPosts int,
 	jobPostLinksSlice []string,
 	createNewInboundJobPost func(doc *colly.HTMLElement) entities.InboundJobPost,

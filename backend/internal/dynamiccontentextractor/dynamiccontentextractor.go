@@ -2,9 +2,10 @@ package dynamiccontentextractor
 
 import (
 	"context"
+	"fmt"
 	"time"
 
-	"github.com/JYGC/SkillSurvey/internal/entities"
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
 )
 
@@ -16,7 +17,7 @@ type DynamicContentExtractor struct {
 	chromedpOptions []chromedp.ExecAllocatorOption
 }
 
-func NewDynamicContentExtractor() DynamicContentExtractor {
+func NewDynamicContentExtractor() *DynamicContentExtractor {
 	chromedpOptions := []chromedp.ExecAllocatorOption{
 		chromedp.UserAgent(userAgent),
 		chromedp.WindowSize(1920, 1080),
@@ -25,20 +26,15 @@ func NewDynamicContentExtractor() DynamicContentExtractor {
 		chromedp.Flag("headless", true),                                 // Headless mode; set to false for headful if needed
 		chromedp.Flag("disable-blink-features", "AutomationControlled"), // Hide automation signals
 	}
-	return DynamicContentExtractor{
+	return &DynamicContentExtractor{
 		chromedpOptions,
 	}
 }
 
-func (d DynamicContentExtractor) GetInboundJobPost(
+func (d DynamicContentExtractor) ExtractDynamicContent(
 	url string,
-	matchSiteSelectorToProperties func(
-		newInboundJobPost *entities.InboundJobPost,
-	) map[string]*string,
-) (
-	newInboundJobPost entities.InboundJobPost,
-	err error,
-) {
+	extractFunction func(context.Context) error,
+) (err error) {
 	allocatorCtx, allocatorCancel := chromedp.NewExecAllocator(
 		context.Background(),
 		d.chromedpOptions...,
@@ -51,25 +47,56 @@ func (d DynamicContentExtractor) GetInboundJobPost(
 	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, 60*time.Second)
 	defer timeoutCancel()
 
-	newInboundJobPost = entities.InboundJobPost{}
 	chromedpActions := []chromedp.Action{
 		chromedp.Evaluate(webdriverProperty, nil),
 		chromedp.Evaluate(pluginsProperty, nil),
 		chromedp.Navigate(url),
-		chromedp.WaitVisible("body", chromedp.ByQueryAll),
+		chromedp.WaitVisible("html", chromedp.ByQueryAll),
+		chromedp.ActionFunc(extractFunction),
 	}
-	matchedSiteSelectors := matchSiteSelectorToProperties(&newInboundJobPost)
-	for selector, propertyPointer := range matchedSiteSelectors {
-		chromedpActions = append(
-			chromedpActions,
-			chromedp.Text(selector, propertyPointer),
-		)
-	}
+
 	err = chromedp.Run(timeoutCtx, chromedpActions...)
 
 	if err != nil {
-		return entities.InboundJobPost{}, err
+		return err
 	}
 
-	return newInboundJobPost, nil
+	return nil
+}
+
+func getContentFromContext(selector string, getContentFunc func([]*cdp.Node) error, ctx context.Context) (err error) {
+	var errParts []error
+	var nodes []*cdp.Node
+	if getNodesErr := chromedp.Nodes(selector, &nodes, chromedp.ByQuery).Do(ctx); getNodesErr != nil {
+		errParts = append(errParts, fmt.Errorf("getNodesErr: %v", getNodesErr))
+	}
+	if len(nodes) > 0 {
+		if getContentFuncErr := getContentFunc(nodes); getContentFuncErr != nil {
+			errParts = append(errParts, getContentFuncErr)
+		}
+	}
+	if len(errParts) > 0 {
+		err = fmt.Errorf("%v", errParts)
+	}
+	return err
+}
+
+func GetTextBySelector(selector string, text *string, ctx context.Context) (err error) {
+	return getContentFromContext(selector, func(nodes []*cdp.Node) error {
+		if getTextErr := chromedp.Text(nodes[0].FullXPath(), text).Do(ctx); getTextErr != nil {
+			return fmt.Errorf("getTextErr: %v", getTextErr)
+		}
+		return nil
+	}, ctx)
+}
+
+func GetAttributeValue(selector string, attributeName string, value *string, ctx context.Context) (err error) {
+	return getContentFromContext(selector, func(nodes []*cdp.Node) error {
+		attributeExists := false
+		*value, attributeExists = nodes[0].Attribute(attributeName)
+		if !attributeExists {
+			return fmt.Errorf("attribute not found")
+		}
+		return nil
+	}, ctx)
 }

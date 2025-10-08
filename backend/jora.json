@@ -8,11 +8,12 @@
         }
     ],
     "PageFlag": "{p}",
-    "Pages": 100,
+    "Pages": 1,
     "SiteSelectors": {
+        "JobSiteNumber": "[job-id]",
         "SiteName": "au.jora.com",
         "JobPostLink": ".job-link",
-        "TitleSelector": "h3.job-title.heading-xxlarge",
+        "TitleSelector": ".job-title",
         "BodySelector": "#job-description-container",
         "PostedDateSelector": ".listed-date",
         "CitySelector": ".location",
@@ -23,6 +24,9 @@
         "PostedDateType": "text",
         "CityType": "text",
         "SuburbType": "text"
+    },
+    "AttributeSelectors": {
+        "JobSiteNumber": "job-id"
     },
     "SecondsBetweenJobPosts": 1,
     "SecondsBetweenLinkPages": 1

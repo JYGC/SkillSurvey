@@ -6,6 +6,7 @@ type JoraSearchCriteria struct {
 }
 
 type JoraSelectors struct {
+	JobSiteNumber      string
 	SiteName           string
 	JobPostLink        string
 	TitleSelector      string
@@ -21,6 +22,10 @@ type JoraSelectors struct {
 	SuburbType         string
 }
 
+type AttributeSelectors struct {
+	JobSiteNumber string
+}
+
 type JoraAdapterConfig struct {
 	BaseUrl                 string
 	AllowedDomains          []string
@@ -28,6 +33,7 @@ type JoraAdapterConfig struct {
 	PageFlag                string
 	Pages                   int
 	SiteSelectors           JoraSelectors
+	AttributeSelectors      AttributeSelectors
 	SecondsBetweenJobPosts  int
 	SecondsBetweenLinkPages int
 }
