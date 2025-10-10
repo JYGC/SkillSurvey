@@ -158,7 +158,7 @@ func (j JoraAdapter) getPostedDate(ctx context.Context) (postedDate time.Time, e
 		return postedDate, nil
 	}
 
-	if monthsIndex := strings.Index(ageString, "mo age"); monthsIndex > 0 {
+	if monthsIndex := strings.Index(ageString, "mo ago"); monthsIndex > 0 {
 		var monthsOld int
 		if monthsOld, err = strconv.Atoi(ageString[0:monthsIndex]); err != nil {
 			return postedDate, err
