@@ -109,8 +109,6 @@ func (s SeekAdapter) RunSurvey() (
 							return err
 						},
 					)
-				fmt.Printf("title: %v\n", newInboundJobPost.Title)
-				fmt.Printf("body: %v\n", newInboundJobPost.Body)
 				if newInboundJobPostErr != nil {
 					jobPostErrors = append(jobPostErrors, newInboundJobPostErr)
 					exception.LogErrorWithLabel("newInboundJobPostErr", newInboundJobPostErr)

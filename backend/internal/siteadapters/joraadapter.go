@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -12,7 +13,6 @@ import (
 	"github.com/JYGC/SkillSurvey/internal/dynamiccontentextractor"
 	"github.com/JYGC/SkillSurvey/internal/entities"
 	"github.com/JYGC/SkillSurvey/internal/environment"
-	"github.com/JYGC/SkillSurvey/internal/webscraper"
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
 )
@@ -20,21 +20,15 @@ import (
 const joraConfigFileName = "jora.json"
 
 type JoraAdapter struct {
-	ConfigSettings          JoraAdapterConfig
-	webScraper              *webscraper.WebScraper
+	configSettings          JoraAdapterConfig
 	dynamicContentExtractor *dynamiccontentextractor.DynamicContentExtractor
 }
 
 func NewJoraAdapter() *JoraAdapter {
 	jora := new(JoraAdapter)
 	config.JsonToConfig(
-		&jora.ConfigSettings,
+		&jora.configSettings,
 		environment.AttachToExecutableDir(joraConfigFileName),
-	)
-	jora.webScraper = webscraper.NewWebScraper(
-		jora.ConfigSettings.BaseUrl,
-		jora.ConfigSettings.SiteSelectors.SiteName,
-		jora.ConfigSettings.AllowedDomains,
 	)
 	jora.dynamicContentExtractor = dynamiccontentextractor.NewDynamicContentExtractor()
 	return jora
@@ -47,11 +41,11 @@ func (j JoraAdapter) RunSurvey() (
 	var errParts []error
 	var pageErrors []error
 	jobPostLinks := []string{}
-	for _, searchCriteria := range j.ConfigSettings.SearchCriterias {
-		for searchPage := 1; searchPage <= j.ConfigSettings.Pages; searchPage++ {
+	for _, searchCriteria := range j.configSettings.SearchCriterias {
+		for searchPage := 1; searchPage <= j.configSettings.Pages; searchPage++ {
 			pageUrl := strings.ReplaceAll(
 				searchCriteria.Url,
-				j.ConfigSettings.PageFlag,
+				j.configSettings.PageFlag,
 				strconv.Itoa(searchPage),
 			)
 			pageError := j.dynamicContentExtractor.ExtractDynamicContent(
@@ -64,8 +58,11 @@ func (j JoraAdapter) RunSurvey() (
 
 					for _, node := range nodes {
 						if jobPostPath, ok := node.Attribute("href"); ok {
-							jobPostLink := j.ConfigSettings.BaseUrl + jobPostPath
-							jobPostLinks = append(jobPostLinks, jobPostLink)
+							jobPostPathWithArgments := strings.Split(jobPostPath, "?")
+							jobPostLink := j.configSettings.BaseUrl + jobPostPathWithArgments[0]
+							if !slices.Contains(jobPostLinks, jobPostLink) {
+								jobPostLinks = append(jobPostLinks, jobPostLink)
+							}
 						}
 					}
 					return nil
@@ -87,24 +84,24 @@ func (j JoraAdapter) RunSurvey() (
 			func(ctx context.Context) (jobPostErr error) {
 				var jobPostErrParts []error
 				newInboundJobPost := entities.InboundJobPost{}
-				newInboundJobPost.SiteName = j.ConfigSettings.SiteSelectors.SiteName
+				newInboundJobPost.SiteName = j.configSettings.SiteSelectors.SiteName
 				newInboundJobPost.JobSiteNumber = j.getJobSiteNumber(jobPostLink)
 				postedDate, getPostedDateErr := j.getPostedDate(ctx)
 				if getPostedDateErr != nil {
 					jobPostErrParts = append(jobPostErrParts, fmt.Errorf("getPostedDateErr: %v", getPostedDateErr))
 				}
 				newInboundJobPost.PostedDate = postedDate
-				if getTitleErr := dynamiccontentextractor.GetTextBySelector(j.ConfigSettings.SiteSelectors.TitleSelector, &newInboundJobPost.Title, ctx); getTitleErr != nil {
+				if getTitleErr := dynamiccontentextractor.GetTextBySelector(j.configSettings.SiteSelectors.TitleSelector, &newInboundJobPost.Title, ctx); getTitleErr != nil {
 					jobPostErrParts = append(jobPostErrParts, fmt.Errorf("getTitleErr: %v", getTitleErr))
 				}
-				if getBodyErr := dynamiccontentextractor.GetTextBySelector(j.ConfigSettings.SiteSelectors.BodySelector, &newInboundJobPost.Body, ctx); getBodyErr != nil {
+				if getBodyErr := dynamiccontentextractor.GetTextBySelector(j.configSettings.SiteSelectors.BodySelector, &newInboundJobPost.Body, ctx); getBodyErr != nil {
 					jobPostErrParts = append(jobPostErrParts, fmt.Errorf("getBodyErr: %v", getBodyErr))
 				}
-				if getCityErr := dynamiccontentextractor.GetTextBySelector(j.ConfigSettings.SiteSelectors.CitySelector, &newInboundJobPost.City, ctx); getCityErr != nil {
+				if getCityErr := dynamiccontentextractor.GetTextBySelector(j.configSettings.SiteSelectors.CitySelector, &newInboundJobPost.City, ctx); getCityErr != nil {
 					jobPostErrParts = append(jobPostErrParts, fmt.Errorf("getCityErr: %v", getCityErr))
 				}
-				newInboundJobPost.Country = j.ConfigSettings.SiteSelectors.Country
-				if getSuburbErr := dynamiccontentextractor.GetTextBySelector(j.ConfigSettings.SiteSelectors.SuburbSelector, &newInboundJobPost.Suburb, ctx); getSuburbErr != nil {
+				newInboundJobPost.Country = j.configSettings.SiteSelectors.Country
+				if getSuburbErr := dynamiccontentextractor.GetTextBySelector(j.configSettings.SiteSelectors.SuburbSelector, &newInboundJobPost.Suburb, ctx); getSuburbErr != nil {
 					jobPostErrParts = append(jobPostErrParts, fmt.Errorf("getSuburbErr: %v", getSuburbErr))
 				}
 				if len(jobPostErrParts) > 0 {
@@ -136,7 +133,7 @@ func (j JoraAdapter) RunSurvey() (
 // the current date.
 func (j JoraAdapter) getPostedDate(ctx context.Context) (postedDate time.Time, err error) {
 	var ageString string
-	if getAgeStringErr := dynamiccontentextractor.GetTextBySelector(j.ConfigSettings.SiteSelectors.PostedDateSelector, &ageString, ctx); getAgeStringErr != nil {
+	if getAgeStringErr := dynamiccontentextractor.GetTextBySelector(j.configSettings.SiteSelectors.PostedDateSelector, &ageString, ctx); getAgeStringErr != nil {
 		return postedDate, getAgeStringErr
 	}
 
@@ -174,5 +171,9 @@ func (j JoraAdapter) getPostedDate(ctx context.Context) (postedDate time.Time, e
 }
 
 func (j JoraAdapter) getJobSiteNumber(url string) string {
-	return url[strings.Index(url, "/job/")+5 : strings.LastIndex(url, "?")]
+	cutOffIndex := len(url) - 1
+	if strings.Contains(url, "?") {
+		cutOffIndex = strings.LastIndex(url, "?")
+	}
+	return url[strings.Index(url, "/job/")+5 : cutOffIndex]
 }

@@ -8,7 +8,7 @@
         }
     ],
     "PageFlag": "{p}",
-    "Pages": 1,
+    "Pages": 50,
     "SiteSelectors": {
         "JobSiteNumber": "[job-id]",
         "SiteName": "au.jora.com",
