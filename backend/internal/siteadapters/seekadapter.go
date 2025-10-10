@@ -1,6 +1,7 @@
 package siteadapters
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -19,7 +20,7 @@ const seekConfigFilename = "./seek.json"
 type SeekAdapter struct {
 	configSettings          SeekAdapterConfig
 	apiScraper              *getapiscraper.GetApiScraper
-	dynamicContentExtractor dynamiccontentextractor.DynamicContentExtractor
+	dynamicContentExtractor *dynamiccontentextractor.DynamicContentExtractor
 }
 
 func NewSeekAdapter() *SeekAdapter {
@@ -88,18 +89,24 @@ func (s SeekAdapter) RunSurvey() (
 					jobSiteNumber,
 				)
 				fmt.Printf("url: %v\n", url)
-				//fmt.Printf("dataJsonMap: %v\n", dataJsonMap)
 
-				newInboundJobPost, newInboundJobPostErr :=
-					s.dynamicContentExtractor.GetInboundJobPost(
+				newInboundJobPost := entities.InboundJobPost{}
+				newInboundJobPostErr :=
+					s.dynamicContentExtractor.ExtractDynamicContent(
 						url,
-						func(
-							newInboundJobPost *entities.InboundJobPost,
-						) map[string]*string {
-							return map[string]*string{
-								s.configSettings.SiteSelectors.TitleSelector: &newInboundJobPost.Title,
-								s.configSettings.SiteSelectors.BodySelector:  &newInboundJobPost.Body,
+						func(ctx context.Context) (err error) {
+							var errParts []error
+							if getTitleErr := dynamiccontentextractor.GetTextBySelector(s.configSettings.SiteSelectors.TitleSelector, &newInboundJobPost.Title, ctx); getTitleErr != nil {
+								errParts = append(errParts, fmt.Errorf("getTitleErr: &v", getTitleErr))
 							}
+							if getBodyErr := dynamiccontentextractor.GetTextBySelector(s.configSettings.SiteSelectors.BodySelector, &newInboundJobPost.Body, ctx); getBodyErr != nil {
+								errParts = append(errParts, fmt.Errorf("getBodyErr: &v", getBodyErr))
+							}
+
+							if len(errParts) > 0 {
+								err = fmt.Errorf("%v", errParts)
+							}
+							return err
 						},
 					)
 				if newInboundJobPostErr != nil {
