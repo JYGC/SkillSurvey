@@ -1,26 +1,19 @@
 package models
 
-import "github.com/pocketbase/pocketbase/core"
+import (
+	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/types"
+)
 
 var _ core.RecordProxy = (*Site)(nil)
 
 type Site struct {
 	core.BaseRecordProxy
-	//Name string
 }
 
-func (s *Site) Name() string {
-	return s.GetString("name")
-}
-
-func (s *Site) SetName(name string) {
-	s.Set("name", name)
-}
-
-func (s *Site) BaseUrl() string {
-	return s.GetString("base_url")
-}
-
-func (s *Site) SetBaseUrl(baseUrl string) {
-	s.Set("base_url", baseUrl)
-}
+func (r *Site) Name() string                { return r.GetString("name") }
+func (r *Site) SetName(v string)            { r.Set("name", v) }
+func (r *Site) Created() types.DateTime     { return r.GetDateTime("created") }
+func (r *Site) SetCreated(v types.DateTime) { r.Set("created", v) }
+func (r *Site) Updated() types.DateTime     { return r.GetDateTime("updated") }
+func (r *Site) SetUpdated(v types.DateTime) { r.Set("updated", v) }

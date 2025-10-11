@@ -3,3 +3,4 @@ build/
 target/
 frontend/dist/
 frontend/node_modules/
+pb_data/
