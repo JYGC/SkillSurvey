@@ -5,6 +5,7 @@ const app = createApp(App);
 
 // Declare routes
 import { createRouter, createWebHistory } from 'vue-router';
+import RegisterUser from '@/routes/RegisterUser.vue';
 import HomeRoute from '@/routes/HomeRoute.vue';
 import MonthlyCountReport from '@/routes/MonthlyCountReport.vue';
 import SkillAdd from '@/routes/SkillAdd.vue';
@@ -16,6 +17,11 @@ import SkillTypeList from '@/routes/SkillTypeList.vue';
 const routes = [
     {
         path: '/',
+        name: 'register-user',
+        component: RegisterUser
+    },
+    {
+        path: '/home',
         name: 'home',
         component: HomeRoute
     },
@@ -61,10 +67,14 @@ const router = createRouter({
 });
 app.use(router);
 
+// Add Carbon
+import CarbonVue3 from '@carbon/vue';
+app.use(CarbonVue3);
+
 // Add bootstrap
 import BootstrapVue3 from 'bootstrap-vue-3';
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap-vue-3/dist/bootstrap-vue-3.css';
 app.use(BootstrapVue3);
 
 //app.use(store);
