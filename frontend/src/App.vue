@@ -27,6 +27,9 @@ export default defineComponent({
 });
 </script>
 
+<style lang="scss">
+  @import './styles/carbon';
+</style>
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

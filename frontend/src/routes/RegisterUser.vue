@@ -2,8 +2,8 @@
   <CvFluidForm>
     <CvTextInput label="Name" v-model="name" />
     <CvTextInput label="Email" v-model="email" />
-    <CvPasswordInput label="Password" v-model="password" />
-    <CvPasswordInput label="Confirm Password" v-model="confirmPassword" />
+    <CvTextInput label="Password" type="password" v-model="password" />
+    <CvTextInput label="Confirm Password" type="password" v-model="confirmPassword" />
   </CvFluidForm>
   <br />
   <CvButton>Register</CvButton>
@@ -13,7 +13,6 @@ import { ref } from 'vue';
 
 const name = ref('');
 const email = ref('');
-const username = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 </script>

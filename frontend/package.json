@@ -8,10 +8,12 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@carbon/icons-vue": "^10.118.0",
     "@carbon/vue": "^3.0.27",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.7",
     "bootstrap-vue-3": "^0.5.1",
+    "carbon-components": "^10.59.2",
     "chart.js": "^4.5.0",
     "pocketbase": "^0.26.2",
     "vue": "^3.5.17",
@@ -26,6 +28,8 @@
     "@vue/eslint-config-typescript": "^14.6.0",
     "eslint": "^9.31.0",
     "eslint-plugin-vue": "^10.3.0",
+    "sass": "^1.93.2",
+    "sass-loader": "^16.0.5",
     "typescript": "~5.8.3"
   },
   "eslintConfig": {
