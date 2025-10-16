@@ -5,60 +5,86 @@ const app = createApp(App);
 
 // Declare routes
 import { createRouter, createWebHistory } from 'vue-router';
-import RegisterUser from '@/routes/RegisterUser.vue';
-import HomeRoute from '@/routes/HomeRoute.vue';
-import MonthlyCountReport from '@/routes/MonthlyCountReport.vue';
-import SkillAdd from '@/routes/SkillAdd.vue';
-import SkillEdit from '@/routes/SkillEdit.vue';
-import SkillList from '@/routes/SkillList.vue';
-import SkillTypeAdd from '@/routes/SkillTypeAdd.vue';
-import SkillTypeEdit from '@/routes/SkillTypeEdit.vue';
-import SkillTypeList from '@/routes/SkillTypeList.vue';
+import PublicLayout from './layouts/PublicLayout.vue';
+import UserLayout from './layouts/UserLayout.vue';
+import Login from './views/public/Login.vue';
+import RegisterUser from './views/public/RegisterUser.vue';
+import HomeRoute from './views/public/HomeRoute.vue';
+import MonthlyCountReport from './views/public/MonthlyCountReport.vue';
+import SkillAdd from './views/public/SkillAdd.vue';
+import SkillEdit from './views/public/SkillEdit.vue';
+import SkillList from './views/public/SkillList.vue';
+import SkillTypeAdd from './views/public/SkillTypeAdd.vue';
+import SkillTypeEdit from './views/public/SkillTypeEdit.vue';
+import SkillTypeList from './views/public/SkillTypeList.vue';
+import Profile from './views/user/Profile.vue';
 const routes = [
     {
         path: '/',
-        name: 'register-user',
-        component: RegisterUser
+        component: PublicLayout,
+        children: [
+            {
+                path: '',
+                name: 'login',
+                component: Login
+            },
+            {
+                path: 'register',
+                name: 'register-user',
+                component: RegisterUser
+            },
+            {
+                path: 'home',
+                name: 'home',
+                component: HomeRoute
+            },
+            {
+                path: 'monthly-count-report',
+                name: 'monthly-count-report',
+                component: MonthlyCountReport
+            },
+            {
+                path: 'skill-add/:skilltypeid?',
+                name: 'skill-add',
+                component: SkillAdd
+            },
+            {
+                path: 'skill-edit/:skillid',
+                name: 'skill-edit',
+                component: SkillEdit
+            },
+            {
+                path: 'skill-list',
+                name: 'skill-list',
+                component: SkillList
+            },
+            {
+                path: 'skill-type-add',
+                name: 'skill-type-add',
+                component: SkillTypeAdd
+            },
+            {
+                path: 'skill-type-edit/:skilltypeid',
+                name: 'skill-type-edit',
+                component: SkillTypeEdit
+            },
+            {
+                path: 'skill-type-list/',
+                name: 'skill-type-list',
+                component: SkillTypeList
+            }
+        ]
     },
     {
-        path: '/home',
-        name: 'home',
-        component: HomeRoute
-    },
-    {
-        path: '/monthly-count-report',
-        name: 'monthly-count-report',
-        component: MonthlyCountReport
-    },
-    {
-        path: '/skill-add/:skilltypeid?',
-        name: 'skill-add',
-        component: SkillAdd
-    },
-    {
-        path: '/skill-edit/:skillid',
-        name: 'skill-edit',
-        component: SkillEdit
-    },
-    {
-        path: '/skill-list',
-        name: 'skill-list',
-        component: SkillList
-    },
-    {
-        path: '/skill-type-add',
-        name: 'skill-type-add',
-        component: SkillTypeAdd
-    },
-    {
-        path: '/skill-type-edit/:skilltypeid',
-        name: 'skill-type-edit',
-        component: SkillTypeEdit
-    },
-    {
-        path: '/skill-type-list/',
-        name: 'skill-type-list',
-        component: SkillTypeList
+        path: '/user',
+        component: UserLayout,
+        children: [
+            {
+                path: 'profile',
+                name: 'user-profile',
+                component: Profile
+            }
+        ]
     },
 ];
 const router = createRouter({

@@ -32,7 +32,7 @@
 <script lang="ts" setup>
 import { SkillName, SkillNameAlias } from '@/schemas/skills';
 import { reactive } from 'vue';
-import { sortByProperty } from '../services/arrays';
+import { sortByProperty } from '../../services/arrays';
 
 const getAllSkillsUrl = 'http://localhost:3000/skill/getall';
 

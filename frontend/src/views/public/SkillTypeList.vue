@@ -28,7 +28,7 @@
 <script lang="ts" setup>
 import { SkillType } from '@/schemas/skills';
 import { reactive } from 'vue';
-import { sortByProperty } from '../services/arrays';
+import { sortByProperty } from '../../services/arrays';
 
 const getAllSkillTypesUrl = 'http://localhost:3000/skilltype/getall';
 
