@@ -8,7 +8,7 @@ export class BackendClient implements IBackendClient {
     this.__pb = new PocketBase(process.env.VUE_APP_POCKETBASE_URL);
     this.__pb.authStore.loadFromCookie(document.cookie);
     this.__pb.authStore.onChange(() => {
-      document.cookie = this.__pb.authStore.exportToCookie({ httpOnly: false });
+      document.cookie = this.__pb.authStore.exportToCookie({ httpOnly: false, secure: false });
     });
   }
 
