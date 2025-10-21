@@ -23,6 +23,7 @@
         user: userId,
         portalThemes: 'white',
       };
+      await backendClient.collection('user_settings').create(userSettings.value);
     }
 
   };
