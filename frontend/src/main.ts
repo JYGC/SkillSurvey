@@ -18,6 +18,7 @@ import SkillTypeAdd from './views/public/SkillTypeAdd.vue';
 import SkillTypeEdit from './views/public/SkillTypeEdit.vue';
 import SkillTypeList from './views/public/SkillTypeList.vue';
 import Profile from './views/user/Profile.vue';
+import Settings from './views/user/Settings.vue';
 const routes = [
     {
         path: '/',
@@ -83,6 +84,11 @@ const routes = [
                 path: 'profile',
                 name: 'user-profile',
                 component: Profile
+            },
+            {
+                path: 'settings',
+                name: 'user-settings',
+                component: Settings
             }
         ]
     },

@@ -5,6 +5,7 @@
   <p v-else>
     Failure to get authenticate user.
   </p>
+  <CvButton @click="onSettingsClick()">Settings</CvButton>
   <CvButton @click="onLogout()">Logout</CvButton>
   <router-view />
 </template>
@@ -20,8 +21,12 @@
     router.push('/');
   }
 
-  async function onLogout() {
-    await backendClient.authStore.clear();
+  const onLogout = () => {
+    backendClient.authStore.clear();
     router.push('/');
+  }
+
+  const onSettingsClick = () => {
+    router.push('/user/settings');
   }
 </script>

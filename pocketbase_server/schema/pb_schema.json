@@ -803,7 +803,7 @@
         "id": "text2236787266",
         "max": 0,
         "min": 0,
-        "name": "job_site_number",
+        "name": "jobSiteNumber",
         "pattern": "",
         "presentable": false,
         "primaryKey": false,
@@ -839,7 +839,7 @@
         "id": "date789529322",
         "max": "",
         "min": "",
-        "name": "posted_date",
+        "name": "postedDate",
         "presentable": true,
         "required": false,
         "system": false,
@@ -936,7 +936,7 @@
         "id": "date4033519741",
         "max": "",
         "min": "",
-        "name": "year_month_date",
+        "name": "yearMonthDate",
         "presentable": false,
         "required": true,
         "system": false,
@@ -961,7 +961,7 @@
         "id": "relation425910964",
         "maxSelect": 1,
         "minSelect": 0,
-        "name": "skill_name",
+        "name": "skillName",
         "presentable": false,
         "required": false,
         "system": false,
@@ -1098,7 +1098,7 @@
         "id": "relation425910964",
         "maxSelect": 1,
         "minSelect": 0,
-        "name": "skill_name",
+        "name": "skillName",
         "presentable": false,
         "required": true,
         "system": false,
@@ -1183,7 +1183,7 @@
       {
         "hidden": false,
         "id": "bool1187331404",
-        "name": "is_enabled",
+        "name": "isEnabled",
         "presentable": false,
         "required": false,
         "system": false,
@@ -1196,7 +1196,7 @@
         "id": "relation3416247195",
         "maxSelect": 1,
         "minSelect": 0,
-        "name": "skill_type",
+        "name": "skillType",
         "presentable": false,
         "required": true,
         "system": false,
@@ -1300,6 +1300,85 @@
       }
     ],
     "indexes": [],
+    "system": false
+  },
+  {
+    "id": "pbc_3975969204",
+    "listRule": "@request.auth.id != \"\" && user = @request.auth.id",
+    "viewRule": "@request.auth.id != \"\" && user = @request.auth.id",
+    "createRule": "@request.auth.id != \"\" && user = @request.auth.id",
+    "updateRule": "@request.auth.id != \"\" && user = @request.auth.id",
+    "deleteRule": "@request.auth.id != \"\" && user = @request.auth.id",
+    "name": "user_settings",
+    "type": "base",
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": true,
+        "collectionId": "_pb_users_auth_",
+        "hidden": false,
+        "id": "relation2375276105",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "user",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "hidden": false,
+        "id": "select809235174",
+        "maxSelect": 1,
+        "name": "portalTheme",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "white",
+          "g10",
+          "g90",
+          "g100"
+        ]
+      },
+      {
+        "hidden": false,
+        "id": "autodate2990389176",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate3332085495",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_awMFnb4lWc` ON `user_settings` (user ASC);"
+    ],
     "system": false
   }
 ]

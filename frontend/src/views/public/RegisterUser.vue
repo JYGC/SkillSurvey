@@ -39,7 +39,7 @@ async function registerUser() {
       passwordConfirm: confirmPassword.value,
     });
     console.log('User registered:', record);
-    router.push('/login'); // Redirect after successful registration
+    router.push('/'); // Redirect after successful registration
   } catch (error) {
     console.error('Error registering user:', error);
     alert('Failed to register user. Please try again.');
