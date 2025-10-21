@@ -7,11 +7,11 @@
   <CvButton @click="onSubmit()">Login</CvButton>
 </template>
 <script lang="ts" setup>
-  import { BackendClient } from '@/services/backend-client';
+  import { getBackendClient } from '@/services/backend-client';
   import { ref } from 'vue';
   import { useRouter } from 'vue-router';
 
-  const backendClient = new BackendClient();
+  const backendClient = getBackendClient();
   const router = useRouter();
 
   const email = ref('');
@@ -21,11 +21,11 @@
 
   async function login() {
     try {
-      const cookieString = await backendClient.loginAsync(email.value, password.value);
+      const cookieString = await backendClient.collection('users').authWithPassword(email.value, password.value);
       console.log(cookieString);
-      console.log(backendClient.isTokenValid);
-      console.log(backendClient.token);
-      console.log(backendClient.loggedInUser);
+      console.log(backendClient.authStore.isValid);
+      console.log(backendClient.authStore.token);
+      console.log(backendClient.authStore.record);
 
       router.push('/user/profile'); // Redirect to user layout or dashboard after login
     } catch (error) {

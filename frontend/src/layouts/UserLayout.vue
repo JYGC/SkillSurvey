@@ -1,6 +1,6 @@
 <template>
-  <p v-if="backendClient.isTokenValid">
-    Logged in as: {{ JSON.stringify(backendClient.loggedInUser) }}
+  <p v-if="backendClient.authStore.isValid">
+    Logged in as: {{ JSON.stringify(backendClient.authStore.record) }}
   </p>
   <p v-else>
     Failure to get authenticate user.
@@ -10,18 +10,18 @@
 </template>
 
 <script lang="ts" setup>
-  import { BackendClient } from '@/services/backend-client';
+  import { getBackendClient } from '@/services/backend-client';
   import { useRouter } from 'vue-router';
 
-  const backendClient = new BackendClient();
+  const backendClient = getBackendClient();
   const router = useRouter();
 
-  if (!backendClient.isTokenValid) {
+  if (!backendClient.authStore.isValid) {
     router.push('/');
   }
 
   async function onLogout() {
-    await backendClient.logoutAsync();
+    await backendClient.authStore.clear();
     router.push('/');
   }
 </script>

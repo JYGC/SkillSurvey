@@ -9,10 +9,12 @@
   <CvButton @click="onSubmit()">Register</CvButton>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue';
-import PocketBase from 'pocketbase';
+  import { ref } from 'vue';
+  import { getBackendClient } from '@/services/backend-client';
+  import { useRouter } from 'vue-router';
 
-const pb = new PocketBase('http://192.168.8.145:8090');
+const pb = getBackendClient();
+const router = useRouter();
 
 const name = ref('');
 const email = ref('');
@@ -36,8 +38,8 @@ async function registerUser() {
       password: password.value,
       passwordConfirm: confirmPassword.value,
     });
-
     console.log('User registered:', record);
+    router.push('/login'); // Redirect after successful registration
   } catch (error) {
     console.error('Error registering user:', error);
     alert('Failed to register user. Please try again.');

@@ -20,13 +20,13 @@
 </template>
 
 <script lang="ts" setup>
-import { BackendClient } from '@/services/backend-client';
+import { getBackendClient } from '@/services/backend-client';
 import { useRouter } from 'vue-router';
 
-  const backendClient = new BackendClient();
+  const backendClient = getBackendClient();
   const router = useRouter();
 
-  if (backendClient.isTokenValid) {
+  if (backendClient.authStore.isValid) {
     router.push('/user/profile');
   }
 </script>
