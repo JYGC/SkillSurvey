@@ -29,7 +29,7 @@
       userSetting.value = {
         id: '',
         user: userId,
-        portalThemes: "white",
+        portalTheme: "white",
       };
       await backendClient.collection('user_settings').create<IUserSettings>(userSetting.value);
     }
