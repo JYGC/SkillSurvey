@@ -5,6 +5,11 @@
   </CvFluidForm>
   <br />
   <CvButton @click="onSubmit()">Login</CvButton>
+  <br />
+  <br />
+  <br />
+  <p>Don't have an account?</p>
+  <CvLink href="/register">Register</CvLink>
 </template>
 <script lang="ts" setup>
   import { getBackendClient } from '@/services/backend-client';
@@ -17,16 +22,9 @@
   const email = ref('');
   const password = ref('');
 
-  console.log(process.env.VUE_APP_POCKETBASE_URL);
-
-  async function login() {
+  const login = () => {
     try {
-      const cookieString = await backendClient.collection('users').authWithPassword(email.value, password.value);
-      console.log(cookieString);
-      console.log(backendClient.authStore.isValid);
-      console.log(backendClient.authStore.token);
-      console.log(backendClient.authStore.record);
-
+      backendClient.collection('users').authWithPassword(email.value, password.value);
       router.push('/user/profile'); // Redirect to user layout or dashboard after login
     } catch (error) {
       console.error('Login failed:', error);
@@ -34,7 +32,7 @@
     }
   }
 
-  function onSubmit() {
+  const onSubmit = () => {
     login();
   }
 </script>

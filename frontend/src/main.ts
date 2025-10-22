@@ -26,6 +26,11 @@ const routes = [
         children: [
             {
                 path: '',
+                name: 'home',
+                component: HomeRoute
+            },
+            {
+                path: 'login',
                 name: 'login',
                 component: Login
             },
@@ -33,11 +38,6 @@ const routes = [
                 path: 'register',
                 name: 'register-user',
                 component: RegisterUser
-            },
-            {
-                path: 'home',
-                name: 'home',
-                component: HomeRoute
             },
             {
                 path: 'monthly-count-report',
