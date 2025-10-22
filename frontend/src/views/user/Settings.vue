@@ -2,7 +2,7 @@
   {{ JSON.stringify(userSetting) }}
 </template>
 <script lang="ts" setup>
-  import { IUserSettings, type PortalTheme } from '@/schemas/users';
+  import { IUserSettings, } from '@/schemas/users';
   import { getBackendClient } from '@/services/backend-client';
   import { ref } from 'vue';
 
@@ -29,7 +29,7 @@
       userSetting.value = {
         id: '',
         user: userId,
-        portalThemes: "white" as PortalTheme,
+        portalThemes: "white",
       };
       await backendClient.collection('user_settings').create<IUserSettings>(userSetting.value);
     }
