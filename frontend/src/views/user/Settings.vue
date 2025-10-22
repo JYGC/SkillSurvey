@@ -1,5 +1,5 @@
 <template>
-  {{ JSON.stringify(userSettings) }}
+  {{ JSON.stringify(userSetting) }}
 </template>
 <script lang="ts" setup>
   import { IUserSettings } from '@/schemas/users';
