@@ -19,7 +19,7 @@
       userSetting.value = await backendClient.collection('user_settings').getFirstListItem<IUserSettings | null>(
         `user="${userId}"`,
         {
-          fields: 'user,portalTheme',
+          fields: 'id,user,portalTheme',
         }
       );
     } catch (error) {
@@ -27,10 +27,11 @@
         throw error;
       }
       userSetting.value = {
+        id: '',
         user: userId,
         portalThemes: 'white',
       };
-      await backendClient.collection('user_settings').create(userSetting.value);
+      await backendClient.collection('user_settings').create<IUserSettings>(userSetting.value);
     }
   };
 
