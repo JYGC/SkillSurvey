@@ -19,10 +19,10 @@ func (r *MonthlyCountReport) SetIdentifier(v string) {
 }
 
 func (r *MonthlyCountReport) SkillName() string {
-	return r.GetString("skill_name")
+	return r.GetString("skillName")
 }
 func (r *MonthlyCountReport) SetSkillName(v string) {
-	r.Set("skill_name", v)
+	r.Set("skillName", v)
 }
 
 func (r *MonthlyCountReport) YearMonth() string {
@@ -33,10 +33,10 @@ func (r *MonthlyCountReport) SetYearMonth(v string) {
 }
 
 func (r *MonthlyCountReport) YearMonthDate() types.DateTime {
-	return r.GetDateTime("year_month_date")
+	return r.GetDateTime("yearMonthDate")
 }
 func (r *MonthlyCountReport) SetYearMonthDate(v types.DateTime) {
-	r.Set("year_month_date", v)
+	r.Set("yearMonthDate", v)
 }
 
 func (r *MonthlyCountReport) Count() int {

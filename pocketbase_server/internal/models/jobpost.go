@@ -19,10 +19,10 @@ func (r *JobPost) SetSite(v string) {
 }
 
 func (r *JobPost) JobSiteNumber() string {
-	return r.GetString("job_site_number")
+	return r.GetString("jobSiteNumber")
 }
 func (r *JobPost) SetJobSiteNumber(v string) {
-	r.Set("job_site_number", v)
+	r.Set("jobSiteNumber", v)
 }
 
 func (r *JobPost) Title() string {
@@ -40,10 +40,10 @@ func (r *JobPost) SetBody(v string) {
 }
 
 func (r *JobPost) PostedDate() types.DateTime {
-	return r.GetDateTime("posted_date")
+	return r.GetDateTime("postedDate")
 }
 func (r *JobPost) SetPostedDate(v types.DateTime) {
-	r.Set("posted_date", v)
+	r.Set("postedDate", v)
 }
 
 func (r *JobPost) City() string {
