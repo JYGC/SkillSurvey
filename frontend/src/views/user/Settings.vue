@@ -8,22 +8,22 @@
 
   const backendClient = getBackendClient();
 
-  const userSettings = ref<IUserSettings | null>(null);
+  const userSetting = ref<IUserSettings | null>(null);
 
   const getUserSettings = async () => {
     if (backendClient.authStore.record == null) {
       return;
     }
     const userId = backendClient.authStore.record.id;
-    const userSetting = backendClient.collection('user_settings').getOne(userId, {
+    userSetting.value = await backendClient.collection('user_settings').getOne<IUserSettings | null>(userId, {
       fields: 'user,portalTheme',
     });
-    if (userSetting == null) {
-      userSettings.value = {
+    if (userSetting.value == null) {
+      userSetting.value = {
         user: userId,
         portalThemes: 'white',
       };
-      await backendClient.collection('user_settings').create(userSettings.value);
+      await backendClient.collection('user_settings').create(userSetting.value);
     }
 
   };
