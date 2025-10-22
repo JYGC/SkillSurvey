@@ -15,17 +15,23 @@
       return;
     }
     const userId = backendClient.authStore.record.id;
-    userSetting.value = await backendClient.collection('user_settings').getOne<IUserSettings | null>(userId, {
-      fields: 'user,portalTheme',
-    });
-    if (userSetting.value == null) {
+    try {
+      userSetting.value = await backendClient.collection('user_settings').getFirstListItem<IUserSettings | null>(
+        `user_settings.user=${userId}`,
+        {
+          fields: 'user,portalTheme',
+        }
+      );
+    } catch (error) {
+      if (!(error instanceof Error && error.message.includes('requested resource wasn\'t found'))) {
+        throw error;
+      }
       userSetting.value = {
         user: userId,
         portalThemes: 'white',
       };
       await backendClient.collection('user_settings').create(userSetting.value);
     }
-
   };
 
   getUserSettings();
