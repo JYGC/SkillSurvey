@@ -16,7 +16,7 @@
     }
     const userId = backendClient.authStore.record.id;
     try {
-      userSetting.value = await backendClient.collection('user_settings').getFirstListItem<IUserSettings | null>(
+      userSetting.value = await backendClient.collection('userSettings').getFirstListItem<IUserSettings | null>(
         `user="${userId}"`,
         {
           fields: 'id,user,portalTheme',
@@ -31,7 +31,7 @@
         user: userId,
         portalTheme: "white",
       };
-      await backendClient.collection('user_settings').create<IUserSettings>(userSetting.value);
+      await backendClient.collection('userSettings').create<IUserSettings>(userSetting.value);
     }
   };
 

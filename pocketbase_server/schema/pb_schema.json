@@ -780,7 +780,7 @@
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,
-    "name": "job_posts",
+    "name": "jobPosts",
     "type": "base",
     "fields": [
       {
@@ -886,7 +886,7 @@
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,
-    "name": "monthly_count_reports",
+    "name": "monthlyCountReports",
     "type": "base",
     "fields": [
       {
@@ -1074,7 +1074,7 @@
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,
-    "name": "skill_name_aliases",
+    "name": "skillNameAliases",
     "type": "base",
     "fields": [
       {
@@ -1149,7 +1149,7 @@
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,
-    "name": "skill_names",
+    "name": "skillNames",
     "type": "base",
     "fields": [
       {
@@ -1233,7 +1233,7 @@
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,
-    "name": "skill_types",
+    "name": "skillTypes",
     "type": "base",
     "fields": [
       {
@@ -1309,7 +1309,7 @@
     "createRule": "@request.auth.id != \"\" && user = @request.auth.id",
     "updateRule": "@request.auth.id != \"\" && user = @request.auth.id",
     "deleteRule": "@request.auth.id != \"\" && user = @request.auth.id",
-    "name": "user_settings",
+    "name": "userSettings",
     "type": "base",
     "fields": [
       {
@@ -1345,7 +1345,7 @@
         "maxSelect": 1,
         "name": "portalTheme",
         "presentable": false,
-        "required": false,
+        "required": true,
         "system": false,
         "type": "select",
         "values": [
@@ -1377,7 +1377,7 @@
       }
     ],
     "indexes": [
-      "CREATE UNIQUE INDEX `idx_awMFnb4lWc` ON `user_settings` (user ASC);"
+      "CREATE UNIQUE INDEX `idx_awMFnb4lWc` ON `userSettings` (`user` ASC)"
     ],
     "system": false
   }
