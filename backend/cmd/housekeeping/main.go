@@ -22,8 +22,6 @@ func main() {
 		case "cleanfs":
 			cleanupFilesystem()
 		case "sendlog":
-			sendLogToAdmin()
-		case "sendcleanlog":
 			sendLogToAdminAndClearLog()
 		case "alertsendlog":
 			sendLogToAdminIfErrorsOverLimit()
@@ -55,8 +53,15 @@ func sendLogToAdminIfErrorsOverLimit() {
 	matches := re.FindAllString(allLogs, -1)
 	numberOfErrors := len(matches)
 	fmt.Printf("number of errors: %d\n", numberOfErrors)
-	if numberOfErrors >= numberOfErrorLimit {
-		sendLogToAdmin()
+	if numberOfErrors < numberOfErrorLimit {
+		return
+	}
+	if err := sendLogToAdmin(); err != nil {
+		fmt.Printf("sendLogToAdmin error: %s\n", err)
+		return
+	}
+	if err := exception.ClearLogs(); err != nil {
+		fmt.Printf("exception.ClearLogs error: %s\n", err)
 	}
 }
 
