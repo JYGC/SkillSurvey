@@ -170,10 +170,12 @@ func TestReportRunCreatesMonthlyCountReports(t *testing.T) {
 		t.Fatalf("report.Run: %v", err)
 	}
 
-	rawPb := pocketbaseclient.NewClient(pbURL)
-	rawPb.Authenticate(email, password)
+	rawPb := pocketbaseclient.NewClient(pbURL, pocketbaseclient.WithUserEmailPassword(email, password))
+	if err := rawPb.Authorize(); err != nil {
+		t.Fatalf("authenticate rawPb: %v", err)
+	}
 	list, err := rawPb.List("monthlyCountReports", pocketbaseclient.ParamsList{
-		Filter: fmt.Sprintf(`skillName = %q`, skillNameID),
+		Filters: fmt.Sprintf(`skillName = %q`, skillNameID),
 	})
 	if err != nil {
 		t.Fatalf("list monthlyCountReports: %v", err)

@@ -173,8 +173,8 @@ func TestScrapeRunCreatesJobPosts(t *testing.T) {
 	seedSite(t, pbApp, siteName, stubServer.URL)
 	seekCfgPath := makeSeekConfig(t, stubServer.URL+"/search", stubServer.URL, siteName)
 
-	rawPb := pocketbaseclient.NewClient(pbURL)
-	if _, err := rawPb.Authenticate(email, password); err != nil {
+	rawPb := pocketbaseclient.NewClient(pbURL, pocketbaseclient.WithUserEmailPassword(email, password))
+	if err := rawPb.Authorize(); err != nil {
 		t.Fatalf("authenticate: %v", err)
 	}
 	pb, err := pbclient.New(pbURL, email, password)
@@ -229,8 +229,10 @@ func TestScrapeRunIsIdempotent(t *testing.T) {
 	scrape.Run(cfg, pb)
 	scrape.Run(cfg, pb)
 
-	rawPb := pocketbaseclient.NewClient(pbURL)
-	rawPb.Authenticate(email, password)
+	rawPb := pocketbaseclient.NewClient(pbURL, pocketbaseclient.WithUserEmailPassword(email, password))
+	if err := rawPb.Authorize(); err != nil {
+		t.Fatalf("authenticate rawPb: %v", err)
+	}
 	list, err := rawPb.List("jobPosts", pocketbaseclient.ParamsList{})
 	if err != nil {
 		t.Fatalf("list jobPosts: %v", err)

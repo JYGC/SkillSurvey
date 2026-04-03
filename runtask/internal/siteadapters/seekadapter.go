@@ -81,10 +81,10 @@ func (s SeekAdapter) RunSurvey() ([]InboundJobPost, error) {
 					func(ctx context.Context) (err error) {
 						var errParts []error
 						if getTitleErr := dynamiccontentextractor.GetTextBySelector(s.configSettings.SiteSelectors.TitleSelector, &newInboundJobPost.Title, ctx); getTitleErr != nil {
-							errParts = append(errParts, fmt.Errorf("getTitleErr: &v", getTitleErr))
+							errParts = append(errParts, fmt.Errorf("getTitleErr: %v", getTitleErr))
 						}
 						if getBodyErr := dynamiccontentextractor.GetTextBySelector(s.configSettings.SiteSelectors.BodySelector, &newInboundJobPost.Body, ctx); getBodyErr != nil {
-							errParts = append(errParts, fmt.Errorf("getBodyErr: &v", getBodyErr))
+							errParts = append(errParts, fmt.Errorf("getBodyErr: %v", getBodyErr))
 						}
 						if len(errParts) > 0 {
 							err = fmt.Errorf("%v", errParts)
