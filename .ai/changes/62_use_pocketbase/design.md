@@ -76,16 +76,16 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-var _ core.RecordProxy = (*Site)(nil)
+var _ core.RecordProxy = (*Role)(nil)
 
 type Role struct {
 	core.BaseRecordProxy
 }
 
-func (r *Site) Name() string            { return r.GetString("name") }
-func (r *Site) SetName(v string)        { r.Set("name", v) }
-func (r *Site) Description() string     { return r.GetString("description") }
-func (r *Site) SetDescription(v string) { r.Set("description", v) }
+func (r *Role) Name() string            { return r.GetString("name") }
+func (r *Role) SetName(v string)        { r.Set("name", v) }
+func (r *Role) Description() string     { return r.GetString("description") }
+func (r *Role) SetDescription(v string) { r.Set("description", v) }
 ```
 
 **`pocketbaseserver/internal/models/userrole.go`**
@@ -97,16 +97,16 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-var _ core.RecordProxy = (*Site)(nil)
+var _ core.RecordProxy = (*UserRole)(nil)
 
 type UserRole struct {
 	core.BaseRecordProxy
 }
 
-func (r *SkillType) User() string     { return r.GetString("user") }
-func (r *SkillType) SetUser(v string) { r.Set("user", v) }
-func (r *SkillType) Role() string     { return r.GetString("role") }
-func (r *SkillType) SetRole(v string) { r.Set("role", v) }
+func (r *UserRole) User() string     { return r.GetString("user") }
+func (r *UserRole) SetUser(v string) { r.Set("user", v) }
+func (r *UserRole) Role() string     { return r.GetString("role") }
+func (r *UserRole) SetRole(v string) { r.Set("role", v) }
 ```
 
 ### Integration tests
@@ -255,7 +255,7 @@ Each step: if a record fails, `log.Printf("migrate %s id=%d: %v", collection, le
 ### `migrate/cmd/migrate/main.go`
 
 1. Load config from `migrate.json` next to the executable.
-2. Open legacy SQLite with GORM (no CGO driver).
+2. Open legacy SQLite with GORM (CGO `go-sqlite3` driver).
 3. Authenticate with PocketBase: `pb.Authenticate(email, password)`.
 4. `migrator.New(db, pb).Run()`.
 5. Print summary. Exit 1 if any failures.
