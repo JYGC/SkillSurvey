@@ -8,9 +8,6 @@ var _ core.RecordProxy = (*Site)(nil)
 
 type UserRole struct {
 	core.BaseRecordProxy
-	Id   string
-	User string // relation ID → _pb_users_auth_
-	Role string // relation ID → roles
 }
 
 func (r *SkillType) User() string     { return r.GetString("user") }
