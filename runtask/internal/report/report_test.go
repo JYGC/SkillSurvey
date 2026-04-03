@@ -23,7 +23,7 @@ import (
 func startTestPocketBase(t *testing.T) (core.App, string) {
 	t.Helper()
 
-	app := pocketbase.New()
+	app := pocketbase.NewWithConfig(pocketbase.Config{DefaultDataDir: t.TempDir()})
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{})
 
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
@@ -42,7 +42,6 @@ func startTestPocketBase(t *testing.T) (core.App, string) {
 	})
 
 	app.RootCmd.SetArgs([]string{
-		"--dir", t.TempDir(),
 		"serve",
 		"--http", fmt.Sprintf("127.0.0.1:%d", port),
 	})

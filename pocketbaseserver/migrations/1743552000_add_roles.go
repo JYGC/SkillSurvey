@@ -123,9 +123,9 @@ func createUserRoles(app core.App) error {
 }
 
 const (
-	writeRuleReporting = `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'reporting' || @collection.userRoles_via_user.role.name ?~ 'migration')`
-	writeRuleWebscraper = `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'webscraper' || @collection.userRoles_via_user.role.name ?~ 'migration')`
-	writeRuleMigration  = `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'migration' || @request.auth.verified = true)`
+	writeRuleReporting  = `@request.auth.id != "" && @collection.userRoles.user = @request.auth.id && (@collection.userRoles.role.name = 'reporting' || @collection.userRoles.role.name = 'migration')`
+	writeRuleWebscraper = `@request.auth.id != "" && @collection.userRoles.user = @request.auth.id && (@collection.userRoles.role.name = 'webscraper' || @collection.userRoles.role.name = 'migration')`
+	writeRuleMigration  = `@request.auth.id != "" && @collection.userRoles.user = @request.auth.id && @collection.userRoles.role.name = 'migration'`
 )
 
 func applyCollectionRules(app core.App) error {
