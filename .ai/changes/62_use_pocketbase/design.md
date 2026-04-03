@@ -72,11 +72,20 @@ Package: `migrations`
 ```go
 package models
 
+import (
+	"github.com/pocketbase/pocketbase/core"
+)
+
+var _ core.RecordProxy = (*Site)(nil)
+
 type Role struct {
-    Id          string
-    Name        string
-    Description string
+	core.BaseRecordProxy
 }
+
+func (r *Site) Name() string            { return r.GetString("name") }
+func (r *Site) SetName(v string)        { r.Set("name", v) }
+func (r *Site) Description() string     { return r.GetString("description") }
+func (r *Site) SetDescription(v string) { r.Set("description", v) }
 ```
 
 **`pocketbaseserver/internal/models/userrole.go`**
@@ -84,11 +93,23 @@ type Role struct {
 ```go
 package models
 
+import (
+	"github.com/pocketbase/pocketbase/core"
+)
+
+var _ core.RecordProxy = (*Site)(nil)
+
 type UserRole struct {
-    Id   string
-    User string // relation ID
-    Role string // relation ID
+	core.BaseRecordProxy
+	Id   string
+	User string // relation ID → _pb_users_auth_
+	Role string // relation ID → roles
 }
+
+func (r *SkillType) User() string     { return r.GetString("user") }
+func (r *SkillType) SetUser(v string) { r.Set("user", v) }
+func (r *SkillType) Role() string     { return r.GetString("role") }
+func (r *SkillType) SetRole(v string) { r.Set("role", v) }
 ```
 
 ### Integration tests
