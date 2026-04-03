@@ -11,12 +11,6 @@ import Login from './views/public/Login.vue';
 import RegisterUser from './views/public/RegisterUser.vue';
 import HomeRoute from './views/public/HomeRoute.vue';
 import MonthlyCountReport from './views/public/MonthlyCountReport.vue';
-import SkillAdd from './views/public/SkillAdd.vue';
-import SkillEdit from './views/public/SkillEdit.vue';
-import SkillList from './views/public/SkillList.vue';
-import SkillTypeAdd from './views/public/SkillTypeAdd.vue';
-import SkillTypeEdit from './views/public/SkillTypeEdit.vue';
-import SkillTypeList from './views/public/SkillTypeList.vue';
 import Profile from './views/user/Profile.vue';
 import Settings from './views/user/Settings.vue';
 const routes = [
@@ -44,36 +38,6 @@ const routes = [
                 name: 'monthly-count-report',
                 component: MonthlyCountReport
             },
-            {
-                path: 'skill-add/:skilltypeid?',
-                name: 'skill-add',
-                component: SkillAdd
-            },
-            {
-                path: 'skill-edit/:skillid',
-                name: 'skill-edit',
-                component: SkillEdit
-            },
-            {
-                path: 'skill-list',
-                name: 'skill-list',
-                component: SkillList
-            },
-            {
-                path: 'skill-type-add',
-                name: 'skill-type-add',
-                component: SkillTypeAdd
-            },
-            {
-                path: 'skill-type-edit/:skilltypeid',
-                name: 'skill-type-edit',
-                component: SkillTypeEdit
-            },
-            {
-                path: 'skill-type-list/',
-                name: 'skill-type-list',
-                component: SkillTypeList
-            }
         ]
     },
     {
