@@ -47,20 +47,20 @@ Package: `migrations`
    - CreateRule/UpdateRule/DeleteRule: `nil` (admin only)
    - Save the collection.
 
-4. Apply write rules to existing collections. For each, call `app.FindCollectionByNameOrId(name)`, update the rule fields, then `app.Save(collection)`:
+4. Apply rules to existing collections. For each, call `app.FindCollectionByNameOrId(name)`, update the rule fields, then `app.Save(collection)`:
 
-   | Collection | CreateRule / UpdateRule / DeleteRule |
-   |---|---|
-   | `jobPosts` | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'webscraper' \|\| @collection.userRoles_via_user.role.name ?~ 'migration')` |
-   | `monthlyCountReports` | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'reporting' \|\| @collection.userRoles_via_user.role.name ?~ 'migration')` |
-   | `skillTypes` | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'migration' \|\| @request.auth.verified = true)` |
-   | `skillNames` | same as `skillTypes` |
-   | `skillNameAliases` | same as `skillTypes` |
-   | `sites` | same as `skillTypes` |
+   | Collection | ListRule / ViewRule | CreateRule / UpdateRule / DeleteRule |
+   |---|---|---|
+   | `monthlyCountReports` | `""` (empty string — unrestricted public read) | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'reporting' \|\| @collection.userRoles_via_user.role.name ?~ 'migration')` |
+   | `jobPosts` | unchanged | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'webscraper' \|\| @collection.userRoles_via_user.role.name ?~ 'migration')` |
+   | `skillTypes` | unchanged | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'migration' \|\| @request.auth.verified = true)` |
+   | `skillNames` | unchanged | same as `skillTypes` |
+   | `skillNameAliases` | unchanged | same as `skillTypes` |
+   | `sites` | unchanged | same as `skillTypes` |
 
 #### `down` function steps
 
-1. Revert write rules on `jobPosts`, `monthlyCountReports`, `skillTypes`, `skillNames`, `skillNameAliases`, `sites` (set CreateRule/UpdateRule/DeleteRule back to `nil`).
+1. Revert rules on `jobPosts`, `monthlyCountReports`, `skillTypes`, `skillNames`, `skillNameAliases`, `sites` (set CreateRule/UpdateRule/DeleteRule back to `nil`; set `monthlyCountReports` ListRule/ViewRule back to `nil`).
 2. Delete seed records from `roles`.
 3. Delete `userRoles` collection.
 4. Delete `roles` collection.
@@ -139,10 +139,8 @@ Module: `keybook/migrate`
 
 Dependencies:
 - `gorm.io/gorm` (same version as `backend/`)
-- `gorm.io/driver/sqlite` — **use `modernc.org/sqlite` tag, not `go-sqlite3`**: replace the import with the pure-Go driver (`gorm.io/driver/sqlite` supports `modernc` via build tag; alternatively use a fork that wraps `modernc.org/sqlite` directly)
+- `gorm.io/driver/sqlite` (same version as `backend/`, using the CGO `go-sqlite3` driver — the production OpenBSD host already has the required C toolchain for `backend/`)
 - `github.com/r--w/pocketbase` — PocketBase Go client
-
-> Note: `backend/go.mod` uses `gorm.io/driver/sqlite v1.1.6` with the CGO `go-sqlite3`. For `migrate/`, use `modernc.org/sqlite` as the GORM driver so the binary compiles without CGO on OpenBSD. Use `gorm.io/driver/sqlite` with a `modernc` replacement or the community wrapper `github.com/glebarez/sqlite` (which wraps `modernc.org/sqlite` and is API-compatible with `gorm.io/driver/sqlite`).
 
 ### `migrate/internal/config/config.go`
 
@@ -581,8 +579,8 @@ After all components are implemented, verify:
 # pocketbaseserver
 cd pocketbaseserver && make build
 
-# migrate (no CGO)
-cd migrate && GOOS=openbsd CGO_ENABLED=0 go build ./...
+# migrate (CGO required for go-sqlite3)
+cd migrate && GOOS=openbsd go build ./...
 
 # runtask (no CGO)
 cd runtask && GOOS=openbsd CGO_ENABLED=0 go build ./...

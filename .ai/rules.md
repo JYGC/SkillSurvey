@@ -54,7 +54,7 @@
 
 # Quality
 - No speculative abstractions — only build what's needed now
-- Tests must be created first before actual code
+- Integration Tests must be created first before actual code
 
 # Old Tech stack
 ## backend

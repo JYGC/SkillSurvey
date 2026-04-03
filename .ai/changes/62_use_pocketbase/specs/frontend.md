@@ -44,25 +44,21 @@ export interface SkillNameAlias {
 
 ## Files to delete
 
-The following views are removed entirely. All skill and skill-type management
-(list, create, edit, delete) is handled via the PocketBase admin UI instead.
+The following views and components are removed entirely. All skill and skill-type
+management (list, create, edit, delete) is handled via the PocketBase admin UI instead.
 
-- `src/views/SkillTypeAdd.vue`
-- `src/views/SkillTypeEdit.vue`
-- `src/views/SkillAdd.vue`
-- `src/views/SkillEdit.vue`
-- `src/views/SkillList.vue`
-- `src/views/SkillTypeList.vue`
+- `src/views/public/SkillTypeAdd.vue`
+- `src/views/public/SkillTypeEdit.vue`
+- `src/views/public/SkillAdd.vue`
+- `src/views/public/SkillEdit.vue`
+- `src/views/public/SkillList.vue`
+- `src/views/public/SkillTypeList.vue`
+- `src/components/SkillView.vue` (only used by `SkillAdd.vue` and `SkillEdit.vue`)
+- `src/components/SkillTypeView.vue` (only used by `SkillTypeAdd.vue` and `SkillTypeEdit.vue`)
 
 Remove any Vue Router routes and navigation links that reference these deleted views.
 
 ## View-by-view migration
-
-### `SkillView.vue` (component)
-
-- Remove `fetch('http://localhost:3000/skilltype/getallidandname')`.
-- Replace with `getBackendClient().collection('skillTypes').getFullList({ fields: 'id,name' })`.
-- The dropdown must bind `id` (string) as the value instead of the legacy numeric ID.
 
 ### `MonthlyCountReport.vue`
 

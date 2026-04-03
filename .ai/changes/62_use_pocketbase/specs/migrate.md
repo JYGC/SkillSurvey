@@ -18,7 +18,7 @@ Entry point: `migrate/cmd/migrate/main.go`.
 
 | Purpose | Package |
 |---|---|
-| Read legacy SQLite | `gorm.io/gorm` + `gorm.io/driver/sqlite` (same versions as `backend/`) |
+| Read legacy SQLite | `gorm.io/gorm` + `gorm.io/driver/sqlite` (same versions as `backend/`, including the CGO `go-sqlite3` driver) |
 | Write to PocketBase | `github.com/r--w/pocketbase` |
 | Legacy entity models | Copy from `backend/internal/entities/` into `migrate/internal/legacyentities/` |
 
@@ -90,8 +90,8 @@ If a matching record already exists, skip creation and use its ID for the mappin
 ## Build
 
 - `migrate/Makefile` must provide a `build` target.
-- No CGO: use `gorm.io/driver/sqlite` with `modernc.org/sqlite` instead of
-  the cgo-based `go-sqlite3`. Update the GORM sqlite import accordingly.
+- Use the same `gorm.io/driver/sqlite` + CGO `go-sqlite3` driver as `backend/`
+  (the production OpenBSD host already has the required C toolchain for `backend/`).
 - Must compile on OpenBSD: `GOOS=openbsd go build ./...` must succeed.
 
 ## Integration tests

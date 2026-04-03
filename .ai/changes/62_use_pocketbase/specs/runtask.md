@@ -20,7 +20,8 @@ The module exposes three sub-commands, selected via a CLI argument:
 |---|---|---|
 | `scrape` | `backend/cmd/survey` | Crawl Seek and Jora; write `jobPosts` to pocketbaseserver |
 | `report` | `backend/cmd/reports` | Compute monthly skill-demand counts; write `monthlyCountReports` |
-| `housekeeping` | `backend/cmd/housekeeping` | Clean Chromium temp files; email `error.log` |
+| `housekeeping cleanfs` | `backend/cmd/housekeeping` (cleanfs) | Remove Chromium temporary files |
+| `housekeeping sendlog` | `backend/cmd/housekeeping` (sendlog) | Email `error.log` to admin then truncate it |
 
 Entry point: `runtask/cmd/runtask/main.go`.
 

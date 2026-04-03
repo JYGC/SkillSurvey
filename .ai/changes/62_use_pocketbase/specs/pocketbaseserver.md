@@ -51,16 +51,17 @@ Access rules:
 
 ## Access rule changes to existing collections
 
-Apply the following write rules. Read rules remain unchanged (public).
+Apply the following rules. PocketBase defaults all rules to superuser-only, so read
+rules must be set explicitly where public access is required.
 
-| Collection | Write rule |
-|---|---|
-| `jobPosts` | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'webscraper' \|\| @collection.userRoles_via_user.role.name ?~ 'migration')` |
-| `monthlyCountReports` | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'reporting' \|\| @collection.userRoles_via_user.role.name ?~ 'migration')` |
-| `skillTypes` | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'migration' \|\| @request.auth.verified = true)` |
-| `skillNames` | same as `skillTypes` |
-| `skillNameAliases` | same as `skillTypes` |
-| `sites` | same as `skillTypes` |
+| Collection | ListRule / ViewRule | CreateRule / UpdateRule / DeleteRule |
+|---|---|---|
+| `monthlyCountReports` | `""` (unrestricted — frontend reads without auth) | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'reporting' \|\| @collection.userRoles_via_user.role.name ?~ 'migration')` |
+| `jobPosts` | unchanged | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'webscraper' \|\| @collection.userRoles_via_user.role.name ?~ 'migration')` |
+| `skillTypes` | unchanged | `@request.auth.id != "" && (@collection.userRoles_via_user.role.name ?~ 'migration' \|\| @request.auth.verified = true)` |
+| `skillNames` | unchanged | same as `skillTypes` |
+| `skillNameAliases` | unchanged | same as `skillTypes` |
+| `sites` | unchanged | same as `skillTypes` |
 
 > The `migration` role may write to all of the above. The `webscraper` role may
 > write to `jobPosts`; the `reporting` role may write to `monthlyCountReports`.
