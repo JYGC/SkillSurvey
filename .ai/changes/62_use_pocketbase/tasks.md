@@ -230,7 +230,7 @@ Tests must be written **before** implementation per rules.md. No database mockin
 ### `src/views/public/MonthlyCountReport.vue`
 - [ ] Remove `const getMonthlyCountUrl` constant and the `fetch(...)` call that uses it
 - [ ] Add `import { getBackendClient } from ...` (existing PocketBase JS SDK helper)
-- [ ] Define local interface `MonthlyCountRecord { YearMonth: string; count: number; expand?: { skillName?: { name: string } } }`
+- [ ] Define local interface `MonthlyCountRecord { YearMonth: string; yearMonthDate: string; count: number; expand?: { skillName?: { name: string } } }`
 - [ ] Replace fetch block with:
   ```typescript
   const allRecords = await getBackendClient()
