@@ -39,7 +39,7 @@ func migrateSites(db *gorm.DB, pb *pocketbase.Client) (map[uint]string, Summary,
 
 		created, err := pb.Create("sites", map[string]any{
 			"name": site.Name,
-			"url":  site.Url,
+			"url":  site.Name,
 		})
 		if err != nil {
 			log.Printf("migrate sites id=%d: %v", site.ID, err)
