@@ -36,9 +36,15 @@ func migrateSkillTypes(db *gorm.DB, pb *pocketbase.Client) (map[uint]string, Sum
 			continue
 		}
 
+		stDescription := ""
+
+		if st.Description != nil {
+			stDescription = st.Description
+		}
+
 		created, err := pb.Create("skillTypes", map[string]any{
 			"name":        st.Name,
-			"description": st.Description,
+			"description": stDescription,
 		})
 		if err != nil {
 			log.Printf("migrate skillTypes id=%d: %v", st.ID, err)
