@@ -36,10 +36,10 @@ func migrateSkillTypes(db *gorm.DB, pb *pocketbase.Client) (map[uint]string, Sum
 			continue
 		}
 
-		stDescription := st.Name
+		stDescription := st.Description
 
-		if st.Description != "" {
-			stDescription = st.Description
+		if stDescription == "" {
+			stDescription = st.Name
 		}
 
 		created, err := pb.Create("skillTypes", map[string]any{
