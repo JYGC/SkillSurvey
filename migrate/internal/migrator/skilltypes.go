@@ -38,7 +38,7 @@ func migrateSkillTypes(db *gorm.DB, pb *pocketbase.Client) (map[uint]string, Sum
 
 		stDescription := st.Name
 
-		if st.Description == "" {
+		if st.Description != "" {
 			stDescription = st.Description
 		}
 
