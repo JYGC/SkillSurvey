@@ -178,8 +178,9 @@ func TestNoRoleCannotWriteJobPostsOrMonthlyCountReports(t *testing.T) {
 		"content":       map[string]any{"title": "t", "body": "b"},
 		"location":      map[string]any{"city": "c", "country": "au", "suburb": "s"},
 	})
-	if status != http.StatusForbidden {
-		t.Errorf("expected 403 for jobPosts POST without role, got %d", status)
+	// PocketBase v0.29 returns 400 (not 403) when a non-nil create rule evaluates to false.
+	if status != http.StatusBadRequest {
+		t.Errorf("expected 400 for jobPosts POST without role, got %d", status)
 	}
 
 	status = apiPost(t, serverURL, token, "monthlyCountReports", map[string]any{
@@ -188,8 +189,8 @@ func TestNoRoleCannotWriteJobPostsOrMonthlyCountReports(t *testing.T) {
 		"yearMonthDate": "2024-01-01 00:00:00",
 		"count":         1,
 	})
-	if status != http.StatusForbidden {
-		t.Errorf("expected 403 for monthlyCountReports POST without role, got %d", status)
+	if status != http.StatusBadRequest {
+		t.Errorf("expected 400 for monthlyCountReports POST without role, got %d", status)
 	}
 }
 
@@ -261,7 +262,7 @@ func TestMigrationRoleCanPostToAllCollections(t *testing.T) {
 	}
 
 	skillTypeID := ""
-	stRecs, err := app.FindRecordsByFilter("skillTypes", "name='Programming'", "-created", 1, 0)
+	stRecs, err := app.FindRecordsByFilter("skillTypes", "name='Programming'", "", 1, 0)
 	if err == nil && len(stRecs) > 0 {
 		skillTypeID = stRecs[0].Id
 	}
@@ -277,7 +278,7 @@ func TestMigrationRoleCanPostToAllCollections(t *testing.T) {
 	}
 
 	skillNameID := ""
-	snRecs, err := app.FindRecordsByFilter("skillNames", "name='Go'", "-created", 1, 0)
+	snRecs, err := app.FindRecordsByFilter("skillNames", "name='Go'", "", 1, 0)
 	if err == nil && len(snRecs) > 0 {
 		skillNameID = snRecs[0].Id
 	}
