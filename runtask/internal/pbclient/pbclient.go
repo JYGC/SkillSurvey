@@ -3,6 +3,7 @@ package pbclient
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	pocketbase "github.com/r--w/pocketbase"
@@ -166,6 +167,16 @@ func (c *Client) GetAllJobPosts() ([]JobPost, error) {
 		}
 		if raw, err := json.Marshal(item["location"]); err == nil {
 			_ = json.Unmarshal(raw, &jp.Location)
+		}
+		// Parse postedDate. PocketBase returns "2006-01-02 15:04:05.000Z"; normalise
+		// the space separator to T so standard RFC3339 parsers handle it.
+		if s := str(item, "postedDate"); s != "" {
+			s = strings.Replace(s, " ", "T", 1)
+			if t, err := time.Parse(time.RFC3339Nano, s); err == nil {
+				jp.PostedDate = t
+			} else if t, err := time.Parse(time.RFC3339, s); err == nil {
+				jp.PostedDate = t
+			}
 		}
 		posts = append(posts, jp)
 	}

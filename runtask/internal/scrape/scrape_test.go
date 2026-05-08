@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -162,8 +163,13 @@ func TestScrapeRunCreatesJobPosts(t *testing.T) {
 	const siteName = "Seek"
 	const jobID = "SEEK-TEST-001"
 
-	// Stub server returning a seek-style job listing.
+	// Stub server: serves the Seek API JSON for /search, and minimal HTML for job pages.
 	stubServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/job/") {
+			w.Header().Set("Content-Type", "text/html")
+			fmt.Fprintf(w, `<!DOCTYPE html><html><body><h1>Test Job Title</h1><p>Test job body.</p></body></html>`)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(seekStubResponse(r.Host, jobID))
 	}))
@@ -207,6 +213,11 @@ func TestScrapeRunIsIdempotent(t *testing.T) {
 	const jobID = "SEEK-TEST-002"
 
 	stubServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/job/") {
+			w.Header().Set("Content-Type", "text/html")
+			fmt.Fprintf(w, `<!DOCTYPE html><html><body><h1>Test Job Title</h1><p>Test job body.</p></body></html>`)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(seekStubResponse(r.Host, jobID))
 	}))
