@@ -6,8 +6,18 @@ import (
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
-// readRuleMigration allows authenticated users with the migration role to list and view records.
-const readRuleMigration = `@request.auth.id != "" && @collection.userRoles.user = @request.auth.id && @collection.userRoles.role.name = 'migration'`
+// Read rules use the back-relation @request.auth.userRoles_via_user so all
+// conditions apply to the same userRoles record for the authenticated user.
+const (
+	// readRuleSites: webscraper lists sites to know which boards to scrape.
+	readRuleSites = `@request.auth.id != "" && (@request.auth.userRoles_via_user.role.name ?= 'webscraper' || @request.auth.userRoles_via_user.role.name ?= 'migration')`
+
+	// readRuleJobPosts: webscraper checks for duplicates; reporting counts posts.
+	readRuleJobPosts = `@request.auth.id != "" && (@request.auth.userRoles_via_user.role.name ?= 'webscraper' || @request.auth.userRoles_via_user.role.name ?= 'reporting' || @request.auth.userRoles_via_user.role.name ?= 'migration')`
+
+	// readRuleSkillData: reporting reads skill names/aliases to build counts.
+	readRuleSkillData = `@request.auth.id != "" && (@request.auth.userRoles_via_user.role.name ?= 'reporting' || @request.auth.userRoles_via_user.role.name ?= 'migration')`
+)
 
 func init() {
 	m.Register(func(app core.App) error {
@@ -24,16 +34,12 @@ func applyMigrationRoleReadRules(app core.App) error {
 		viewRule *string // nil means leave unchanged
 	}
 
-	rule := types.Pointer(readRuleMigration)
-
 	updates := []readUpdate{
-		// sites and jobPosts already have a public viewRule ("") — leave viewRule unchanged.
-		{name: "sites", listRule: rule, viewRule: nil},
-		{name: "jobPosts", listRule: rule, viewRule: nil},
-		// skill collections have no viewRule — set both.
-		{name: "skillTypes", listRule: rule, viewRule: rule},
-		{name: "skillNames", listRule: rule, viewRule: rule},
-		{name: "skillNameAliases", listRule: rule, viewRule: rule},
+		{name: "sites", listRule: types.Pointer(readRuleSites), viewRule: nil},
+		{name: "jobPosts", listRule: types.Pointer(readRuleJobPosts), viewRule: nil},
+		{name: "skillTypes", listRule: types.Pointer(readRuleSkillData), viewRule: types.Pointer(readRuleSkillData)},
+		{name: "skillNames", listRule: types.Pointer(readRuleSkillData), viewRule: types.Pointer(readRuleSkillData)},
+		{name: "skillNameAliases", listRule: types.Pointer(readRuleSkillData), viewRule: types.Pointer(readRuleSkillData)},
 	}
 
 	for _, u := range updates {
