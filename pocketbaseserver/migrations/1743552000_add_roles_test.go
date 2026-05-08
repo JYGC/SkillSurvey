@@ -293,7 +293,7 @@ func TestMigrationRoleCanPostToAllCollections(t *testing.T) {
 	}
 
 	// jobPosts — need a site
-	siteRecs, siteErr := app.FindRecordsByFilter("sites", "name='MigSite'", "-created", 1, 0)
+	siteRecs, siteErr := app.FindRecordsByFilter("sites", "name='MigSite'", "", 1, 0)
 	if siteErr != nil || len(siteRecs) == 0 {
 		t.Fatalf("expected to find MigSite record after POST: err=%v, count=%d", siteErr, len(siteRecs))
 	}
