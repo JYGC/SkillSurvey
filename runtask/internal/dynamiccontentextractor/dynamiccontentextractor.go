@@ -3,6 +3,7 @@ package dynamiccontentextractor
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
@@ -18,6 +19,14 @@ type DynamicContentExtractor struct {
 }
 
 func NewDynamicContentExtractor() *DynamicContentExtractor {
+	// Chrome requires XDG_RUNTIME_DIR on Linux/BSD. Set a fallback if missing
+	// (common in SSH sessions without a login manager).
+	if os.Getenv("XDG_RUNTIME_DIR") == "" {
+		dir := fmt.Sprintf("/tmp/runtime-%d", os.Getuid())
+		os.MkdirAll(dir, 0700)
+		os.Setenv("XDG_RUNTIME_DIR", dir)
+	}
+
 	chromedpOptions := []chromedp.ExecAllocatorOption{
 		chromedp.UserAgent(userAgent),
 		chromedp.WindowSize(1920, 1080),
