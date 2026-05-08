@@ -205,7 +205,14 @@ func applyCollectionRules(app core.App) error {
 			return err
 		}
 	}
-	return nil
+
+	// Disable self-registration on the users collection (superadmin only).
+	usersCol, err := app.FindCollectionByNameOrId("_pb_users_auth_")
+	if err != nil {
+		return err
+	}
+	usersCol.CreateRule = nil
+	return app.Save(usersCol)
 }
 
 // ── down helpers ─────────────────────────────────────────────────────────────
@@ -235,7 +242,14 @@ func revertCollectionRules(app core.App) error {
 			return err
 		}
 	}
-	return nil
+
+	// Restore users open registration.
+	usersCol, err := app.FindCollectionByNameOrId("_pb_users_auth_")
+	if err != nil {
+		return err
+	}
+	usersCol.CreateRule = types.Pointer("")
+	return app.Save(usersCol)
 }
 
 func deleteSeedRoles(app core.App) error {
