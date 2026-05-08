@@ -14,12 +14,20 @@ import (
 // The glob patterns mirror those used in backend/cmd/housekeeping/main.go.
 func CleanFS(baseDir string) error {
 	patterns := []string{
+		// with leading dot (Linux)
 		filepath.Join(baseDir, ".org.chromium.Chromium.[a-l][a-lm-qr-vw-zA-Z0-9]*"),
 		filepath.Join(baseDir, ".org.chromium.Chromium.[m-q][a-lm-qr-vw-zA-Z0-9]*"),
 		filepath.Join(baseDir, ".org.chromium.Chromium.[r-v][a-lm-qr-vw-zA-Z0-9]*"),
 		filepath.Join(baseDir, ".org.chromium.Chromium.[w-z][a-lm-qr-vw-zA-Z0-9]*"),
 		filepath.Join(baseDir, ".org.chromium.Chromium.[A-Z][a-lm-qr-vw-zA-Z0-9]*"),
 		filepath.Join(baseDir, ".org.chromium.Chromium.[0-9][a-lm-qr-vw-zA-Z0-9]*"),
+		// without leading dot (OpenBSD)
+		filepath.Join(baseDir, "org.chromium.Chromium.[a-l][a-lm-qr-vw-zA-Z0-9]*"),
+		filepath.Join(baseDir, "org.chromium.Chromium.[m-q][a-lm-qr-vw-zA-Z0-9]*"),
+		filepath.Join(baseDir, "org.chromium.Chromium.[r-v][a-lm-qr-vw-zA-Z0-9]*"),
+		filepath.Join(baseDir, "org.chromium.Chromium.[w-z][a-lm-qr-vw-zA-Z0-9]*"),
+		filepath.Join(baseDir, "org.chromium.Chromium.[A-Z][a-lm-qr-vw-zA-Z0-9]*"),
+		filepath.Join(baseDir, "org.chromium.Chromium.[0-9][a-lm-qr-vw-zA-Z0-9]*"),
 		filepath.Join(baseDir, "chromedp-runner*"),
 	}
 
