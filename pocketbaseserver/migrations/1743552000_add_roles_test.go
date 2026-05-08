@@ -249,7 +249,7 @@ func TestMigrationRoleCanPostToAllCollections(t *testing.T) {
 		"url":  "https://mig.example.com",
 	})
 	if status != http.StatusOK {
-		t.Errorf("expected 200 for sites POST with migration role, got %d", status)
+		t.Fatalf("expected 200 for sites POST with migration role, got %d", status)
 	}
 
 	// skillTypes
@@ -293,7 +293,10 @@ func TestMigrationRoleCanPostToAllCollections(t *testing.T) {
 	}
 
 	// jobPosts — need a site
-	siteRecs, _ := app.FindRecordsByFilter("sites", "name='MigSite'", "-created", 1, 0)
+	siteRecs, siteErr := app.FindRecordsByFilter("sites", "name='MigSite'", "-created", 1, 0)
+	if siteErr != nil || len(siteRecs) == 0 {
+		t.Fatalf("expected to find MigSite record after POST: err=%v, count=%d", siteErr, len(siteRecs))
+	}
 	siteID := siteRecs[0].Id
 	status = apiPost(t, serverURL, token, "jobPosts", map[string]any{
 		"jobSiteNumber": "MIG-001",
