@@ -76,7 +76,7 @@ func (d DynamicContentExtractor) ExtractDynamicContent(
 func getContentFromContext(selector string, getContentFunc func([]*cdp.Node) error, ctx context.Context) (err error) {
 	var errParts []error
 	var nodes []*cdp.Node
-	if getNodesErr := chromedp.Nodes(selector, &nodes, chromedp.ByQuery).Do(ctx); getNodesErr != nil {
+	if getNodesErr := chromedp.Nodes(selector, &nodes, chromedp.ByQuery, chromedp.AtLeast(0)).Do(ctx); getNodesErr != nil {
 		errParts = append(errParts, fmt.Errorf("getNodesErr: %v", getNodesErr))
 	}
 	if len(nodes) > 0 {
