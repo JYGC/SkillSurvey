@@ -86,6 +86,8 @@ func createSites(app core.App) error {
 			Name:     "url",
 			Required: true,
 		},
+		&core.AutodateField{Id: "autodate2990389176", Name: "created", OnCreate: true},
+		&core.AutodateField{Id: "autodate3332085495", Name: "updated", OnCreate: true, OnUpdate: true},
 	)
 	return app.Save(sites)
 }
@@ -104,6 +106,8 @@ func createSkillTypes(app core.App) error {
 			Name:     "description",
 			Required: true,
 		},
+		&core.AutodateField{Id: "autodate2990389176", Name: "created", OnCreate: true},
+		&core.AutodateField{Id: "autodate3332085495", Name: "updated", OnCreate: true, OnUpdate: true},
 	)
 	return app.Save(skillTypes)
 }
@@ -128,6 +132,8 @@ func createSkillNames(app core.App) error {
 			MaxSelect:    1,
 			Required:     true,
 		},
+		&core.AutodateField{Id: "autodate2990389176", Name: "created", OnCreate: true},
+		&core.AutodateField{Id: "autodate3332085495", Name: "updated", OnCreate: true, OnUpdate: true},
 	)
 	return app.Save(skillNames)
 }
@@ -148,6 +154,8 @@ func createSkillNameAliases(app core.App) error {
 			Name:     "alias",
 			Required: true,
 		},
+		&core.AutodateField{Id: "autodate2990389176", Name: "created", OnCreate: true},
+		&core.AutodateField{Id: "autodate3332085495", Name: "updated", OnCreate: true, OnUpdate: true},
 	)
 	return app.Save(skillNameAliases)
 }
@@ -184,6 +192,8 @@ func createJobPosts(app core.App) error {
 			Name:     "location",
 			Required: true,
 		},
+		&core.AutodateField{Id: "autodate2990389176", Name: "created", OnCreate: true},
+		&core.AutodateField{Id: "autodate3332085495", Name: "updated", OnCreate: true, OnUpdate: true},
 	)
 	return app.Save(jobPosts)
 }
@@ -218,6 +228,8 @@ func createMonthlyCountReports(app core.App) error {
 			CollectionId: "pbc_669710600",
 			MaxSelect:    1,
 		},
+		&core.AutodateField{Id: "autodate2990389176", Name: "created", OnCreate: true},
+		&core.AutodateField{Id: "autodate3332085495", Name: "updated", OnCreate: true, OnUpdate: true},
 	)
 	return app.Save(monthlyCountReports)
 }
@@ -249,6 +261,8 @@ func createUserSettings(app core.App) error {
 			Required:  true,
 			Values:    []string{"white", "g10", "g90", "g100"},
 		},
+		&core.AutodateField{Id: "autodate2990389176", Name: "created", OnCreate: true},
+		&core.AutodateField{Id: "autodate3332085495", Name: "updated", OnCreate: true, OnUpdate: true},
 	)
 	return app.Save(userSettings)
 }

@@ -65,6 +65,8 @@ func createRoles(app core.App) error {
 			Name:     "description",
 			Required: true,
 		},
+		&core.AutodateField{Id: "autodate2990389176", Name: "created", OnCreate: true},
+		&core.AutodateField{Id: "autodate3332085495", Name: "updated", OnCreate: true, OnUpdate: true},
 	)
 	return app.Save(roles)
 }
@@ -118,6 +120,8 @@ func createUserRoles(app core.App) error {
 			MaxSelect:    1,
 			Required:     true,
 		},
+		&core.AutodateField{Id: "autodate2990389176", Name: "created", OnCreate: true},
+		&core.AutodateField{Id: "autodate3332085495", Name: "updated", OnCreate: true, OnUpdate: true},
 	)
 	return app.Save(userRoles)
 }
