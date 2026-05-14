@@ -36,7 +36,7 @@ func ReportErrorIfPanic(extraData map[string]any) (err error) {
 		default:
 			err = fmt.Errorf("%v", x)
 		}
-		ErrorLogger.Println(err)
+		logPrintln(err)
 	}
 	return err
 }
@@ -47,11 +47,27 @@ func LogExtraData(extraData map[string]any) {
 		errorMap["Extra data"] = extraData
 	}
 	errorMap["Stacktrace"] = string(debug.Stack())
-	ErrorLogger.Println(errorMap)
+	logPrintln(errorMap)
 }
 
 func LogErrorWithLabel(label string, err error) {
-	ErrorLogger.Printf("%s: %v\n", label, err)
+	logPrintf("%s: %v\n", label, err)
+}
+
+func logPrintln(v any) {
+	if ErrorLogger != nil {
+		ErrorLogger.Println(v)
+	} else {
+		log.Println(v)
+	}
+}
+
+func logPrintf(format string, args ...any) {
+	if ErrorLogger != nil {
+		ErrorLogger.Printf(format, args...)
+	} else {
+		log.Printf(format, args...)
+	}
 }
 
 func GetAllLogs(errorLogFilePath string) (string, error) {
