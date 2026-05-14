@@ -197,10 +197,20 @@ func TestMigratorSkillNameHasNewSkillTypeID(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	// Find the skillName record in PocketBase
-	snList, err := pb.List("skillNames", pocketbaseclient.ParamsList{Filters: `name = "Go"`})
+	// Find the skillType first so we can filter the skillName by both name and type.
+	stList, err := pb.List("skillTypes", pocketbaseclient.ParamsList{Filters: `name = "Programming"`})
+	if err != nil || len(stList.Items) == 0 {
+		t.Fatalf("find skillType Programming: %v", err)
+	}
+	stID := stList.Items[0]["id"].(string)
+
+	// The seed migration also contains a "Go" skill name (under "Back End Language"),
+	// so filter by both name and the specific skillType to get the migrated record.
+	snList, err := pb.List("skillNames", pocketbaseclient.ParamsList{
+		Filters: fmt.Sprintf(`name = "Go" && skillType = %q`, stID),
+	})
 	if err != nil || len(snList.Items) == 0 {
-		t.Fatalf("find skillName Go: %v", err)
+		t.Fatalf("find skillName Go under Programming: %v", err)
 	}
 	snRecord := snList.Items[0]
 
@@ -209,13 +219,6 @@ func TestMigratorSkillNameHasNewSkillTypeID(t *testing.T) {
 	if !ok || skillTypeField == "" {
 		t.Errorf("skillName.skillType should be a non-empty PocketBase string ID, got %v", snRecord["skillType"])
 	}
-
-	// Verify that ID matches the actual skillType record.
-	stList, err := pb.List("skillTypes", pocketbaseclient.ParamsList{Filters: `name = "Programming"`})
-	if err != nil || len(stList.Items) == 0 {
-		t.Fatalf("find skillType Programming: %v", err)
-	}
-	stID := stList.Items[0]["id"].(string)
 	if skillTypeField != stID {
 		t.Errorf("skillName.skillType = %q, want PocketBase ID %q", skillTypeField, stID)
 	}
@@ -232,18 +235,28 @@ func TestMigratorIsIdempotent(t *testing.T) {
 	if _, err := m.Run(); err != nil {
 		t.Fatalf("first Run: %v", err)
 	}
+
+	collections := []string{"sites", "skillTypes", "skillNames", "skillNameAliases", "jobPosts", "monthlyCountReports"}
+	countAfterFirst := make(map[string]int, len(collections))
+	for _, col := range collections {
+		list, err := pb.List(col, pocketbaseclient.ParamsList{Size: 500})
+		if err != nil {
+			t.Fatalf("list %s after first run: %v", col, err)
+		}
+		countAfterFirst[col] = list.TotalItems
+	}
+
 	if _, err := m.Run(); err != nil {
 		t.Fatalf("second Run: %v", err)
 	}
 
-	collections := []string{"sites", "skillTypes", "skillNames", "skillNameAliases", "jobPosts", "monthlyCountReports"}
 	for _, col := range collections {
 		list, err := pb.List(col, pocketbaseclient.ParamsList{Size: 500})
 		if err != nil {
-			t.Fatalf("list %s: %v", col, err)
+			t.Fatalf("list %s after second run: %v", col, err)
 		}
-		if list.TotalItems != 1 {
-			t.Errorf("after two runs, collection %s has %d records (want 1)", col, list.TotalItems)
+		if list.TotalItems != countAfterFirst[col] {
+			t.Errorf("collection %s: count after first run=%d, after second run=%d (expected no change)", col, countAfterFirst[col], list.TotalItems)
 		}
 	}
 }
@@ -260,10 +273,19 @@ func TestMigratorMonthlyCountReportIdentifierUsesNewPBID(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	// Get the newly created skillName ID.
-	snList, err := pb.List("skillNames", pocketbaseclient.ParamsList{Filters: `name = "Go"`})
+	// The seed migration also contains a "Go" skill name (under "Back End Language"),
+	// so resolve "Programming" first to find the migrated "Go" specifically.
+	stList, err := pb.List("skillTypes", pocketbaseclient.ParamsList{Filters: `name = "Programming"`})
+	if err != nil || len(stList.Items) == 0 {
+		t.Fatalf("find skillType Programming: %v", err)
+	}
+	stID := stList.Items[0]["id"].(string)
+
+	snList, err := pb.List("skillNames", pocketbaseclient.ParamsList{
+		Filters: fmt.Sprintf(`name = "Go" && skillType = %q`, stID),
+	})
 	if err != nil || len(snList.Items) == 0 {
-		t.Fatalf("find skillName Go: %v", err)
+		t.Fatalf("find skillName Go under Programming: %v", err)
 	}
 	newSkillNameID := snList.Items[0]["id"].(string)
 

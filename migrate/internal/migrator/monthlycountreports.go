@@ -45,15 +45,6 @@ func migrateMonthlyCountReports(db *gorm.DB, pb *pocketbase.Client, skillNameIdM
 			continue
 		}
 
-		yearMonthDate := r.YearMonthDate
-		if yearMonthDate.IsZero() {
-			// Parse from YearMonth string if YearMonthDate was not stored.
-			fmt.Sscanf(r.YearMonth, "%d-%d", nil, nil)
-			// Fallback: use the first day of the YearMonth.
-			var year, month int
-			fmt.Sscanf(r.YearMonth, "%d-%d", &year, &month)
-		}
-
 		created, err := pb.Create("monthlyCountReports", map[string]any{
 			"identifier":    identifier,
 			"YearMonth":     r.YearMonth,
