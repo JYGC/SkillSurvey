@@ -56,13 +56,13 @@ func SendLog(cfg config.Config) error {
 		return fmt.Errorf("read error log: %w", err)
 	}
 
-	msg := "From: runtask@localhost\r\n" +
+	msg := "From: " + cfg.SenderEmail + "\r\n" +
 		"To: " + cfg.EmailRecipient + "\r\n" +
 		"Subject: SkillSurvey Error Log\r\n\r\n" +
 		"*** Error logs ***\n" + allLogs + "\n"
 
-	addr := fmt.Sprintf("%s:%d", cfg.SmtpHost, cfg.SmtpPort)
-	if err := smtp.SendMail(addr, nil, "runtask@localhost", []string{cfg.EmailRecipient}, []byte(msg)); err != nil {
+	auth := smtp.PlainAuth("", cfg.SenderEmail, cfg.SenderEmailPassword, cfg.SmtpDomain)
+	if err := smtp.SendMail(fmt.Sprintf("%s:%d", cfg.SmtpDomain, cfg.SmtpPort), auth, cfg.SenderEmail, []string{cfg.EmailRecipient}, []byte(msg)); err != nil {
 		return fmt.Errorf("send mail: %w", err)
 	}
 

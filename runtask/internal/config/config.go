@@ -14,8 +14,10 @@ type Config struct {
 	SeekConfigFile         string
 	JoraConfigFile         string
 	ErrorLogFile           string
-	SmtpHost               string
+	SmtpDomain             string
 	SmtpPort               int
+	SenderEmail            string
+	SenderEmailPassword    string
 	EmailRecipient         string
 }
 
