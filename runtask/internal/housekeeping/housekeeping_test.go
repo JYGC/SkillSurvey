@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -94,8 +93,13 @@ func startSMTPStub(t *testing.T) (port int, received <-chan string) {
 			}
 
 			switch {
-			case strings.HasPrefix(line, "EHLO"), strings.HasPrefix(line, "HELO"):
+			case strings.HasPrefix(line, "EHLO"):
+				// Advertise AUTH PLAIN so smtp.PlainAuth is accepted.
+				fmt.Fprintf(conn, "250-OK\r\n250 AUTH PLAIN\r\n")
+			case strings.HasPrefix(line, "HELO"):
 				write("250 OK")
+			case strings.HasPrefix(line, "AUTH"):
+				write("235 Authentication successful")
 			case strings.HasPrefix(line, "MAIL FROM"):
 				write("250 OK")
 			case strings.HasPrefix(line, "RCPT TO"):
@@ -128,10 +132,12 @@ func TestSendLogEmailsContentsAndTruncates(t *testing.T) {
 	port, received := startSMTPStub(t)
 
 	cfg := config.Config{
-		ErrorLogFile:   logFile,
-		SmtpHost:       "127.0.0.1",
-		SmtpPort:       port,
-		EmailRecipient: "admin@example.com",
+		ErrorLogFile:        logFile,
+		SmtpDomain:          "127.0.0.1",
+		SmtpPort:            port,
+		SenderEmail:         "sender@example.com",
+		SenderEmailPassword: "testpassword",
+		EmailRecipient:      "admin@example.com",
 	}
 
 	if err := housekeeping.SendLog(cfg); err != nil {
@@ -157,6 +163,3 @@ func TestSendLogEmailsContentsAndTruncates(t *testing.T) {
 		t.Errorf("expected error.log size=0 after SendLog, got %d", fi.Size())
 	}
 }
-
-// keep strconv import used in port conversion if needed
-var _ = strconv.Itoa
