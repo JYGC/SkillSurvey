@@ -1,6 +1,6 @@
 # backend — Codebase Index
 
-> **Status: Legacy.** Being replaced by `pocketbaseserver`. The frontend still calls the REST API at `:3000` for skill/report data.
+> **Status: Legacy.** Replaced by `pocketbaseserver` + `runtask`. Has its own `go.mod` and is **not** included in the repo's `go.work` workspace. The new stack handles all active scraping, reporting, and data access.
 
 ## Purpose
 

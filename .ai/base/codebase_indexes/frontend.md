@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Single-page application for managing skills/skill types and viewing monthly skill-demand reports. Uses PocketBase for auth and a separate Go REST API (`:3000`) for skill data.
+Single-page application for managing skills/skill types and viewing monthly skill-demand reports. Uses PocketBase for auth, user settings, and all skill/report data. The old dependency on the legacy REST API at `:3000` is being removed as part of the migration to the new stack.
 
 ## Tech stack
 

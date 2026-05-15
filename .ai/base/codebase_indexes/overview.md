@@ -1,24 +1,47 @@
 # SkillSurvey — System Overview
 
-SkillSurvey tracks which technical skills appear in Australian job listings (Seek, Jora) and exposes the trend data through a web UI. The system has three sub-projects:
+SkillSurvey tracks which technical skills appear in Australian job listings (Seek, Jora) and exposes the trend data through a web UI.
+
+## Sub-projects
 
 | Project | Purpose | Status |
 |---|---|---|
-| `backend/` | Old Go stack: scrapers + GORM/SQLite REST API | Legacy (being replaced) |
-| `pocketbaseserver/` | New Go stack: PocketBase BaaS, auth, DB | Active |
-| `frontend/` | Vue 3 + TypeScript SPA | Active (shared by both stacks) |
+| `pocketbaseserver/` | PocketBase BaaS — auth, DB, REST API | Active |
+| `runtask/` | Scheduled task runner — scrape, report, housekeeping | Active |
+| `migrate/` | One-shot legacy SQLite → PocketBase migration tool | Active (tool) |
+| `frontend/` | Vue 3 + TypeScript SPA | Active |
+| `backend/` | Old Go stack: GORM/SQLite scrapers + REST API | Legacy (standalone, not in go.work) |
 
-## Data flow (new stack)
+## Go workspace
+
+`go.work` includes three modules:
+
+```
+go 1.24.1
+
+use (
+    ./migrate
+    ./pocketbaseserver
+    ./runtask
+)
+```
+
+`backend/` has its own `go.mod` but is excluded from the workspace.
+
+## Data flow
 
 ```
 Job Sites (Seek / Jora)
        │
-       ▼ [runtask scraper — not in this repo yet]
+       ▼  runtask scrape
 pocketbaseserver  ─── SQLite (pb_data/) ──► REST API (:8090)
        │
-       ▼ serves pb_public/
-   frontend  ◄─────────────────────────────────────────────
-       │ fetch() calls to :3000 (old) and PocketBase SDK (:8090)
+       ▼  runtask report
+monthlyCountReports in PocketBase
+       │
+       ▼  served via pb_public/
+   frontend  ◄──────────────────────────────────────────
+       │  PocketBase JS SDK + fetch() calls to :8090
        ▼
     Browser
 ```
@@ -27,12 +50,13 @@ pocketbaseserver  ─── SQLite (pb_data/) ──► REST API (:8090)
 
 | Service | Port | Notes |
 |---|---|---|
-| `backend/results` (old REST API) | 3000 | Still called by frontend for skills/reports |
-| `pocketbaseserver` | 8090 | Auth, userSettings, future collections |
+| `pocketbaseserver` | 8090 | All data, auth, and static frontend |
+| `backend/results` (legacy) | 3000 | No longer the primary data source |
 
 ## Cross-cutting concerns
 
 - **OS target**: OpenBSD (all binaries must build/run on OpenBSD)
 - **Secrets**: Never commit API keys or passwords
-- **Tests**: All new features require integration tests; no DB mocking
+- **Tests**: Integration tests use real PocketBase + real SMTP stubs; no mocking
 - **Style**: Google Go style guide; Google TypeScript style guide
+- **Config**: JSON files placed next to each binary (no env vars for runtime config)
