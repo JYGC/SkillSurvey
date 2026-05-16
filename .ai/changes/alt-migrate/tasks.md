@@ -113,10 +113,10 @@ altMigrateCmd.Flags().String("db", "", "Path to legacy SkillSurvey.db SQLite fil
 app.RootCmd().AddCommand(altMigrateCmd)
 ```
 
-- [ ] Add `alt-migrate` cobra command to `main.go`.
-- [ ] Confirm `pocketbaseserver alt-migrate --help` prints usage on the server.
+- [x] Add `alt-migrate` cobra command to `main.go`.
+- [x] Confirm `pocketbaseserver alt-migrate --help` prints usage on the server.
 
-**Expected outcome:** `pocketbaseserver alt-migrate --db /path/to/SkillSurvey.db` runs and prints a summary.
+**Expected outcome:** ✅ Confirmed — `pocketbaseserver alt-migrate --help` prints correct usage with `--db` flag.
 
 ---
 
