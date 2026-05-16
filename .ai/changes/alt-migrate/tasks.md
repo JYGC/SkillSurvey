@@ -56,14 +56,14 @@ Write three test cases before any implementation code exists. Watch them fail at
 
 Implement `Run(app core.App, legacyDbPath string) (Summary, error)` following the design:
 
-- [ ] Open legacy SQLite with `database/sql` using the `"sqlite"` driver (registered by PocketBase on bootstrap — no extra import needed).
-- [ ] Load all legacy sites via `SELECT id, name FROM sites`.
-- [ ] Load all PocketBase site records via `app.FindRecordsByFilter("sites", "", "", -1, 0)` and build a `map[uint]string` from legacy site ID to PocketBase site ID (joined by site name).
-- [ ] Load all legacy job posts via `SELECT jp.id, jp.site_id, jp.job_site_number, jp.title, jp.body, jp.posted_date, jp.city, jp.country, jp.suburb FROM job_posts jp`.
-- [ ] For each job post: resolve `pbSiteID` from the map; if missing, log warning, increment `Failed`, continue.
-- [ ] For each job post: check existence via `app.FindRecordsByFilter("jobPosts", "jobSiteNumber={:n} && site={:s}", ...)`; if found, increment `Skipped`, continue.
-- [ ] For each job post: create record via `core.NewRecord(col)`, `record.Set(...)`, `app.Save(record)`; on error log and increment `Failed`, on success increment `Written`.
-- [ ] Return `Summary`.
+- [x] Open legacy SQLite with `database/sql` using the `"sqlite"` driver (registered by PocketBase on bootstrap — no extra import needed).
+- [x] Load all legacy sites via `SELECT id, name FROM sites`.
+- [x] Load all PocketBase site records via `app.FindRecordsByFilter("sites", "", "", -1, 0)` and build a `map[uint]string` from legacy site ID to PocketBase site ID (joined by site name).
+- [x] Load all legacy job posts via `SELECT jp.id, jp.site_id, jp.job_site_number, jp.title, jp.body, jp.posted_date, jp.city, jp.country, jp.suburb FROM job_posts jp`.
+- [x] For each job post: resolve `pbSiteID` from the map; if missing, log warning, increment `Failed`, continue.
+- [x] For each job post: check existence via `app.FindRecordsByFilter("jobPosts", "jobSiteNumber={:n} && site={:s}", ...)`; if found, increment `Skipped`, continue.
+- [x] For each job post: create record via `core.NewRecord(col)`, `record.Set(...)`, `app.Save(record)`; on error log and increment `Failed`, on success increment `Written`.
+- [x] Return `Summary`.
 
 **PocketBase field mapping:**
 
@@ -75,7 +75,7 @@ Implement `Run(app core.App, legacyDbPath string) (Summary, error)` following th
 | `content` | `map[string]any{"title": ..., "body": ...}` |
 | `location` | `map[string]any{"city": ..., "country": ..., "suburb": ...}` |
 
-**Expected outcome:** Push to OpenBSD server; run `go test ./pocketbaseserver/internal/altmigrate/ -v -timeout 60s`; all three tests pass.
+**Expected outcome:** ✅ Confirmed on OpenBSD server — all 5 tests pass (`ok keybook/pocketbaseserver/internal/altmigrate 8.272s`).
 
 ---
 

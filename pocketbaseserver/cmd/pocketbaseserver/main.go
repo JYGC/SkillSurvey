@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -9,7 +11,9 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
+	"github.com/spf13/cobra"
 
+	"keybook/pocketbaseserver/internal/altmigrate"
 	_ "keybook/pocketbaseserver/migrations"
 )
 
@@ -36,6 +40,32 @@ func main() {
 		se.Router.GET("/{path...}", apis.Static(os.DirFS("./pb_public"), false))
 		return se.Next()
 	})
+
+	altMigrateCmd := &cobra.Command{
+		Use:   "alt-migrate",
+		Short: "Migrate jobPosts from legacy SQLite directly into PocketBase",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			dbPath, _ := cmd.Flags().GetString("db")
+			if dbPath == "" {
+				return errors.New("--db flag is required")
+			}
+			if err := app.Bootstrap(); err != nil {
+				return err
+			}
+			summary, err := altmigrate.Run(app, dbPath)
+			fmt.Printf("jobPosts:   attempted=%d  written=%d  skipped=%d  failed=%d\n",
+				summary.Attempted, summary.Written, summary.Skipped, summary.Failed)
+			if err != nil {
+				return err
+			}
+			if summary.Failed > 0 {
+				return errors.New("migration completed with failures — see log for details")
+			}
+			return nil
+		},
+	}
+	altMigrateCmd.Flags().String("db", "", "Path to legacy SkillSurvey.db SQLite file")
+	app.RootCmd.AddCommand(altMigrateCmd)
 
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
