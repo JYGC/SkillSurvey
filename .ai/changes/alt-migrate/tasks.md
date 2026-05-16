@@ -11,42 +11,42 @@ Work through tasks in order. Check each item when done. **Integration test task 
 Write three test cases before any implementation code exists. Watch them fail at compile time — that is expected. Write the minimum implementation in Task 2 to make them pass.
 
 ### `TestAltMigrateRunCreatesJobPosts`
-- [ ] Start PocketBase with `t.TempDir()` data dir; import `_ "keybook/pocketbaseserver/migrations"` to apply all migrations.
-- [ ] Create a legacy SQLite file in `t.TempDir()` using `database/sql`; insert 1 site row and 2 job post rows.
-- [ ] Manually create the matching site record in PocketBase (same name as the legacy site).
-- [ ] Call `altmigrate.Run(app, legacyDbPath)`.
-- [ ] Assert PocketBase `jobPosts` collection has 2 records.
-- [ ] Assert each record has correct `jobSiteNumber`, `site` (PocketBase ID), `postedDate`, `content` JSON, and `location` JSON.
-- [ ] Assert returned Summary: `Attempted=2, Written=2, Skipped=0, Failed=0`.
+- [x] Start PocketBase with `t.TempDir()` data dir; import `_ "keybook/pocketbaseserver/migrations"` to apply all migrations.
+- [x] Create a legacy SQLite file in `t.TempDir()` using `database/sql`; insert 1 site row and 2 job post rows.
+- [x] Manually create the matching site record in PocketBase (same name as the legacy site).
+- [x] Call `altmigrate.Run(app, legacyDbPath)`.
+- [x] Assert PocketBase `jobPosts` collection has 2 records.
+- [x] Assert each record has correct `jobSiteNumber`, `site` (PocketBase ID), `postedDate`, `content` JSON, and `location` JSON.
+- [x] Assert returned Summary: `Attempted=2, Written=2, Skipped=0, Failed=0`.
 
 ### `TestAltMigrateIsIdempotent`
-- [ ] Same setup as above.
-- [ ] Call `altmigrate.Run` twice.
-- [ ] Assert exactly 2 records exist after second run (no duplicates).
-- [ ] Assert second Summary: `Attempted=2, Written=0, Skipped=2, Failed=0`.
+- [x] Same setup as above.
+- [x] Call `altmigrate.Run` twice.
+- [x] Assert exactly 2 records exist after second run (no duplicates).
+- [x] Assert second Summary: `Attempted=2, Written=0, Skipped=2, Failed=0`.
 
 ### `TestAltMigrateSkipsJobPostWithUnknownSite`
-- [ ] Start PocketBase (no sites seeded).
-- [ ] Create legacy SQLite with 1 site and 1 job post; do NOT create a matching PocketBase site.
-- [ ] Call `altmigrate.Run`.
-- [ ] Assert 0 records in PocketBase `jobPosts`.
-- [ ] Assert Summary: `Attempted=1, Written=0, Skipped=0, Failed=1`.
+- [x] Start PocketBase (no sites seeded).
+- [x] Create legacy SQLite with 1 site and 1 job post; do NOT create a matching PocketBase site.
+- [x] Call `altmigrate.Run`.
+- [x] Assert 0 records in PocketBase `jobPosts`.
+- [x] Assert Summary: `Attempted=1, Written=0, Skipped=0, Failed=1`.
 
 ### `TestAltMigrateSiteIdZeroCountsAsFailed`
-- [ ] Start PocketBase with 1 site seeded.
-- [ ] Create legacy SQLite with a job post where `site_id=0`.
-- [ ] Call `altmigrate.Run`.
-- [ ] Assert 0 records in PocketBase `jobPosts`.
-- [ ] Assert Summary: `Attempted=1, Written=0, Skipped=0, Failed=1`.
+- [x] Start PocketBase with 1 site seeded.
+- [x] Create legacy SQLite with a job post where `site_id=0`.
+- [x] Call `altmigrate.Run`.
+- [x] Assert 0 records in PocketBase `jobPosts`.
+- [x] Assert Summary: `Attempted=1, Written=0, Skipped=0, Failed=1`.
 
 ### `TestAltMigrateHandlesZeroDate`
-- [ ] Start PocketBase with 1 site seeded.
-- [ ] Create legacy SQLite with a job post where `posted_date='0001-01-01 00:00:00+00:00'`.
-- [ ] Call `altmigrate.Run`.
-- [ ] Assert 1 record written to PocketBase (zero date is stored, not treated as an error).
-- [ ] Assert Summary: `Attempted=1, Written=1, Skipped=0, Failed=0`.
+- [x] Start PocketBase with 1 site seeded.
+- [x] Create legacy SQLite with a job post where `posted_date='0001-01-01 00:00:00+00:00'`.
+- [x] Call `altmigrate.Run`.
+- [x] Assert 1 record written to PocketBase (zero date is stored, not treated as an error).
+- [x] Assert Summary: `Attempted=1, Written=1, Skipped=0, Failed=0`.
 
-**Expected outcome:** Tests compile and fail because `altmigrate` package does not exist yet. Push to OpenBSD server and confirm compile failure there before proceeding.
+**Expected outcome:** ✅ Confirmed on OpenBSD server — `undefined: Run` compile failure on all 5 test calls. Proceed to Task 2.
 
 ---
 
