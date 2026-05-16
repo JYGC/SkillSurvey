@@ -135,12 +135,13 @@ Before starting any non-trivial feature, refactor, or bug fix, check `.ai/change
 
 **All tests run on the OpenBSD server — not on Windows.** Push changes, pull on the server, run tests there. (see `CLAUDE.local.md` for connection details).
 
-**Integration tests must be written before the implementation code they cover.** Write the test, watch it fail, then write the minimum code to make it pass. Frontend unit tests are not required; Go unit tests are not required where an integration test covers the same behaviour.
+**Unit tests must be written before the implementation code they cover.** Write the test, watch it fail, then write the minimum code to make it pass. Frontend unit tests are not required; Go unit tests are not required where an integration test covers the same behaviour.
 
 ### Test types
 
 | Type | Scope | When required |
 |---|---|---|
+| **Unit** | Single function or package in isolation (no external dependencies) | When logic is complex enough to warrant isolated testing — written first |
 | **Integration (Go)** | Real PocketBase instance + real stubs (SMTP, httptest) | Always for non-trivial Go features — written first |
 | **Integration (frontend)** | API-connected Vue components exercised against PocketBase | Required when adding new API-connected UI features |
 | **Contract** | PocketBase collection rules verified via HTTP (status codes, auth) | When adding or changing collections, roles, or access rules |
