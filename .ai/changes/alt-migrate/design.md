@@ -140,7 +140,8 @@ Confirmed column names from the production backup — all snake_case, no `url` c
 
 | Fact | Value |
 |---|---|
-| Total job_posts rows | 435,042 |
+| Backup file (on OpenBSD server) | `/home/junying/Downloads/SkillSurvey.db.bak20260515200001` |
+| Total job_posts rows | 435,042+ (2026-05-08 backup had 435,042; 2026-05-15 backup will have more) |
 | site_id=1 (seek.com.au) | 233,924 |
 | site_id=2 (au.jora.com) | 198,372 |
 | site_id=0 (orphaned) | 2,746 |

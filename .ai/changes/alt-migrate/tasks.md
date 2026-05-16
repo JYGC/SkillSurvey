@@ -125,8 +125,8 @@ app.RootCmd().AddCommand(altMigrateCmd)
 - [ ] Push branch; pull on server.
 - [ ] `cd pocketbaseserver && make build`
 - [ ] Verify the command is registered: `./build/pocketbaseserver alt-migrate --help`
-- [ ] Run against a copy of the real `SkillSurvey.db`: `./build/pocketbaseserver alt-migrate --db /path/to/SkillSurvey.db`
-- [ ] Confirm summary shows `failed=2746` (the `site_id=0` orphans — expected) and `written + skipped + failed = attempted` (totals must balance). Written count will exceed 432,296 — the backup inspected was from 2026-05-08; the live DB will have more records scraped since then.
+- [ ] Run against the legacy backup: `./build/pocketbaseserver alt-migrate --db /home/junying/Downloads/SkillSurvey.db.bak20260515200001`
+- [ ] Confirm summary shows `failed=2746` (the `site_id=0` orphans — expected) and `written + skipped + failed = attempted` (totals must balance). Written count will exceed 432,296 — the backup inspected was from 2026-05-08; the 2026-05-15 backup will have more records scraped since then.
 - [ ] Spot-check a few records in PocketBase admin UI (verify `postedDate`, `content`, `location` fields).
 - [ ] Run a second time to verify idempotency: `written=0`, all previously written records appear as `skipped`, `failed=2746`.
 
