@@ -95,7 +95,9 @@ Optional layers: **Domain** (pure entities and value objects, no dependencies), 
 
 ## Changes (spec-driven work)
 
-Non-trivial features and bug fixes are tracked as a **change** — a folder at `.ai/changes/<change-name>/` containing up to three spec files. Use specs for anything complex, costly to get wrong, or requiring iterative design. Skip specs for exploratory/prototype work.
+> This approach is based on [Kiro's spec methodology](https://kiro.dev/docs/specs/). The [Requirements-First workflow](https://kiro.dev/docs/specs/feature-specs/requirements-first/) is the standard used here: specify system behaviour before making architectural decisions.
+
+Non-trivial features and bug fixes are tracked as a **change** — a folder at `.ai/changes/<change-name>/` containing up to three spec files. Use specs for anything complex, costly to get wrong, or requiring iterative design. Skip specs for exploratory/prototype work ("vibe coding").
 
 ### Spec files
 
