@@ -58,11 +58,11 @@ WHEN migration completes THE SYSTEM SHALL print a one-line summary per collectio
 jobPosts:   attempted=N  written=N  skipped=N  failed=N
 ```
 
-For the production backup the expected terminal output is approximately:
+For the production database the expected terminal output will be approximately:
 ```
-jobPosts:   attempted=435042  written=432296  skipped=0  failed=2746
+jobPosts:   attempted=N  written=N-2746  skipped=0  failed=2746
 ```
-(2,746 failures are the `site_id=0` orphaned records — expected, not a bug.)
+The 2,746 failures are the `site_id=0` orphaned records — expected, not a bug. The backup inspected (2026-05-08) had 435,042 total rows; the live DB will have more due to ongoing scraping.
 
 ---
 

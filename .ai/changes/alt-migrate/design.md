@@ -200,7 +200,7 @@ Records with `posted_date = '0001-01-01 00:00:00+00:00'` (Go zero time) exist in
 
 Processing continues record-by-record on individual failures. A non-zero exit at the end signals partial failure so the operator can investigate and re-run (safe due to idempotency).
 
-**Expected production run outcome:** `attempted=435042  written=432296  skipped=0  failed=2746` — the 2,746 failures are the `site_id=0` orphaned records and are expected.
+**Expected production run outcome:** `failed=2746` (the `site_id=0` orphaned records — expected). Total attempted will exceed 435,042 (the 2026-05-08 backup count) as scraping has continued since then.
 
 ---
 
