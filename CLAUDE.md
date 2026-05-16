@@ -133,7 +133,7 @@ Before starting any non-trivial feature, refactor, or bug fix, check `.ai/change
 
 ### Mandate
 
-**All tests run on the OpenBSD server — not on Windows.** Push changes, pull on the server, run tests there.
+**All tests run on the OpenBSD server — not on Windows.** Push changes, pull on the server, run tests there. (see `CLAUDE.local.md` for connection details).
 
 **Integration tests must be written before the implementation code they cover.** Write the test, watch it fail, then write the minimum code to make it pass. Frontend unit tests are not required; Go unit tests are not required where an integration test covers the same behaviour.
 
