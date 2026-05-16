@@ -64,6 +64,35 @@ One-shot tool that reads the legacy SQLite DB (via GORM) and writes into PocketB
 
 Vue 3 SPA built to `frontend/dist/`, then copied to `pocketbaseserver/pb_public/`. Uses the PocketBase JS SDK for all data and auth. Base URL from `VUE_APP_POCKETBASE_URL` (`.env`).
 
+## Layered Architecture
+
+All code must follow the layered architecture pattern with clear separation of concerns. Each layer may only depend on the layer directly below it.
+
+| Layer | Responsibility |
+|---|---|
+| **API** | HTTP handlers, request/response mapping, input validation |
+| **Application** | Use-case orchestration; coordinates services without business logic |
+| **Service** | Business logic and domain rules |
+| **Repository** | Data access abstraction; hides persistence details from services |
+| **Store** | Persistence (database queries, external API calls) |
+
+Optional layers: **Domain** (pure entities and value objects, no dependencies), **DTO/Schema** (data transfer objects at layer boundaries).
+
+### References
+
+1. [Microsoft Learn — Infrastructure Persistence Layer Design](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design)
+2. [From Request to Database: Three-Layer Architecture in API Development](https://konstantinmb.medium.com/from-request-to-database-understanding-the-three-layer-architecture-in-api-development-1c44c973c7af)
+3. [Repository Pattern with Layered Architecture](https://medium.com/@leadcoder/repository-pattern-with-layered-architecture-35f7b9182ebf)
+4. [Layered Architecture Template for REST APIs (Java/Spring Boot)](https://kamilmazurek.pl/layered-architecture-template)
+5. [Service–Repository Pattern in Action](https://medium.com/@albinaji.official/service-repository-pattern-in-action-0db4bb9a474b)
+6. [Repository and Services Pattern in a Multilayered Architecture](https://www.vodovnik.com/repository-and-services-pattern-in-a-multilayered-architecture/)
+7. [Clean Architecture — Incorporating Repository Pattern](https://medium.com/@bert.oneill/clean-architecture-incorporating-repository-pattern-388742e0b54e)
+8. [Unpacking Clean Architecture Layers — Domain, Application, Infrastructure Services](https://www.dandoescode.com/blog/unpacking-the-layers-of-clean-architecture-domain-application-and-infrastructure-services)
+9. [Clean Architecture: Understanding the Infrastructure and Persistence Layers](https://dev.to/moh_moh701/what-is-clean-architecture-understanding-the-infrastructure-and-persistence-layers-2pca)
+10. [clean-architecture-api-boilerplate (GitHub)](https://github.com/luizomf/clean-architecture-api-boilerplate/blob/master/README.md)
+11. [Building a Layered Architecture in NestJS & TypeScript](https://medium.com/@patrick.cunha336/building-a-layered-architecture-in-nestjs-typescript-repository-pattern-dtos-and-validators-08907a8ac4cb) — **⚠️ Uses NestJS/Node.js. This project uses Vue for the frontend — apply the structural concepts only, not the framework specifics.**
+12. [Clean Architecture Design Guide for Backend API Developments](https://naskay.com/blog/clean-architecture-design-guide-for-backend-api-developments/)
+
 ## Changes (spec-driven work)
 
 Non-trivial features and bug fixes are tracked as a **change** — a folder at `.ai/changes/<change-name>/` containing up to three spec files. Use specs for anything complex, costly to get wrong, or requiring iterative design. Skip specs for exploratory/prototype work.
