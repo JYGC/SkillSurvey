@@ -128,13 +128,46 @@ type legacyJobPost struct {
 ```sql
 SELECT id, name FROM sites;
 
-SELECT jp.id, jp.site_id, jp.job_site_number,
-       jp.title, jp.body, jp.posted_date,
-       jp.city, jp.country, jp.suburb
-FROM   job_posts jp;
+SELECT id, site_id, job_site_number,
+       title, body, posted_date,
+       city, country, suburb
+FROM   job_posts;
 ```
 
-Column names follow GORM's default snake_case convention for the legacy schema.
+Confirmed column names from the production backup — all snake_case, no `url` column on `sites`.
+
+### Known data characteristics (from production backup)
+
+| Fact | Value |
+|---|---|
+| Total job_posts rows | 435,042 |
+| site_id=1 (seek.com.au) | 233,924 |
+| site_id=2 (au.jora.com) | 198,372 |
+| site_id=0 (orphaned) | 2,746 |
+| NULL values in any key field | None |
+| Legacy site names | `seek.com.au`, `au.jora.com` |
+| posted_date format | RFC3339 with offset, e.g. `2018-09-10 14:00:00+00:00` |
+| Zero dates present | Yes — min date is `0001-01-01 00:00:00+00:00` |
+
+### posted_date parsing
+
+The `posted_date` column stores timestamps as strings in the format `2018-09-10 14:00:00+00:00` (RFC3339-like, space separator instead of `T`). Timezone offsets vary (`+00:00`, `+10:00`).
+
+Parse in Go using:
+```go
+t, err := time.Parse("2006-01-02 15:04:05.999999999-07:00", row.PostedDate)
+```
+
+If parsing fails, fall back to:
+```go
+t, err = time.Parse("2006-01-02 15:04:05-07:00", row.PostedDate)
+```
+
+Write to PocketBase as UTC: `t.UTC().Format("2006-01-02 15:04:05.000Z")`
+
+### Zero-date handling
+
+Records with `posted_date = '0001-01-01 00:00:00+00:00'` (Go zero time) exist in the backup. These are data quality issues in the source. The system shall store them as-is — PocketBase accepts the zero date — and not treat them as an error.
 
 ### PocketBase record mapping
 
@@ -158,11 +191,16 @@ Column names follow GORM's default snake_case convention for the legacy schema.
 |---|---|
 | `--db` flag missing | cobra validation; exit before Bootstrap |
 | Legacy DB file not found | `sql.Open` / first query fails; print error, exit non-zero |
-| Site not found in PocketBase | Log warning with legacy job post ID and site name; increment Failed; continue |
+| `site_id=0` (orphaned record) | Site lookup returns nothing; log warning with job post ID; increment Failed; continue |
+| Site name not found in PocketBase | Log warning with legacy job post ID and site name; increment Failed; continue |
+| `posted_date` parse failure | Log warning with job post ID and raw value; store empty string; continue |
+| Zero date (`0001-01-01`) | Store as-is — not treated as an error |
 | `app.Save()` error | Log error with legacy job post ID; increment Failed; continue |
 | PocketBase Bootstrap failure | Print error, exit non-zero |
 
 Processing continues record-by-record on individual failures. A non-zero exit at the end signals partial failure so the operator can investigate and re-run (safe due to idempotency).
+
+**Expected production run outcome:** `attempted=435042  written=432296  skipped=0  failed=2746` — the 2,746 failures are the `site_id=0` orphaned records and are expected.
 
 ---
 

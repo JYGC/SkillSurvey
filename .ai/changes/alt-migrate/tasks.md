@@ -32,6 +32,20 @@ Write three test cases before any implementation code exists. Watch them fail at
 - [ ] Assert 0 records in PocketBase `jobPosts`.
 - [ ] Assert Summary: `Attempted=1, Written=0, Skipped=0, Failed=1`.
 
+### `TestAltMigrateSiteIdZeroCountsAsFailed`
+- [ ] Start PocketBase with 1 site seeded.
+- [ ] Create legacy SQLite with a job post where `site_id=0`.
+- [ ] Call `altmigrate.Run`.
+- [ ] Assert 0 records in PocketBase `jobPosts`.
+- [ ] Assert Summary: `Attempted=1, Written=0, Skipped=0, Failed=1`.
+
+### `TestAltMigrateHandlesZeroDate`
+- [ ] Start PocketBase with 1 site seeded.
+- [ ] Create legacy SQLite with a job post where `posted_date='0001-01-01 00:00:00+00:00'`.
+- [ ] Call `altmigrate.Run`.
+- [ ] Assert 1 record written to PocketBase (zero date is stored, not treated as an error).
+- [ ] Assert Summary: `Attempted=1, Written=1, Skipped=0, Failed=0`.
+
 **Expected outcome:** Tests compile and fail because `altmigrate` package does not exist yet. Push to OpenBSD server and confirm compile failure there before proceeding.
 
 ---
@@ -57,7 +71,7 @@ Implement `Run(app core.App, legacyDbPath string) (Summary, error)` following th
 |---|---|
 | `jobSiteNumber` | `legacyJobPost.JobSiteNumber` |
 | `site` | Resolved PocketBase site ID string |
-| `postedDate` | `time.Time` formatted as `"2006-01-02 15:04:05.000Z"` |
+| `postedDate` | Parse source string (`"2006-01-02 15:04:05-07:00"`) → convert to UTC → format as `"2006-01-02 15:04:05.000Z"` |
 | `content` | `map[string]any{"title": ..., "body": ...}` |
 | `location` | `map[string]any{"city": ..., "country": ..., "suburb": ...}` |
 
@@ -112,10 +126,11 @@ app.RootCmd().AddCommand(altMigrateCmd)
 - [ ] `cd pocketbaseserver && make build`
 - [ ] Verify the command is registered: `./build/pocketbaseserver alt-migrate --help`
 - [ ] Run against a copy of the real `SkillSurvey.db`: `./build/pocketbaseserver alt-migrate --db /path/to/SkillSurvey.db`
-- [ ] Confirm summary counts match expected totals; spot-check a few records in PocketBase admin UI.
-- [ ] Run a second time to verify idempotency (`written=0, skipped=N, failed=0`).
+- [ ] Confirm summary matches expected: `attempted=435042  written=432296  skipped=0  failed=2746` (2,746 failures = `site_id=0` orphans — expected).
+- [ ] Spot-check a few records in PocketBase admin UI (verify `postedDate`, `content`, `location` fields).
+- [ ] Run a second time to verify idempotency: `written=0  skipped=432296  failed=2746`.
 
-**Expected outcome:** All job posts migrated; second run is a no-op.
+**Expected outcome:** 432,296 job posts migrated; second run is a no-op for all successfully written records.
 
 ---
 

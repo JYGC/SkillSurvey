@@ -23,6 +23,13 @@ WHEN the file specified by `--db` does not exist or cannot be opened THE SYSTEM 
 WHEN alt-migrate runs THE SYSTEM SHALL migrate `jobPosts` from the legacy SQLite database into PocketBase.
 WHEN alt-migrate runs THE SYSTEM SHALL NOT migrate sites, skillTypes, skillNames, skillNameAliases, or monthlyCountReports — these are handled by the existing `migrate` tool, which is fast enough for those smaller collections.
 
+### Data volume
+The production backup (`SkillSurvey.db.bak20260508200001`) contains:
+- **435,042** total `job_posts` rows
+- **233,924** with `site_id=1` (`seek.com.au`)
+- **198,372** with `site_id=2` (`au.jora.com`)
+- **2,746** with `site_id=0` — orphaned records with no valid site
+
 ### Write method
 WHEN writing a jobPost THE SYSTEM SHALL use PocketBase's internal Go API (`app.Save()`) — not HTTP — so that PocketBase's schema validation and indexing are respected without the overhead of an HTTP round-trip.
 
@@ -32,6 +39,7 @@ WHEN writing a jobPost THE SYSTEM SHALL use PocketBase's internal Go API (`app.S
 
 WHEN migrating a jobPost THE SYSTEM SHALL look up the corresponding PocketBase site record by matching the legacy site name.
 WHEN no matching site is found in PocketBase THE SYSTEM SHALL skip that jobPost and log a warning including the legacy record ID and site name.
+WHEN a jobPost has `site_id=0` THE SYSTEM SHALL treat it as an unresolvable site and count it as failed (2,746 such records exist in the production backup — this is expected and not an error in the migration tool).
 
 ---
 
@@ -49,6 +57,12 @@ WHEN migration completes THE SYSTEM SHALL print a one-line summary per collectio
 ```
 jobPosts:   attempted=N  written=N  skipped=N  failed=N
 ```
+
+For the production backup the expected terminal output is approximately:
+```
+jobPosts:   attempted=435042  written=432296  skipped=0  failed=2746
+```
+(2,746 failures are the `site_id=0` orphaned records — expected, not a bug.)
 
 ---
 
