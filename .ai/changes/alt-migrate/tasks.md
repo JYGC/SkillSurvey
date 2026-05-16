@@ -1,14 +1,14 @@
 # Tasks: alt-migrate
 
-Work through tasks in order. Check each item when done. Integration test tasks come first.
+Work through tasks in order. Check each item when done. **Integration test task comes first — before any implementation code** (per CLAUDE.md testing mandate). All tests run on the **OpenBSD server**.
 
 ---
 
-## Task 1 — Write integration tests [required]
+## Task 1 — Write integration tests [required, written first]
 
 **File:** `pocketbaseserver/internal/altmigrate/altmigrate_test.go`
 
-Write three test cases before any implementation code exists. All tests will fail at compile time until Task 2 is done — that is expected.
+Write three test cases before any implementation code exists. Watch them fail at compile time — that is expected. Write the minimum implementation in Task 2 to make them pass.
 
 ### `TestAltMigrateRunCreatesJobPosts`
 - [ ] Start PocketBase with `t.TempDir()` data dir; import `_ "keybook/pocketbaseserver/migrations"` to apply all migrations.
@@ -32,7 +32,7 @@ Write three test cases before any implementation code exists. All tests will fai
 - [ ] Assert 0 records in PocketBase `jobPosts`.
 - [ ] Assert Summary: `Attempted=1, Written=0, Skipped=0, Failed=1`.
 
-**Expected outcome:** Tests compile and fail (package `altmigrate` does not exist yet).
+**Expected outcome:** Tests compile and fail because `altmigrate` package does not exist yet. Push to OpenBSD server and confirm compile failure there before proceeding.
 
 ---
 
@@ -61,7 +61,7 @@ Implement `Run(app core.App, legacyDbPath string) (Summary, error)` following th
 | `content` | `map[string]any{"title": ..., "body": ...}` |
 | `location` | `map[string]any{"city": ..., "country": ..., "suburb": ...}` |
 
-**Expected outcome:** All three tests pass on the OpenBSD server.
+**Expected outcome:** Push to OpenBSD server; run `go test ./pocketbaseserver/internal/altmigrate/ -v -timeout 60s`; all three tests pass.
 
 ---
 

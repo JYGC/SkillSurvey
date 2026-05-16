@@ -1,5 +1,7 @@
 # Requirements: alt-migrate
 
+> Spec type: Feature — Requirements-First (per [Kiro Requirements-First workflow](https://kiro.dev/docs/specs/feature-specs/requirements-first/)).
+
 ## Background
 
 The existing `migrate` tool populates PocketBase via HTTP API calls. For large collections — especially `jobPosts` — this is too slow. `alt-migrate` is a temporary command embedded in `pocketbaseserver` that reads the legacy SQLite backup and writes records directly through PocketBase's internal Go API, bypassing HTTP entirely.

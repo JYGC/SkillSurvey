@@ -15,6 +15,18 @@ pocketbaseserver binary
                 └── core.App API ──── PocketBase SQLite (write)
 ```
 
+### Layered Architecture mapping
+
+This command is temporary and minimal, so only the relevant layers apply:
+
+| Layer | Component | Role |
+|---|---|---|
+| **API** | cobra command in `main.go` | Parses `--db` flag; calls `app.Bootstrap()` and `altmigrate.Run()` |
+| **Application** | `altmigrate.Run()` | Orchestrates the migration: loads sites, iterates job posts, coordinates reads and writes |
+| **Store** | `database/sql` (legacy SQLite) + `core.App` (PocketBase SQLite) | Raw persistence — reads from legacy DB, writes through PocketBase's internal API |
+
+No Service or Repository layer is warranted for this temporary one-shot command.
+
 ### New files
 
 | Path | Purpose |
@@ -156,7 +168,9 @@ Processing continues record-by-record on individual failures. A non-zero exit at
 
 ## Testing strategy
 
-Integration test in `altmigrate_test.go`. Starts a real PocketBase instance using `t.TempDir()` with all migrations applied via `import _ "keybook/pocketbaseserver/migrations"`. Creates a real legacy SQLite file using `database/sql`.
+Integration tests are written **before** implementation code (per the CLAUDE.md testing mandate). All tests run on the **OpenBSD server** — not on Windows.
+
+Integration test in `altmigrate_test.go`. Starts a real PocketBase instance using `t.TempDir()` with all migrations applied via `import _ "keybook/pocketbaseserver/migrations"`. Creates a real legacy SQLite file using `database/sql`. No mocking.
 
 ### Test cases
 
