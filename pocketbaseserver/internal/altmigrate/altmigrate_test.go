@@ -1,10 +1,15 @@
 package altmigrate
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
+	"net"
+	"net/http"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
@@ -13,15 +18,53 @@ import (
 	_ "keybook/pocketbaseserver/migrations"
 )
 
-// startTestApp bootstraps a real PocketBase instance with all migrations applied.
-// Does not start an HTTP server — only the internal app API is needed for altmigrate.
+// startTestApp starts a real PocketBase HTTP server with all migrations applied.
+// Migrations only run during the serve command flow, so a full server start is required.
 func startTestApp(t *testing.T) core.App {
 	t.Helper()
 	app := pocketbase.NewWithConfig(pocketbase.Config{DefaultDataDir: t.TempDir()})
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{})
-	if err := app.Bootstrap(); err != nil {
-		t.Fatalf("bootstrap PocketBase: %v", err)
+
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("find free port: %v", err)
 	}
+	port := ln.Addr().(*net.TCPAddr).Port
+	ln.Close()
+
+	var httpServer *http.Server
+	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		httpServer = e.Server
+		return e.Next()
+	})
+
+	app.RootCmd.SetArgs([]string{"serve", "--http", fmt.Sprintf("127.0.0.1:%d", port)})
+	go func() { _ = app.Start() }()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	for {
+		select {
+		case <-ctx.Done():
+			t.Fatal("PocketBase test server did not start in time")
+		default:
+		}
+		resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/api/health", port))
+		if err == nil && resp.StatusCode == 200 {
+			resp.Body.Close()
+			break
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+
+	t.Cleanup(func() {
+		if httpServer != nil {
+			shutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			_ = httpServer.Shutdown(shutCtx)
+		}
+	})
+
 	return app
 }
 
