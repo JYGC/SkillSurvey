@@ -146,6 +146,7 @@ Confirmed column names from the production backup — all snake_case, no `url` c
 | site_id=0 (orphaned) | 2,746 |
 | NULL values in any key field | None |
 | Legacy site names | `seek.com.au`, `au.jora.com` |
+| Seed migration site name | `www.seek.com.au` (different from legacy `seek.com.au`) — the existing `migrate` tool creates `seek.com.au` separately; both exist in PocketBase alongside each other |
 | posted_date format | RFC3339 with offset, e.g. `2018-09-10 14:00:00+00:00` |
 | Zero dates present | Yes — min date is `0001-01-01 00:00:00+00:00` |
 
