@@ -66,19 +66,59 @@ Vue 3 SPA built to `frontend/dist/`, then copied to `pocketbaseserver/pb_public/
 
 ## Changes (spec-driven work)
 
-Non-trivial features and bug fixes are tracked as a **change** — a folder at `.ai/changes/<change-name>/`. Use specs for anything complex or costly to get wrong.
+Non-trivial features and bug fixes are tracked as a **change** — a folder at `.ai/changes/<change-name>/` containing up to three spec files. Use specs for anything complex, costly to get wrong, or requiring iterative design. Skip specs for exploratory/prototype work.
 
-**Spec files:**
+### Spec files
 
-- `requirements.md` — the *what*, using EARS notation: `WHEN <condition> THE SYSTEM SHALL <action>`
-- `design.md` — the *how*: architecture, sequence diagrams, data models, error handling, test strategy
-- `tasks.md` — discrete implementation tasks with expected outcomes and dependencies
-- `bugfix.md` — replaces `requirements.md` for bugs; three sections: Current Behavior (Defect) / Expected Behavior (Correct) / Unchanged Behavior (Regression Prevention)
+**`requirements.md`** — the *what*. Organise by feature area (H2) and user story group (H3). Each requirement uses EARS notation:
 
-**Feature workflow:** requirements → design → tasks, each agreed before the next is written.  
-**Bugfix workflow:** bugfix.md → design (with root cause) → tasks (includes regression tests).
+```
+WHEN <condition> THE SYSTEM SHALL <action>
+```
 
-Before starting non-trivial work, check `.ai/changes/` for an existing change folder. If none exists, create one.
+Example:
+```
+## Report Generation
+
+### Monthly count report
+WHEN runtask report runs THE SYSTEM SHALL create one monthlyCountReport per skill per month found in jobPosts.
+WHEN a report for a skill+month already exists THE SYSTEM SHALL update its count rather than create a duplicate.
+```
+
+Also cover edge cases and error-handling scenarios.
+
+**`design.md`** — the *how*. Sections: system architecture and components, sequence diagrams, data models and interfaces, error-handling approach, testing strategy.
+
+**`tasks.md`** — the *steps*. Discrete, trackable implementation tasks, each with a clear description, expected outcome, and any dependencies. Mark tasks required vs optional. Work through independent tasks first, then dependent ones in order.
+
+**`bugfix.md`** — replaces `requirements.md` for bug fixes. Three sections using their own notation:
+
+```
+## Current Behavior (Defect)
+WHEN <condition> THEN the system <incorrect behavior>
+
+## Expected Behavior (Correct)
+WHEN <condition> THEN the system SHALL <correct behavior>
+
+## Unchanged Behavior (Regression Prevention)
+WHEN <condition> THEN the system SHALL CONTINUE TO <existing behavior>
+```
+
+The "Unchanged Behavior" section is the key addition — explicitly locking down what must not change prevents regressions. The `design.md` for a bugfix includes root cause analysis; `tasks.md` includes tests that verify the bug is fixed and unchanged behavior is preserved.
+
+### Workflow
+
+**Feature:**
+1. Create `requirements.md` and agree on it before writing `design.md`.
+2. Create `design.md` and agree on it before writing `tasks.md`.
+3. Execute `tasks.md` one task at a time, marking each done as you go.
+
+**Bugfix:**
+1. Create `bugfix.md` (current / expected / unchanged behavior) and agree on it.
+2. Create `design.md` including root cause analysis.
+3. Create and execute `tasks.md`, including tests for fix and regression prevention.
+
+Before starting any non-trivial feature, refactor, or bug fix, check `.ai/changes/` for an existing change folder. If none exists, create one and start with `requirements.md` (feature) or `bugfix.md` (bug).
 
 ## Development rules
 
