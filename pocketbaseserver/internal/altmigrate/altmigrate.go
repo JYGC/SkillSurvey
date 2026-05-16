@@ -161,11 +161,15 @@ func buildSiteMap(app core.App, db *sql.DB) (map[uint]string, error) {
 	return siteMap, nil
 }
 
-// parsePostedDate parses a legacy posted_date string (RFC3339-like with space
-// separator, e.g. "2024-01-15 10:00:00+00:00") and returns the UTC time.
+// parsePostedDate parses a legacy posted_date string. The modernc/sqlite driver
+// converts stored TEXT datetimes (e.g. "2024-01-15 14:00:00+00:00") into RFC3339
+// format ("2024-01-15T14:00:00Z") when scanning into a string, so both the
+// space-separator storage format and RFC3339 scan format are handled.
 // Returns false if parsing fails.
 func parsePostedDate(s string) (time.Time, bool) {
 	for _, layout := range []string{
+		time.RFC3339Nano,
+		time.RFC3339,
 		"2006-01-02 15:04:05.999999999-07:00",
 		"2006-01-02 15:04:05-07:00",
 	} {
