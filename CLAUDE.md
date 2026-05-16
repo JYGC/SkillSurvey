@@ -133,6 +133,8 @@ Before starting any non-trivial feature, refactor, or bug fix, check `.ai/change
 
 ### Mandate
 
+**All tests run on the OpenBSD server — not on Windows.** Push changes, pull on the server, run tests there.
+
 **Integration tests must be written before the implementation code they cover.** Write the test, watch it fail, then write the minimum code to make it pass. Frontend unit tests are not required; Go unit tests are not required where an integration test covers the same behaviour.
 
 ### Test types
@@ -144,8 +146,6 @@ Before starting any non-trivial feature, refactor, or bug fix, check `.ai/change
 | **Contract** | PocketBase collection rules verified via HTTP (status codes, auth) | When adding or changing collections, roles, or access rules |
 
 ### Go tests
-
-**All Go tests run on the OpenBSD server — not on Windows.** Push changes, pull on server, then run there.
 
 Every integration test starts a real PocketBase HTTP server using a `t.TempDir()` data directory — no database mocking. Stubs for external services use real TCP/HTTP:
 - **SMTP**: `net.Listen("tcp", "127.0.0.1:0")` stub that speaks the SMTP protocol
