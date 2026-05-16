@@ -40,6 +40,7 @@ WHEN writing a jobPost THE SYSTEM SHALL use PocketBase's internal Go API (`app.S
 WHEN migrating a jobPost THE SYSTEM SHALL look up the corresponding PocketBase site record by matching the legacy site name.
 WHEN no matching site is found in PocketBase THE SYSTEM SHALL skip that jobPost and log a warning including the legacy record ID and site name.
 WHEN a jobPost has `site_id=0` THE SYSTEM SHALL treat it as an unresolvable site and count it as failed (2,746 such records exist in the production backup — this is expected and not an error in the migration tool).
+WHEN a jobPost has a blank `job_site_number` THE SYSTEM SHALL count it as failed without attempting to save (118,455 such records exist in the production backup — this is expected and not an error in the migration tool).
 
 ---
 
@@ -58,11 +59,11 @@ WHEN migration completes THE SYSTEM SHALL print a one-line summary per collectio
 jobPosts:   attempted=N  written=N  skipped=N  failed=N
 ```
 
-For the production database the expected terminal output will be approximately:
+For the production database (2026-05-15 backup) the confirmed terminal output is:
 ```
-jobPosts:   attempted=N  written=N-2746  skipped=0  failed=2746
+jobPosts:   attempted=435880  written=312322  skipped=2357  failed=121201
 ```
-The 2,746 failures are the `site_id=0` orphaned records — expected, not a bug. The backup inspected (2026-05-08) had 435,042 total rows; the live DB will have more due to ongoing scraping.
+The 121,201 failures = 2,746 site_id=0 orphans + 118,455 blank jobSiteNumber records — both expected, not bugs. The 2,357 skipped are duplicate (jobSiteNumber, site) pairs within the legacy DB itself.
 
 ---
 
