@@ -131,22 +131,40 @@ Before starting any non-trivial feature, refactor, or bug fix, check `.ai/change
 
 ## Testing
 
-- **All Go tests run on the OpenBSD server** — not on Windows. Push changes, pull on server, run there.
-- Integration tests use a real PocketBase instance (`t.TempDir()` data dir) started in-process — no mocking.
-- Write integration tests before implementation code.
-- `pocketbaseserver/migrations` tests start a full PocketBase server with all migrations applied; SMTP tests use a real TCP stub listener on a random port.
-- Importing `_ "keybook/pocketbaseserver/migrations"` in a test pulls all migrations into the test binary.
+### Mandate
+
+**Integration tests must be written before the implementation code they cover.** Write the test, watch it fail, then write the minimum code to make it pass. Frontend unit tests are not required; Go unit tests are not required where an integration test covers the same behaviour.
+
+### Test types
+
+| Type | Scope | When required |
+|---|---|---|
+| **Integration (Go)** | Real PocketBase instance + real stubs (SMTP, httptest) | Always for non-trivial Go features — written first |
+| **Integration (frontend)** | API-connected Vue components exercised against PocketBase | Required when adding new API-connected UI features |
+| **Contract** | PocketBase collection rules verified via HTTP (status codes, auth) | When adding or changing collections, roles, or access rules |
+
+### Go tests
+
+**All Go tests run on the OpenBSD server — not on Windows.** Push changes, pull on server, then run there.
+
+Every integration test starts a real PocketBase HTTP server using a `t.TempDir()` data directory — no database mocking. Stubs for external services use real TCP/HTTP:
+- **SMTP**: `net.Listen("tcp", "127.0.0.1:0")` stub that speaks the SMTP protocol
+- **HTTP scrape targets**: `httptest.NewServer` serving canned HTML/JSON
+
+Import `_ "keybook/pocketbaseserver/migrations"` in any test binary that needs the full schema (including roles and seed data) applied automatically.
 
 ```sh
-# Run all tests in a module (on OpenBSD server)
-go test ./...
-
-# Run a specific package
-go test ./runtask/internal/housekeeping/ -v
-
-# Run a specific test
-go test ./runtask/internal/scrape/ -run TestScrapeRunCreatesJobPosts -v -timeout 120s
+go test ./...                                                              # all tests in a module
+go test ./runtask/internal/housekeeping/ -v -timeout 60s                   # specific package
+go test ./runtask/internal/scrape/ -run TestScrapeRunCreatesJobPosts -v    # single test
+go test ./pocketbaseserver/migrations/ -v -timeout 120s                    # migration + RBAC tests
 ```
+
+Place test files alongside the Go source (`*_test.go`).
+
+### In specs
+
+`tasks.md` must include explicit test tasks. For features: the integration test task comes first, before any implementation task. For bugfixes: tasks must include a test that reproduces the bug before it is fixed, and regression tests drawn from `bugfix.md`'s "Unchanged Behavior" section.
 
 ## Build commands
 
