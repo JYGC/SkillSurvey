@@ -141,10 +141,11 @@ Confirmed column names from the production backup — all snake_case, no `url` c
 | Fact | Value |
 |---|---|
 | Backup file (on OpenBSD server) | `/home/junying/Downloads/SkillSurvey.db.bak20260515200001` |
-| Total job_posts rows | 435,042+ (2026-05-08 backup had 435,042; 2026-05-15 backup will have more) |
-| site_id=1 (seek.com.au) | 233,924 |
-| site_id=2 (au.jora.com) | 198,372 |
+| Total job_posts rows | 435,880 (2026-05-15 backup) |
+| site_id=1 (seek.com.au) | ~233,924 |
+| site_id=2 (au.jora.com) | ~198,372 |
 | site_id=0 (orphaned) | 2,746 |
+| Blank job_site_number | 118,455 (all have valid site_id; no overlap with site_id=0) |
 | NULL values in any key field | None |
 | Legacy site names | `seek.com.au`, `au.jora.com` |
 | Seed migration site name | `www.seek.com.au` (different from legacy `seek.com.au`) — the existing `migrate` tool creates `seek.com.au` separately; both exist in PocketBase alongside each other |
@@ -195,6 +196,7 @@ Records with `posted_date = '0001-01-01 00:00:00+00:00'` (Go zero time) exist in
 | Legacy DB file not found | `sql.Open` / first query fails; print error, exit non-zero |
 | `site_id=0` (orphaned record) | Site lookup returns nothing; log warning with job post ID; increment Failed; continue |
 | Site name not found in PocketBase | Log warning with legacy job post ID and site name; increment Failed; continue |
+| Blank `job_site_number` | Log warning with job post ID; increment Failed; continue (118,455 such records — expected) |
 | `posted_date` parse failure | Log warning with job post ID and raw value; store empty string; continue |
 | Zero date (`0001-01-01`) | Store as-is — not treated as an error |
 | `app.Save()` error | Log error with legacy job post ID; increment Failed; continue |
@@ -202,7 +204,7 @@ Records with `posted_date = '0001-01-01 00:00:00+00:00'` (Go zero time) exist in
 
 Processing continues record-by-record on individual failures. A non-zero exit at the end signals partial failure so the operator can investigate and re-run (safe due to idempotency).
 
-**Expected production run outcome:** `failed=2746` (the `site_id=0` orphaned records — expected). Total attempted will exceed 435,042 (the 2026-05-08 backup count) as scraping has continued since then.
+**Expected production run outcome:** `failed=121201` (2,746 site_id=0 orphans + 118,455 blank jobSiteNumber records — both expected). `written=314679`. Total `attempted=435880` (2026-05-15 backup).
 
 ---
 

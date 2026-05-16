@@ -68,9 +68,13 @@ func startTestApp(t *testing.T) core.App {
 	return app
 }
 
-// createSiteInPB inserts a site record into PocketBase and returns its ID.
+// createSiteInPB returns the PocketBase site ID for the given name, finding an
+// existing record (e.g. from seed migrations) or creating one if absent.
 func createSiteInPB(t *testing.T, app core.App, name string) string {
 	t.Helper()
+	if rec, err := app.FindFirstRecordByData("sites", "name", name); err == nil {
+		return rec.Id
+	}
 	col, err := app.FindCollectionByNameOrId("sites")
 	if err != nil {
 		t.Fatalf("find sites collection: %v", err)
@@ -146,7 +150,7 @@ func countJobPosts(t *testing.T, app core.App) int {
 // to PocketBase with correct field values.
 func TestAltMigrateRunCreatesJobPosts(t *testing.T) {
 	app := startTestApp(t)
-	pbSiteID := createSiteInPB(t, app, "seek.com.au")
+	pbSiteID := createSiteInPB(t, app, "www.seek.com.au")
 
 	db, dbPath := setupLegacyDB(t)
 	insertSite(t, db, 1, "seek.com.au")
@@ -198,7 +202,7 @@ func TestAltMigrateRunCreatesJobPosts(t *testing.T) {
 // and reports all records as skipped on the second run.
 func TestAltMigrateIsIdempotent(t *testing.T) {
 	app := startTestApp(t)
-	createSiteInPB(t, app, "seek.com.au")
+	createSiteInPB(t, app, "www.seek.com.au")
 
 	db, dbPath := setupLegacyDB(t)
 	insertSite(t, db, 1, "seek.com.au")
@@ -235,10 +239,11 @@ func TestAltMigrateIsIdempotent(t *testing.T) {
 // site name not found in PocketBase are counted as failed and not written.
 func TestAltMigrateSkipsJobPostWithUnknownSite(t *testing.T) {
 	app := startTestApp(t)
-	// No PocketBase site created — site lookup will fail.
+	// Legacy site name "unregistered-site.com" has no matching PocketBase site
+	// (seed migration only creates www.seek.com.au and au.jora.com).
 
 	db, dbPath := setupLegacyDB(t)
-	insertSite(t, db, 1, "seek.com.au")
+	insertSite(t, db, 1, "unregistered-site.com")
 	insertJobPost(t, db, 1, 1, "JP-001", "Go Developer", "role body", "2024-01-15 10:00:00+00:00", "Sydney", "Australia", "CBD")
 
 	summary, err := Run(app, dbPath)
@@ -264,7 +269,7 @@ func TestAltMigrateSkipsJobPostWithUnknownSite(t *testing.T) {
 // (orphaned records in the legacy DB) are counted as failed and not written.
 func TestAltMigrateSiteIdZeroCountsAsFailed(t *testing.T) {
 	app := startTestApp(t)
-	createSiteInPB(t, app, "seek.com.au")
+	createSiteInPB(t, app, "www.seek.com.au")
 
 	db, dbPath := setupLegacyDB(t)
 	insertSite(t, db, 1, "seek.com.au")
@@ -291,7 +296,7 @@ func TestAltMigrateSiteIdZeroCountsAsFailed(t *testing.T) {
 // (0001-01-01) are written successfully and not treated as an error.
 func TestAltMigrateHandlesZeroDate(t *testing.T) {
 	app := startTestApp(t)
-	createSiteInPB(t, app, "seek.com.au")
+	createSiteInPB(t, app, "www.seek.com.au")
 
 	db, dbPath := setupLegacyDB(t)
 	insertSite(t, db, 1, "seek.com.au")

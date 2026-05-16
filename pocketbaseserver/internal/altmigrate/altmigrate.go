@@ -51,6 +51,13 @@ func Run(app core.App, legacyDbPath string) (Summary, error) {
 		return Summary{}, fmt.Errorf("find jobPosts collection: %w", err)
 	}
 
+	// Load all existing (jobSiteNumber, site) pairs once to avoid a per-record
+	// table scan as the collection grows (existence check would otherwise be O(n²)).
+	existingKeys, err := loadExistingJobKeys(app)
+	if err != nil {
+		return Summary{}, err
+	}
+
 	rows, err := db.Query(`
 		SELECT id, site_id, job_site_number, title, body,
 		       posted_date, city, country, suburb
@@ -75,6 +82,12 @@ func Run(app core.App, legacyDbPath string) (Summary, error) {
 		}
 		s.Attempted++
 
+		if jp.JobSiteNumber == "" {
+			log.Printf("altmigrate: job post id=%d: blank jobSiteNumber", jp.ID)
+			s.Failed++
+			continue
+		}
+
 		pbSiteID, ok := siteMap[jp.SiteID]
 		if !ok {
 			log.Printf("altmigrate: job post id=%d: no PocketBase site for legacy site_id=%d", jp.ID, jp.SiteID)
@@ -82,17 +95,8 @@ func Run(app core.App, legacyDbPath string) (Summary, error) {
 			continue
 		}
 
-		existing, err := app.FindRecordsByFilter(
-			"jobPosts",
-			fmt.Sprintf("jobSiteNumber='%s'&&site='%s'", jp.JobSiteNumber, pbSiteID),
-			"", 1, 0,
-		)
-		if err != nil {
-			log.Printf("altmigrate: job post id=%d: existence check: %v", jp.ID, err)
-			s.Failed++
-			continue
-		}
-		if len(existing) > 0 {
+		key := jp.JobSiteNumber + "\x00" + pbSiteID
+		if _, found := existingKeys[key]; found {
 			s.Skipped++
 			continue
 		}
@@ -111,6 +115,7 @@ func Run(app core.App, legacyDbPath string) (Summary, error) {
 			s.Failed++
 			continue
 		}
+		existingKeys[key] = struct{}{}
 		s.Written++
 	}
 	if err := rows.Err(); err != nil {
@@ -154,11 +159,44 @@ func buildSiteMap(app core.App, db *sql.DB) (map[uint]string, error) {
 
 	siteMap := make(map[uint]string)
 	for legacyID, name := range legacyIDToName {
-		if pbID, ok := nameToID[name]; ok {
+		// The seeded site is "www.seek.com.au" but the legacy DB stored it as "seek.com.au".
+		normalized := normalizeSiteName(name)
+		if pbID, ok := nameToID[normalized]; ok {
 			siteMap[legacyID] = pbID
 		}
 	}
 	return siteMap, nil
+}
+
+// normalizeSiteName maps legacy site names to the names used in PocketBase seed data.
+func normalizeSiteName(name string) string {
+	if name == "seek.com.au" {
+		return "www.seek.com.au"
+	}
+	return name
+}
+
+// loadExistingJobKeys queries PocketBase for all (jobSiteNumber, site) pairs
+// already in the jobPosts collection. Keys are stored as "jobSiteNumber\x00site"
+// so idempotency checks are O(1) map lookups rather than per-record filter queries.
+func loadExistingJobKeys(app core.App) (map[string]struct{}, error) {
+	keys := map[string]struct{}{}
+	sqlRows, err := app.DB().NewQuery("SELECT [[jobSiteNumber]], [[site]] FROM {{jobPosts}}").Rows()
+	if err != nil {
+		return nil, fmt.Errorf("load existing jobPost keys: %w", err)
+	}
+	defer sqlRows.Close()
+	for sqlRows.Next() {
+		var num, site string
+		if err := sqlRows.Scan(&num, &site); err != nil {
+			return nil, fmt.Errorf("scan jobPost key row: %w", err)
+		}
+		keys[num+"\x00"+site] = struct{}{}
+	}
+	if err := sqlRows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate jobPost keys: %w", err)
+	}
+	return keys, nil
 }
 
 // parsePostedDate parses a legacy posted_date string. The modernc/sqlite driver
