@@ -10,13 +10,16 @@ import (
 )
 
 // Run computes monthly skill-demand counts from jobPosts and upserts monthlyCountReports.
+// Only jobPosts from the 13-month window ending now (1 year + 1 month) are considered,
+// keeping the query and in-memory footprint bounded as the collection grows.
 func Run(_ config.Config, pb *pbclient.Client) error {
 	skillNames, err := pb.GetEnabledSkillNamesWithAliases()
 	if err != nil {
 		return fmt.Errorf("get skill names: %w", err)
 	}
 
-	jobPosts, err := pb.GetAllJobPosts()
+	since := time.Now().AddDate(-1, -1, 0)
+	jobPosts, err := pb.GetAllJobPosts(since)
 	if err != nil {
 		return fmt.Errorf("get job posts: %w", err)
 	}

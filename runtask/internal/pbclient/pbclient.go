@@ -147,9 +147,14 @@ func (c *Client) GetEnabledSkillNamesWithAliases() ([]SkillNameWithAliases, erro
 	return result, nil
 }
 
-// GetAllJobPosts returns all jobPost records with content and location parsed.
-func (c *Client) GetAllJobPosts() ([]JobPost, error) {
-	items, err := getFullList(c.pb, "jobPosts", pocketbase.ParamsList{})
+// GetAllJobPosts returns jobPost records posted on or after since, with content
+// and location parsed. Pass a zero time to fetch all records.
+func (c *Client) GetAllJobPosts(since time.Time) ([]JobPost, error) {
+	params := pocketbase.ParamsList{}
+	if !since.IsZero() {
+		params.Filters = fmt.Sprintf(`postedDate >= "%s"`, since.UTC().Format("2006-01-02 15:04:05.000Z"))
+	}
+	items, err := getFullList(c.pb, "jobPosts", params)
 	if err != nil {
 		return nil, err
 	}
