@@ -130,7 +130,7 @@ func seedSkillData(t *testing.T, app core.App) (skillTypeID, skillNameID string)
 }
 
 // seedJobPost creates a jobPost with a body that mentions an alias.
-func seedJobPost(t *testing.T, app core.App, siteID, jobSiteNumber, body string) {
+func seedJobPost(t *testing.T, app core.App, siteID, jobSiteNumber, body string, postedDate time.Time) {
 	t.Helper()
 	col, _ := app.FindCollectionByNameOrId("jobPosts")
 	jp := core.NewRecord(col)
@@ -140,8 +140,46 @@ func seedJobPost(t *testing.T, app core.App, siteID, jobSiteNumber, body string)
 	jp.Set("content", json.RawMessage(contentJSON))
 	locationJSON, _ := json.Marshal(map[string]string{"city": "Sydney", "country": "AU", "suburb": "CBD"})
 	jp.Set("location", json.RawMessage(locationJSON))
-	jp.Set("postedDate", "2024-01-15 00:00:00.000Z")
+	jp.Set("postedDate", postedDate.UTC().Format("2006-01-02 15:04:05.000Z"))
 	app.Save(jp)
+}
+
+func TestReportRunExcludesOldJobPosts(t *testing.T) {
+	pbApp, pbURL := startTestPocketBase(t)
+	email, password := createReportingAccount(t, pbApp)
+
+	siteCol, _ := pbApp.FindCollectionByNameOrId("sites")
+	site := core.NewRecord(siteCol)
+	site.Set("name", "TestSite")
+	site.Set("url", "https://test.example.com")
+	pbApp.Save(site)
+
+	_, skillNameID := seedSkillData(t, pbApp)
+
+	// Post dated 2 years ago — outside the 13-month window.
+	seedJobPost(t, pbApp, site.Id, "JP-OLD-001", "We need a golang developer.", time.Now().AddDate(-2, 0, 0))
+
+	pb, err := pbclient.New(pbURL, email, password)
+	if err != nil {
+		t.Fatalf("pbclient.New: %v", err)
+	}
+	if err := report.Run(config.Config{}, pb); err != nil {
+		t.Fatalf("report.Run: %v", err)
+	}
+
+	rawPb := pocketbaseclient.NewClient(pbURL, pocketbaseclient.WithUserEmailPassword(email, password))
+	if err := rawPb.Authorize(); err != nil {
+		t.Fatalf("authenticate rawPb: %v", err)
+	}
+	list, err := rawPb.List("monthlyCountReports", pocketbaseclient.ParamsList{
+		Filters: fmt.Sprintf(`skillName = %q`, skillNameID),
+	})
+	if err != nil {
+		t.Fatalf("list monthlyCountReports: %v", err)
+	}
+	if list.TotalItems != 0 {
+		t.Errorf("expected 0 monthlyCountReports for a 2-year-old post, got %d", list.TotalItems)
+	}
 }
 
 func TestReportRunCreatesMonthlyCountReports(t *testing.T) {
@@ -158,7 +196,8 @@ func TestReportRunCreatesMonthlyCountReports(t *testing.T) {
 	_, skillNameID := seedSkillData(t, pbApp)
 
 	// Seed a job post whose body contains " golang " (word-boundary match).
-	seedJobPost(t, pbApp, site.Id, "JP-R-001", "We need a golang developer for our team.")
+	// Use a date within the 13-month window so the report filter includes it.
+	seedJobPost(t, pbApp, site.Id, "JP-R-001", "We need a golang developer for our team.", time.Now().AddDate(0, -1, 0))
 
 	pb, err := pbclient.New(pbURL, email, password)
 	if err != nil {
