@@ -1,22 +1,24 @@
 export interface SkillType {
-	ID: number;
-	Name: string;
-	Description: string;
-	SkillNames: Array<SkillName>;
+  id: string;
+  name: string;
+  description: string;
+  expand?: { skillNames_via_skillType?: SkillName[] };
 }
 
 export interface SkillName {
-	ID: number;
-	SkillTypeID: number;
-	SkillType: SkillType | null;
-	Name: string;
-	IsEnabled: boolean;
-	SkillNameAliases: Array<SkillNameAlias>;
+  id: string;
+  skillType: string;          // relation ID
+  name: string;
+  isEnabled: boolean;
+  expand?: {
+    skillType?: SkillType;
+    skillNameAliases_via_skillName?: SkillNameAlias[];
+  };
 }
 
 export interface SkillNameAlias {
-	ID: number;
-	SkillNameID: number;
-	SkillName: SkillName | null;
-	Alias: string;
+  id: string;
+  skillName: string;          // relation ID
+  alias: string;
+  expand?: { skillName?: SkillName };
 }
