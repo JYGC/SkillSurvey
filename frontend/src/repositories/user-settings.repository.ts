@@ -8,8 +8,8 @@ export const userSettingsRepository = {
         `user="${userId}"`,
         { fields: 'id,user,portalTheme' },
       );
-    } catch (e: any) {
-      if (!e?.message?.includes("wasn't found")) throw e;
+    } catch (e: unknown) {
+      if (!(e instanceof Error && e.message.includes("wasn't found"))) throw e;
       const defaults: IUserSettings = { id: '', user: userId, portalTheme: 'white' };
       return pb.collection('userSettings').create<IUserSettings>(defaults);
     }

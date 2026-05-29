@@ -1,6 +1,6 @@
 export function sortByProperty<T>(
   skillArray: Array<T>,
-  getPropertyToSortBy: (element: T) => any
+  getPropertyToSortBy: (element: T) => string | number
 ): Array<T> {
     return skillArray.sort((a: T, b: T) => {
         const aProperty = getPropertyToSortBy(a);
