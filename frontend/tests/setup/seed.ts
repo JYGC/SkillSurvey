@@ -12,21 +12,15 @@ const SEED_MONTHS = [
 ];
 
 export async function seedInitialData(baseUrl: string): Promise<void> {
-  // 1. Create first superadmin (only allowed on a fresh instance).
-  await post(baseUrl, '/api/collections/_superusers/records', undefined, {
-    email: SEED_ADMIN_EMAIL,
-    password: SEED_ADMIN_PASSWORD,
-    passwordConfirm: SEED_ADMIN_PASSWORD,
-  });
-
-  // 2. Authenticate as superadmin.
+  // The superadmin is created via `pocketbaseserver superuser upsert` in
+  // vitest.global-setup.ts before the server starts. Authenticate here.
   const authRes = await post(baseUrl, '/api/collections/_superusers/auth-with-password', undefined, {
     identity: SEED_ADMIN_EMAIL,
     password: SEED_ADMIN_PASSWORD,
   });
   const adminToken: string = authRes.token;
 
-  // 3. Create test user (self-registration is disabled; superadmin creates accounts).
+  // Create test user (self-registration is disabled; superadmin creates accounts).
   const user = await post(baseUrl, '/api/collections/users/records', adminToken, {
     name: 'Test User',
     email: SEED_USER_EMAIL,
@@ -34,26 +28,26 @@ export async function seedInitialData(baseUrl: string): Promise<void> {
     passwordConfirm: SEED_USER_PASSWORD,
   });
 
-  // 4. Create userSettings for the test user.
+  // Create userSettings for the test user.
   await post(baseUrl, '/api/collections/userSettings/records', adminToken, {
     user: user.id,
     portalTheme: 'white',
   });
 
-  // 5. Create a skillType for test monthlyCountReports.
+  // Create a skillType for test monthlyCountReports.
   const skillType = await post(baseUrl, '/api/collections/skillTypes/records', adminToken, {
     name: 'Test Skill Type',
     description: 'Used by automated tests',
   });
 
-  // 6. Create a skillName under that type.
+  // Create a skillName under that type.
   const skillName = await post(baseUrl, '/api/collections/skillNames/records', adminToken, {
     name: 'TestSkill',
     isEnabled: true,
     skillType: skillType.id,
   });
 
-  // 7. Create seed monthlyCountReports.
+  // Create seed monthlyCountReports.
   for (const month of SEED_MONTHS) {
     await post(baseUrl, '/api/collections/monthlyCountReports/records', adminToken, {
       identifier: `TestSkill-${month.YearMonth}`,

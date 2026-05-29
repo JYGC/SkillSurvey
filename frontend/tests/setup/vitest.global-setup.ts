@@ -1,7 +1,8 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, execFileSync, ChildProcess } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD } from './seed';
 
 const PB_HOST = '127.0.0.1';
 const PB_PORT = '18090';
@@ -18,6 +19,15 @@ export async function setup(): Promise<void> {
   const pbBin = path.resolve(
     __dirname,
     '../../../pocketbaseserver/build/pocketbaseserver',
+  );
+
+  // PocketBase 0.22+ requires existing auth to create superusers via HTTP API,
+  // even on a fresh instance. Use the CLI instead: it applies migrations and
+  // writes the record before the HTTP server starts.
+  execFileSync(
+    pbBin,
+    ['superuser', 'upsert', SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD, '--dir', tmpDir],
+    { stdio: 'pipe' },
   );
 
   server = spawn(pbBin, ['serve', '--http', `${PB_HOST}:${PB_PORT}`, '--dir', tmpDir], {
