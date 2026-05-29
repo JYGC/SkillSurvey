@@ -17,6 +17,11 @@ vi.mock('@/repositories/monthly-count-report.repository', () => ({
 
 vi.mock('@/services/monthly-count-report.service', () => mockService);
 
+vi.mock('chart.js', () => ({
+  Chart: { register: vi.fn() },
+  registerables: [],
+}));
+
 const seedRecords: MonthlyCountRecord[] = [
   { id: '1', YearMonth: '2024-01', yearMonthDate: '2024-01-01', count: 5, skillName: 's1', expand: { skillName: { name: 'TypeScript' } } },
 ];
