@@ -290,9 +290,9 @@ Dependencies: T29, T31, T34, T36, T38, T40, T5
 
 ## Phase 8 — Verification (dependencies: T41–T44)
 
-- [ ] **T45** Run `npm run lint` on the server — zero errors
+- [x] **T45** Run `npm run lint` on the server — zero errors
 
-- [ ] **T46** Run full test suite on the server:
+- [x] **T46** Run full test suite on the server:
   ```sh
   npm run test:unit
   npm run test:contract
