@@ -83,3 +83,47 @@ WHEN the logout button is clicked THE SYSTEM SHALL call `useAuth` logout then na
 ### getBackendClient factory removed
 WHEN any code previously importing `getBackendClient` is refactored THE SYSTEM SHALL import the singleton store instead.
 WHEN `backend-client.ts` no longer contains any exports consumed by views or composables THE SYSTEM SHALL be replaced by the singleton store module.
+
+## Testing
+
+### Test infrastructure
+WHEN tests run on OpenBSD THE SYSTEM SHALL start a dedicated pocketbaseserver process using a temporary data directory so each run is isolated.
+WHEN the test run completes THE SYSTEM SHALL stop the pocketbaseserver process and remove the temporary directory.
+WHEN E2E tests run on OpenBSD THE SYSTEM SHALL locate the Chromium binary via the `CHROMIUM_PATH` environment variable rather than downloading a browser.
+
+### Unit tests — services
+WHEN `getRecentMonths` is called with records spanning more than 12 months THE SYSTEM SHALL return only the last 12 distinct `YearMonth` values.
+WHEN `getRecentMonths` is called with records spanning fewer than 12 months THE SYSTEM SHALL return all distinct `YearMonth` values.
+WHEN `getRecentMonths` is called with an empty array THE SYSTEM SHALL return an empty array.
+WHEN `buildChartDatasets` is called THE SYSTEM SHALL return one dataset per distinct skill name.
+WHEN `buildChartDatasets` is called with records that omit a month for a skill THE SYSTEM SHALL fill that month's count with `0`.
+WHEN `buildChartDatasets` is called THE SYSTEM SHALL set `hidden: true` on every dataset.
+
+### Unit tests — composables (repositories mocked)
+WHEN `useAuth` is called and `authRepository.isAuthenticated` is false THE SYSTEM SHALL expose `isAuthenticated` as false.
+WHEN `useAuth.login` is awaited and the repository resolves THE SYSTEM SHALL not throw.
+WHEN `useAuth.login` is awaited and the repository rejects THE SYSTEM SHALL propagate the error to the caller.
+WHEN `useAuth.logout` is called THE SYSTEM SHALL delegate to `authRepository.logout`.
+WHEN `useMonthlyCountReport` initialises and the repository resolves THE SYSTEM SHALL populate `chartData.labels` and `chartData.datasets`.
+WHEN `useMonthlyCountReport` initialises and the repository rejects THE SYSTEM SHALL set `error` and leave `chartData` in its empty initial state.
+WHEN `useUserSettings.load` is called with no authenticated user THE SYSTEM SHALL leave `userSetting` as null.
+WHEN `useUserSettings.load` is called with an authenticated user THE SYSTEM SHALL call the repository and set `userSetting`.
+
+### Contract tests — PocketBase access rules
+WHEN an unauthenticated request fetches `monthlyCountReports` THE SYSTEM SHALL return HTTP 403.
+WHEN an authenticated user fetches `monthlyCountReports` THE SYSTEM SHALL return HTTP 200.
+WHEN an unauthenticated request attempts to create a `users` record (self-registration) THE SYSTEM SHALL return HTTP 400.
+WHEN a user fetches another user's `userSettings` record THE SYSTEM SHALL return HTTP 403.
+WHEN a user fetches their own `userSettings` record THE SYSTEM SHALL return HTTP 200.
+
+### Integration tests — component mounting
+WHEN `Login.vue` is mounted and the form is submitted with valid credentials THE SYSTEM SHALL navigate to `/user/profile`.
+WHEN `Login.vue` is mounted and the form is submitted with invalid credentials THE SYSTEM SHALL display an error message without navigating.
+WHEN `MonthlyCountReport.vue` is mounted and the repository returns records THE SYSTEM SHALL render a `<canvas>` element.
+WHEN `MonthlyCountReport.vue` is mounted and the repository rejects THE SYSTEM SHALL render the error message text.
+WHEN `Settings.vue` is mounted with an authenticated user THE SYSTEM SHALL display the user's `portalTheme`.
+
+### E2E tests — full user flows
+WHEN a user navigates to `/login` and submits valid credentials THE SYSTEM SHALL redirect to the user layout page.
+WHEN a user navigates to `/monthly-count-report` THE SYSTEM SHALL render a chart canvas.
+WHEN a logged-in user clicks Logout THE SYSTEM SHALL redirect to `/`.

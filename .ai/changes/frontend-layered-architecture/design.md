@@ -295,7 +295,187 @@ Settings.vue  onMounted
 
 ## Testing strategy
 
-This is a pure refactor — no new API-connected behaviour is introduced. No new integration tests are required by the mandate. Correctness is verified by:
+### Frameworks and tools
 
-1. `npm run lint` — no type or style errors after refactoring.
-2. Manual serve smoke-test: all existing routes render and behave identically to before.
+| Scope | Framework | Notes |
+|---|---|---|
+| Unit (services) | Vitest 2.x + happy-dom | Pure functions; no browser or HTTP |
+| Unit (composables) | Vitest + @vue/test-utils | `vi.mock` for repository modules |
+| Contract | Vitest + `fetch` | HTTP assertions against real PocketBase; no browser |
+| Integration (component) | Vitest + @vue/test-utils | Full component mount against real PocketBase |
+| E2E | Playwright 1.x | Full browser flows; uses system Chromium on OpenBSD |
+
+### OpenBSD-specific configuration
+
+Vitest and @vue/test-utils run in Node.js with no OS-specific requirements.
+
+Playwright downloads browser binaries by default but does **not** support OpenBSD. Instead, set `CHROMIUM_PATH` to the system Chromium binary (installed for `runtask`'s chromedp scraper, typically `/usr/local/bin/chromium`). The Playwright config reads this env var and passes it as `executablePath` on the `chromium` project.
+
+```javascript
+// playwright.config.ts (relevant excerpt)
+projects: [{
+  name: 'chromium',
+  use: {
+    ...devices['Desktop Chrome'],
+    executablePath: process.env.CHROMIUM_PATH,
+    launchOptions: { args: ['--no-sandbox'] },
+  },
+}]
+```
+
+`--no-sandbox` is required when running Chromium as a non-root user without a user namespace (common on OpenBSD).
+
+### New dev dependencies
+
+```
+vitest
+@vitest/coverage-v8
+@vue/test-utils
+happy-dom
+@playwright/test
+```
+
+Add to `frontend/package.json` `devDependencies`. Do not run `playwright install` on OpenBSD — system Chromium is used instead.
+
+### Directory structure
+
+```
+frontend/
+  tests/
+    unit/
+      services/
+        monthly-count-report.service.spec.ts
+        arrays.spec.ts
+      composables/
+        use-auth.spec.ts
+        use-monthly-count-report.spec.ts
+        use-user-settings.spec.ts
+    contract/
+      auth.contract.spec.ts
+      monthly-count-report.contract.spec.ts
+      user-settings.contract.spec.ts
+    integration/
+      Login.spec.ts
+      MonthlyCountReport.spec.ts
+      Settings.spec.ts
+    e2e/
+      login.e2e.spec.ts
+      monthly-count-report.e2e.spec.ts
+    setup/
+      vitest.global-setup.ts   ← starts/stops real pocketbaseserver binary
+      vitest.setup.ts          ← per-file setup (auth state reset)
+      seed.ts                  ← helpers to create test users and records via API
+  vitest.config.ts
+  playwright.config.ts
+```
+
+### `vitest.config.ts`
+
+```typescript
+import { defineConfig } from 'vitest/config';
+import vue from '@vitejs/plugin-vue';
+import { resolve } from 'path';
+
+export default defineConfig({
+  plugins: [vue()],
+  resolve: { alias: { '@': resolve(__dirname, 'src') } },
+  test: {
+    environment: 'happy-dom',
+    globalSetup: './tests/setup/vitest.global-setup.ts',
+    setupFiles:  './tests/setup/vitest.setup.ts',
+  },
+});
+```
+
+### `tests/setup/vitest.global-setup.ts`
+
+Starts and tears down a real pocketbaseserver binary. Runs once per test suite.
+
+```typescript
+import { spawn, ChildProcess } from 'child_process';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+
+let server: ChildProcess;
+let tmpDir: string;
+
+export async function setup() {
+  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pb-test-'));
+  server = spawn(
+    path.resolve(__dirname, '../../../pocketbaseserver/build/pocketbaseserver'),
+    ['serve', '--http', '127.0.0.1:18090', '--dir', tmpDir],
+    { stdio: 'pipe' }
+  );
+  await waitForUrl('http://127.0.0.1:18090/api/health');
+  process.env.TEST_PB_URL = 'http://127.0.0.1:18090';
+  await seedInitialData(process.env.TEST_PB_URL);
+}
+
+export async function teardown() {
+  server.kill();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+}
+
+async function waitForUrl(url: string, timeoutMs = 10_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try { const r = await fetch(url); if (r.ok) return; } catch {}
+    await new Promise(r => setTimeout(r, 200));
+  }
+  throw new Error(`Timed out waiting for ${url}`);
+}
+```
+
+`seedInitialData` (in `tests/setup/seed.ts`):
+1. Creates the first superadmin via `POST /api/collections/_superusers/records` (allowed only when no admins exist on a fresh instance).
+2. Authenticates as superadmin to obtain an admin token.
+3. Creates a test regular user via `POST /api/collections/users/records` (admin-only because self-registration is disabled).
+4. Creates seed `monthlyCountReports` and `userSettings` records needed by integration and E2E tests.
+5. Writes test credentials to `process.env.TEST_USER_EMAIL` and `process.env.TEST_USER_PASSWORD`.
+
+### `tests/setup/vitest.setup.ts`
+
+Runs before each test file. Resets the PocketBase singleton's auth state so tests don't share login sessions.
+
+```typescript
+import pb from '@/store/pocketbase';
+import { beforeEach } from 'vitest';
+
+beforeEach(() => {
+  pb.authStore.clear();
+  // Override base URL so the singleton points at the test server
+  (pb as any)._baseUrl = process.env.TEST_PB_URL ?? pb.baseUrl;
+});
+```
+
+### npm test scripts
+
+Add to `frontend/package.json`:
+
+```json
+"test:unit":        "vitest run tests/unit",
+"test:contract":    "vitest run tests/contract",
+"test:integration": "vitest run tests/integration",
+"test:e2e":         "playwright test",
+"test":             "npm run test:unit && npm run test:contract && npm run test:integration && npm run test:e2e"
+```
+
+Unit tests do not require the PocketBase server; the global setup is guarded so it only starts the server when running contract, integration, or E2E tests.
+
+### Running on the OpenBSD server
+
+```sh
+# Unit only (no server needed)
+npm run test:unit
+
+# Contract + integration (starts/stops pocketbaseserver automatically)
+npm run test:contract
+npm run test:integration
+
+# E2E (requires CHROMIUM_PATH)
+CHROMIUM_PATH=/usr/local/bin/chromium npm run test:e2e
+
+# All
+CHROMIUM_PATH=/usr/local/bin/chromium npm test
+```
