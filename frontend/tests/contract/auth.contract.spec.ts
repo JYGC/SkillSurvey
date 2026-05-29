@@ -4,7 +4,8 @@ import { SEED_USER_EMAIL, SEED_USER_PASSWORD } from '../setup/seed';
 const baseUrl = process.env.TEST_PB_URL!;
 
 describe('auth contract', () => {
-  it('unauthenticated POST to users/records returns 400 (self-registration disabled)', async () => {
+  it('unauthenticated POST to users/records returns 403 (self-registration disabled)', async () => {
+    // PocketBase returns 403 when createRule is null (superadmin-only collection).
     const res = await fetch(`${baseUrl}/api/collections/users/records`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -15,7 +16,7 @@ describe('auth contract', () => {
         passwordConfirm: 'Test1234!',
       }),
     });
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(403);
   });
 
   it('valid credentials return 200 with a token', async () => {
