@@ -4,6 +4,8 @@ describe('login and logout flow', () => {
   it('valid credentials navigate to /user/profile (T41)', async () => {
     await browser.url('/login');
 
+    // Wait for Vue to render the login form before collecting inputs
+    await $('input').waitForExist({ timeout: 10000 });
     const inputs = await $$('input');
     await inputs[0].setValue(SEED_USER_EMAIL);
     await inputs[1].setValue(SEED_USER_PASSWORD);
