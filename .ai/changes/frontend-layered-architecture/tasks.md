@@ -6,12 +6,12 @@ Rule: every unit of implementation is preceded by its test. Mark each `[x]` as y
 
 ## Phase 0 — Foundation (no tests; these are types and wiring, no logic)
 
-- [ ] **T1** Create `frontend/src/store/pocketbase.ts`
+- [x] **T1** Create `frontend/src/store/pocketbase.ts`
   - Module-level PocketBase singleton: init with `VUE_APP_POCKETBASE_URL`, load cookie, register onChange
   - Default-export the `pb` instance
   - _Outcome_: any file can `import pb from '@/store/pocketbase'` and get the same instance
 
-- [ ] **T2** Create `frontend/src/schemas/monthly-count-report.ts`
+- [x] **T2** Create `frontend/src/schemas/monthly-count-report.ts`
   - Move `MonthlyCountRecord` interface out of `MonthlyCountReport.vue`; export it
   - _Outcome_: `MonthlyCountRecord` importable from `@/schemas/monthly-count-report`
 
@@ -19,35 +19,36 @@ Rule: every unit of implementation is preceded by its test. Mark each `[x]` as y
 
 ## Phase 1 — Test infrastructure (dependencies: T1)
 
-- [ ] **T3** Install test dev dependencies
-  - Add to `frontend/package.json` devDependencies: `vitest`, `@vitest/coverage-v8`, `@vue/test-utils`, `happy-dom`, `@playwright/test`
-  - Run `npm install` on the server; do **not** run `playwright install` — system Chromium is used
-  - _Outcome_: `vitest` and `playwright` CLIs available
+- [x] **T3** Install test dev dependencies
+  - Add to `frontend/package.json` devDependencies: `vitest`, `@vitest/coverage-v8`, `@vue/test-utils`, `happy-dom`, `@wdio/cli`, `@wdio/local-runner`, `@wdio/mocha-framework`, `@wdio/spec-reporter`, `@wdio/types`, `wdio-chromedriver-service`, `webdriverio`
+  - Note: `@playwright/test` replaced by WebdriverIO — Playwright throws `Unsupported platform: openbsd` at module init and cannot be used on the OpenBSD server
+  - Run `npm install` on the server; do **not** run `playwright install` — system Chrome + chromedriver are used
+  - _Outcome_: `vitest` and `wdio` CLIs available
 
-- [ ] **T4** Create `frontend/vitest.config.ts`
+- [x] **T4** Create `frontend/vitest.config.ts`
   - `environment: 'happy-dom'`; `resolve.alias` `@` → `src/`; `globalSetup` and `setupFiles` pointing at Phase 1 files
   - _Outcome_: `npm run test:unit` resolves `@/` imports and runs in happy-dom
 
-- [ ] **T5** Create `frontend/playwright.config.ts`
-  - Single `chromium` project; reads `CHROMIUM_PATH` env var for `executablePath`; `--no-sandbox` in `launchOptions`
-  - `baseURL` reads `TEST_E2E_URL` env var
-  - _Outcome_: `CHROMIUM_PATH=/usr/local/bin/chromium npx playwright test` can launch a browser
+- [x] **T5** Create `frontend/wdio.conf.ts`
+  - Single Chrome capability using system Chrome (`CHROMIUM_PATH`, default `/usr/local/bin/chrome`) and system chromedriver (`CHROMEDRIVER_PATH`, default `/usr/local/bin/chromedriver`)
+  - `--headless`, `--no-sandbox`, `--disable-dev-shm-usage` Chrome args; Mocha framework; `baseUrl` from `TEST_E2E_URL`
+  - _Outcome_: `npm run test:e2e` can launch Chrome on OpenBSD
 
-- [ ] **T6** Create `frontend/tests/setup/vitest.global-setup.ts`
+- [x] **T6** Create `frontend/tests/setup/vitest.global-setup.ts`
   - `setup()`: spawn `pocketbaseserver/build/pocketbaseserver serve --http 127.0.0.1:18090 --dir <tmpdir>`, poll `/api/health`, call `seedInitialData()`
   - `teardown()`: kill process, remove tmpdir
   - _Outcome_: contract and integration tests get a clean PocketBase instance per run
 
-- [ ] **T7** Create `frontend/tests/setup/seed.ts`
+- [x] **T7** Create `frontend/tests/setup/seed.ts`
   - `seedInitialData(baseUrl)`: create superadmin via `POST /api/collections/_superusers/records`, authenticate, create test user, insert seed `monthlyCountReports` and `userSettings` records
   - Write test credentials to `process.env.TEST_USER_EMAIL` / `TEST_USER_PASSWORD`
   - _Outcome_: integration and E2E tests can authenticate and find test data
 
-- [ ] **T8** Create `frontend/tests/setup/vitest.setup.ts`
+- [x] **T8** Create `frontend/tests/setup/vitest.setup.ts`
   - `beforeEach`: clear `pb.authStore`; override `pb` base URL to `TEST_PB_URL` when set
   - _Outcome_: tests cannot share login state across files
 
-- [ ] **T9** Add npm test scripts to `frontend/package.json`
+- [x] **T9** Add npm test scripts to `frontend/package.json`
   - `"test:unit"`, `"test:contract"`, `"test:integration"`, `"test:e2e"`, `"test"`
   - _Outcome_: each scope runnable independently on the server
 

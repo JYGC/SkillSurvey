@@ -303,27 +303,31 @@ Settings.vue  onMounted
 | Unit (composables) | Vitest + @vue/test-utils | `vi.mock` for repository modules |
 | Contract | Vitest + `fetch` | HTTP assertions against real PocketBase; no browser |
 | Integration (component) | Vitest + @vue/test-utils | Full component mount against real PocketBase |
-| E2E | Playwright 1.x | Full browser flows; uses system Chromium on OpenBSD |
+| E2E | WebdriverIO 9.x + Mocha | Full browser flows; uses system Chrome + chromedriver on OpenBSD |
 
 ### OpenBSD-specific configuration
 
 Vitest and @vue/test-utils run in Node.js with no OS-specific requirements.
 
-Playwright downloads browser binaries by default but does **not** support OpenBSD. Instead, set `CHROMIUM_PATH` to the system Chromium binary (installed for `runtask`'s chromedp scraper, typically `/usr/local/bin/chromium`). The Playwright config reads this env var and passes it as `executablePath` on the `chromium` project.
+Playwright throws `Unsupported platform: openbsd` at module-load time (hard-coded registry check) and cannot be used on OpenBSD. WebdriverIO uses the system `chromedriver` binary directly and has no platform restrictions.
 
-```javascript
-// playwright.config.ts (relevant excerpt)
-projects: [{
-  name: 'chromium',
-  use: {
-    ...devices['Desktop Chrome'],
-    executablePath: process.env.CHROMIUM_PATH,
-    launchOptions: { args: ['--no-sandbox'] },
+On OpenBSD, Chrome is at `/usr/local/bin/chrome` and chromedriver at `/usr/local/bin/chromedriver`. The `wdio.conf.ts` reads `CHROMIUM_PATH` and `CHROMEDRIVER_PATH` env vars:
+
+```typescript
+// wdio.conf.ts (relevant excerpt)
+capabilities: [{
+  browserName: 'chrome',
+  'goog:chromeOptions': {
+    binary: process.env.CHROMIUM_PATH ?? '/usr/local/bin/chrome',
+    args: ['--headless', '--no-sandbox', '--disable-dev-shm-usage'],
   },
-}]
+}],
+services: [['chromedriver', {
+  chromedriverCustomPath: process.env.CHROMEDRIVER_PATH ?? '/usr/local/bin/chromedriver',
+}]],
 ```
 
-`--no-sandbox` is required when running Chromium as a non-root user without a user namespace (common on OpenBSD).
+`--no-sandbox` is required when running Chromium as a non-root user on OpenBSD.
 
 ### New dev dependencies
 
@@ -332,10 +336,16 @@ vitest
 @vitest/coverage-v8
 @vue/test-utils
 happy-dom
-@playwright/test
+@wdio/cli
+@wdio/local-runner
+@wdio/mocha-framework
+@wdio/spec-reporter
+@wdio/types
+wdio-chromedriver-service
+webdriverio
 ```
 
-Add to `frontend/package.json` `devDependencies`. Do not run `playwright install` on OpenBSD — system Chromium is used instead.
+Add to `frontend/package.json` `devDependencies`. Do not run `playwright install` — system Chrome + chromedriver are used instead.
 
 ### Directory structure
 
@@ -366,7 +376,7 @@ frontend/
       vitest.setup.ts          ← per-file setup (auth state reset)
       seed.ts                  ← helpers to create test users and records via API
   vitest.config.ts
-  playwright.config.ts
+  wdio.conf.ts
 ```
 
 ### `vitest.config.ts`
