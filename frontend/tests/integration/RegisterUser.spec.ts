@@ -3,12 +3,10 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import RegisterUser from '@/views/public/RegisterUser.vue';
 
-const mockRegister = vi.fn();
+const mockRegister = vi.hoisted(() => vi.fn());
 
 vi.mock('@/repositories/auth.repository', () => ({
-  authRepository: {
-    register: mockRegister,
-  },
+  authRepository: { register: mockRegister },
 }));
 
 function makeRouter() {
@@ -23,8 +21,12 @@ function makeRouter() {
 }
 
 const stubs = {
-  CvFluidForm: true,
-  CvTextInput: { template: '<input />' },
+  CvFluidForm: { template: '<div><slot /></div>' },
+  CvTextInput: {
+    props: { modelValue: String, type: String, label: String },
+    emits: ['update:modelValue'],
+    template: '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+  },
   CvButton: { template: '<button @click="$emit(\'click\')"><slot /></button>' },
   CvLink: true,
 };

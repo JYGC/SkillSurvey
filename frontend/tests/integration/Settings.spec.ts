@@ -1,28 +1,35 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import Settings from '@/views/user/Settings.vue';
-import pb from '@/store/pocketbase';
-import { SEED_USER_EMAIL, SEED_USER_PASSWORD } from '../setup/seed';
+import type { IUserSettings } from '@/schemas/users';
 
-async function authenticateTestUser(): Promise<void> {
-  const res = await fetch(`${process.env.TEST_PB_URL}/api/collections/users/auth-with-password`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ identity: SEED_USER_EMAIL, password: SEED_USER_PASSWORD }),
-  });
-  const data = await res.json();
-  pb.authStore.save(data.token, data.record);
-}
+const mockGetOrCreate = vi.hoisted(() => vi.fn());
+const mockCurrentUser = vi.hoisted(() => ({ value: { id: 'user1' } as { id: string } | null }));
+
+vi.mock('@/repositories/user-settings.repository', () => ({
+  userSettingsRepository: { getOrCreate: mockGetOrCreate },
+}));
+
+vi.mock('@/repositories/auth.repository', () => ({
+  authRepository: {
+    get currentUser() { return mockCurrentUser.value; },
+  },
+}));
 
 describe('Settings', () => {
   beforeEach(() => {
-    pb.authStore.clear();
+    vi.resetAllMocks();
+    mockCurrentUser.value = { id: 'user1' };
   });
 
   it('authenticated user: portalTheme visible in rendered output', async () => {
-    await authenticateTestUser();
+    const seedSettings: IUserSettings = { id: 'set1', user: 'user1', portalTheme: 'white' };
+    mockGetOrCreate.mockResolvedValue(seedSettings);
+
     const wrapper = mount(Settings);
     await flushPromises();
+
+    expect(mockGetOrCreate).toHaveBeenCalledWith('user1');
     expect(wrapper.text()).toContain('white');
   });
 });
