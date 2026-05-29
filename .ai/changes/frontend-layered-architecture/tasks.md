@@ -151,7 +151,7 @@ Dependencies: T1, T2, T6, T7, T8
 
 Dependencies: T15, T18, T21, T4
 
-- [ ] **T22** Write unit tests for `use-auth.ts` — **tests first**
+- [x] **T22** Write unit tests for `use-auth.ts` — **tests first**
   - File: `tests/unit/composables/use-auth.spec.ts`
   - `vi.mock('@/repositories/auth.repository')`
   - `isAuthenticated` mirrors `authRepository.isAuthenticated`
@@ -159,29 +159,29 @@ Dependencies: T15, T18, T21, T4
   - `logout` delegates to `authRepository.logout`
   - _Outcome_: failing tests
 
-- [ ] **T23** Implement `frontend/src/composables/use-auth.ts`
+- [x] **T23** Implement `frontend/src/composables/use-auth.ts`
   - `isAuthenticated` and `currentUser` as `computed`; `login` async; `logout` delegates
   - _Outcome_: T22 tests pass
 
-- [ ] **T24** Write unit tests for `use-monthly-count-report.ts` — **tests first**
+- [x] **T24** Write unit tests for `use-monthly-count-report.ts` — **tests first**
   - File: `tests/unit/composables/use-monthly-count-report.spec.ts`
   - `vi.mock` repository and service modules
   - On resolve: `chartData.labels` and `chartData.datasets` populated; `error` is null
   - On reject: `error` set; `chartData` remains empty
   - _Outcome_: failing tests
 
-- [ ] **T25** Implement `frontend/src/composables/use-monthly-count-report.ts`
+- [x] **T25** Implement `frontend/src/composables/use-monthly-count-report.ts`
   - `Chart.register(...registerables)` at module level; returns `{ chartData, chartHeight, error }`; calls `load()` on init
   - _Outcome_: T24 tests pass
 
-- [ ] **T26** Write unit tests for `use-user-settings.ts` — **tests first**
+- [x] **T26** Write unit tests for `use-user-settings.ts` — **tests first**
   - File: `tests/unit/composables/use-user-settings.spec.ts`
   - `vi.mock` auth repository and user-settings repository
   - `load()` with no current user → `userSetting` stays null; repository not called
   - `load()` with current user → repository called; `userSetting` set to result
   - _Outcome_: failing tests
 
-- [ ] **T27** Implement `frontend/src/composables/use-user-settings.ts`
+- [x] **T27** Implement `frontend/src/composables/use-user-settings.ts`
   - Returns `{ userSetting, load }`; `load()` guards on `currentUser`
   - _Outcome_: T26 tests pass
 
@@ -191,69 +191,69 @@ Dependencies: T15, T18, T21, T4
 
 Dependencies: T23, T25, T27, T6, T7, T8
 
-- [ ] **T28** Write integration test for `PublicLayout.vue` — **tests first**
+- [x] **T28** Write integration test for `PublicLayout.vue` — **tests first**
   - File: `tests/integration/PublicLayout.spec.ts`
   - Mount with unauthenticated state → no redirect; nav links rendered
   - Mount with authenticated state → `router.push('/user/profile')` called
   - _Outcome_: failing tests (current component calls `getBackendClient()` which will not resolve correctly in test environment)
 
-- [ ] **T29** Refactor `PublicLayout.vue`
+- [x] **T29** Refactor `PublicLayout.vue`
   - Replace `getBackendClient()` check with `useAuth().isAuthenticated`
   - _Outcome_: T28 tests pass; no import from `services/backend-client`
 
-- [ ] **T30** Write integration test for `UserLayout.vue` — **tests first**
+- [x] **T30** Write integration test for `UserLayout.vue` — **tests first**
   - File: `tests/integration/UserLayout.spec.ts`
   - Mount with unauthenticated state → redirect to `/`
   - Mount with authenticated state → displays `currentUser` data; Logout button present
   - Click Logout → `authRepository.logout` called; redirect to `/`
   - _Outcome_: failing tests
 
-- [ ] **T31** Refactor `UserLayout.vue`
+- [x] **T31** Refactor `UserLayout.vue`
   - Replace `getBackendClient()` calls with `useAuth()`; drive display from `currentUser`
   - _Outcome_: T30 tests pass; no import from `services/backend-client`
 
-- [ ] **T32** Refactor `App.vue` — Options API → `<script setup>`
+- [x] **T32** Refactor `App.vue` — Options API → `<script setup>`
   - Remove `defineComponent({ name: 'App' })` wrapper; script block can be empty or omitted
   - No test required: zero logic, cannot meaningfully fail
   - _Outcome_: no Options API remains in the codebase
 
-- [ ] **T33** Write integration test for `Login.vue` — **tests first**
+- [x] **T33** Write integration test for `Login.vue` — **tests first**
   - File: `tests/integration/Login.spec.ts`
   - Submit valid credentials → `router.currentRoute` is `/user/profile`
   - Submit invalid credentials → error `<p>` visible; no navigation
   - _Outcome_: failing tests (current component has async bug and calls `getBackendClient()`)
 
-- [ ] **T34** Refactor `Login.vue`
+- [x] **T34** Refactor `Login.vue`
   - Replace `getBackendClient()` with `await useAuth().login(...)`; fix async bug (navigation after await); replace `alert()` with inline error `<p>`
   - _Outcome_: T33 tests pass
 
-- [ ] **T35** Write integration test for `RegisterUser.vue` — **tests first**
+- [x] **T35** Write integration test for `RegisterUser.vue` — **tests first**
   - File: `tests/integration/RegisterUser.spec.ts`
   - Submit valid form → `authRepository.register` called; router navigates to `/`
   - Password mismatch → `authRepository.register` not called; error message shown
   - Submit fails → error message shown; no navigation
   - _Outcome_: failing tests
 
-- [ ] **T36** Refactor `RegisterUser.vue`
+- [x] **T36** Refactor `RegisterUser.vue`
   - Replace `pb.collection('users').create(...)` with `authRepository.register(...)`; replace `alert()` with inline error `<p>`
   - _Outcome_: T35 tests pass; no raw PocketBase calls
 
-- [ ] **T37** Write integration test for `MonthlyCountReport.vue` — **tests first**
+- [x] **T37** Write integration test for `MonthlyCountReport.vue` — **tests first**
   - File: `tests/integration/MonthlyCountReport.spec.ts`
   - Mount against test PocketBase with seed data → `<canvas>` element rendered after data loads
   - Mount with repository that rejects → error text visible
   - _Outcome_: failing tests
 
-- [ ] **T38** Refactor `MonthlyCountReport.vue`
+- [x] **T38** Refactor `MonthlyCountReport.vue`
   - Replace inline IIFE, `createDatasets`, `Chart.register`, and PocketBase calls with `useMonthlyCountReport()`; add error `<p>`; remove local `MonthlyCountRecord` interface
   - _Outcome_: T37 tests pass; view ≤ 20 lines
 
-- [ ] **T39** Write integration test for `Settings.vue` — **tests first**
+- [x] **T39** Write integration test for `Settings.vue` — **tests first**
   - File: `tests/integration/Settings.spec.ts`
   - Mount as authenticated test user against test PocketBase → `userSetting.portalTheme` appears in rendered output
   - _Outcome_: failing tests
 
-- [ ] **T40** Refactor `Settings.vue`
+- [x] **T40** Refactor `Settings.vue`
   - Replace inline try/catch and repository call with `useUserSettings()`; call `load()` via `onMounted`
   - _Outcome_: T39 tests pass; no raw PocketBase calls in view
 
@@ -282,7 +282,7 @@ Dependencies: T29, T31, T34, T36, T38, T40, T5
 
 ## Phase 7 — Cleanup (dependencies: T29–T40 all complete)
 
-- [ ] **T44** Delete `frontend/src/services/backend-client.ts`
+- [x] **T44** Delete `frontend/src/services/backend-client.ts`
   - Confirm zero `getBackendClient` imports remain in `src/`
   - _Outcome_: store singleton is the sole PocketBase entry point
 
