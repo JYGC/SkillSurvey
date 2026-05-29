@@ -263,17 +263,17 @@ Dependencies: T23, T25, T27, T6, T7, T8
 
 Dependencies: T29, T31, T34, T36, T38, T40, T5
 
-- [ ] **T41** Write E2E test: login flow
+- [x] **T41** Write E2E test: login flow
   - File: `tests/e2e/login.e2e.spec.ts`
   - Navigate to `/login`; fill valid credentials; submit; assert URL is `/user/profile`
   - _Outcome_: full browser login flow verified on OpenBSD
 
-- [ ] **T42** Write E2E test: monthly count report
+- [x] **T42** Write E2E test: monthly count report
   - File: `tests/e2e/monthly-count-report.e2e.spec.ts`
   - Login; navigate to `/monthly-count-report`; assert `canvas` element is present
   - _Outcome_: chart render verified end-to-end
 
-- [ ] **T43** Write E2E test: logout
+- [x] **T43** Write E2E test: logout
   - From user layout, click Logout; assert redirect to `/`
   - Can be appended to `login.e2e.spec.ts` as a continuation step
   - _Outcome_: logout flow verified
