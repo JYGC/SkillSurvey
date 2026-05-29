@@ -26,9 +26,9 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.50.1",
-    "@vitejs/plugin-vue": "^5.2.1",
-    "@vitest/coverage-v8": "^2.2.0",
+    "@playwright/test": "^1.59.1",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "@vitest/coverage-v8": "^4.1.7",
     "@vue/test-utils": "^2.4.6",
     "@types/webpack-env": "^1.18.8",
     "@vue/cli-plugin-babel": "~5.0.8",
@@ -39,9 +39,9 @@
     "eslint-plugin-vue": "^10.3.0",
     "sass": "^1.93.2",
     "sass-loader": "^16.0.5",
-    "happy-dom": "^15.7.4",
+    "happy-dom": "^20.9.0",
     "typescript": "~5.8.3",
-    "vitest": "^2.2.0"
+    "vitest": "^4.1.7"
   },
   "eslintConfig": {
     "root": true,
