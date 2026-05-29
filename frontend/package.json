@@ -5,7 +5,12 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "test:unit": "VITEST_UNIT_ONLY=1 vitest run tests/unit",
+    "test:contract": "vitest run tests/contract",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run test:contract && npm run test:integration && npm run test:e2e"
   },
   "dependencies": {
     "@carbon/icons-vue": "^10.118.0",
@@ -21,6 +26,10 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitest/coverage-v8": "^2.2.0",
+    "@vue/test-utils": "^2.4.6",
     "@types/webpack-env": "^1.18.8",
     "@vue/cli-plugin-babel": "~5.0.8",
     "@vue/cli-plugin-typescript": "^5.0.8",
@@ -30,7 +39,9 @@
     "eslint-plugin-vue": "^10.3.0",
     "sass": "^1.93.2",
     "sass-loader": "^16.0.5",
-    "typescript": "~5.8.3"
+    "happy-dom": "^15.7.4",
+    "typescript": "~5.8.3",
+    "vitest": "^2.2.0"
   },
   "eslintConfig": {
     "root": true,
