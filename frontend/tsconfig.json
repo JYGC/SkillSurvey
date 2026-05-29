@@ -30,11 +30,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.vue",
-    "tests/**/*.ts",
-    "tests/**/*.tsx",
-    "vitest.config.ts",
-    "wdio.conf.ts"
+    "src/**/*.vue"
   ],
   "exclude": [
     "node_modules"
