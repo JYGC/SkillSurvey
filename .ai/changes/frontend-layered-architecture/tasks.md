@@ -1,11 +1,10 @@
 # Tasks: Frontend Layered Architecture
 
-Work order: infrastructure → schemas/store → test infra → (write tests then implement) per layer → views → cleanup → verify.
-Mark each `[x]` as you complete it.
+Rule: every unit of implementation is preceded by its test. Mark each `[x]` as you complete it.
 
 ---
 
-## Phase 0 — Foundation (no tests yet)
+## Phase 0 — Foundation (no tests; these are types and wiring, no logic)
 
 - [ ] **T1** Create `frontend/src/store/pocketbase.ts`
   - Module-level PocketBase singleton: init with `VUE_APP_POCKETBASE_URL`, load cookie, register onChange
@@ -18,22 +17,20 @@ Mark each `[x]` as you complete it.
 
 ---
 
-## Phase 1 — Test infrastructure
-
-Dependencies: T1
+## Phase 1 — Test infrastructure (dependencies: T1)
 
 - [ ] **T3** Install test dev dependencies
   - Add to `frontend/package.json` devDependencies: `vitest`, `@vitest/coverage-v8`, `@vue/test-utils`, `happy-dom`, `@playwright/test`
-  - Run `npm install` on the server (do **not** run `playwright install` — use system Chromium)
+  - Run `npm install` on the server; do **not** run `playwright install` — system Chromium is used
   - _Outcome_: `vitest` and `playwright` CLIs available
 
 - [ ] **T4** Create `frontend/vitest.config.ts`
-  - Configure: `environment: 'happy-dom'`, `resolve.alias` `@` → `src/`, `globalSetup` and `setupFiles` pointing at Phase 1 setup files
-  - _Outcome_: `npm run test:unit` resolves imports and runs in happy-dom
+  - `environment: 'happy-dom'`; `resolve.alias` `@` → `src/`; `globalSetup` and `setupFiles` pointing at Phase 1 files
+  - _Outcome_: `npm run test:unit` resolves `@/` imports and runs in happy-dom
 
 - [ ] **T5** Create `frontend/playwright.config.ts`
-  - Single `chromium` project; reads `CHROMIUM_PATH` env var for `executablePath`; sets `--no-sandbox` in `launchOptions`
-  - `baseURL` reads `TEST_E2E_URL` env var (the URL where `npm run serve` listens during E2E)
+  - Single `chromium` project; reads `CHROMIUM_PATH` env var for `executablePath`; `--no-sandbox` in `launchOptions`
+  - `baseURL` reads `TEST_E2E_URL` env var
   - _Outcome_: `CHROMIUM_PATH=/usr/local/bin/chromium npx playwright test` can launch a browser
 
 - [ ] **T6** Create `frontend/tests/setup/vitest.global-setup.ts`
@@ -43,228 +40,259 @@ Dependencies: T1
 
 - [ ] **T7** Create `frontend/tests/setup/seed.ts`
   - `seedInitialData(baseUrl)`: create superadmin via `POST /api/collections/_superusers/records`, authenticate, create test user, insert seed `monthlyCountReports` and `userSettings` records
-  - Write credentials to `process.env.TEST_USER_EMAIL` / `TEST_USER_PASSWORD`
+  - Write test credentials to `process.env.TEST_USER_EMAIL` / `TEST_USER_PASSWORD`
   - _Outcome_: integration and E2E tests can authenticate and find test data
 
 - [ ] **T8** Create `frontend/tests/setup/vitest.setup.ts`
-  - `beforeEach`: clear `pb.authStore`; override `pb`'s base URL to `TEST_PB_URL` when set
+  - `beforeEach`: clear `pb.authStore`; override `pb` base URL to `TEST_PB_URL` when set
   - _Outcome_: tests cannot share login state across files
 
 - [ ] **T9** Add npm test scripts to `frontend/package.json`
   - `"test:unit"`, `"test:contract"`, `"test:integration"`, `"test:e2e"`, `"test"`
-  - _Outcome_: each test scope runnable independently on the server
+  - _Outcome_: each scope runnable independently on the server
 
 ---
 
-## Phase 2 — Services (unit tests first)
+## Phase 2 — Services (unit tests before implementation)
 
 Dependencies: T2, T4
 
-- [ ] **T10** Write unit tests for `monthly-count-report.service.ts` — **before implementing**
+- [ ] **T10** Write unit tests for `monthly-count-report.service.ts` — **tests first**
   - File: `tests/unit/services/monthly-count-report.service.spec.ts`
-  - `getRecentMonths`: empty input → `[]`; < 12 months → all; > 12 months → last 12
-  - `buildChartDatasets`: one dataset per skill; missing months filled with `0`; every dataset has `hidden: true`
-  - Tests import from `@/services/monthly-count-report` — they will fail until T11
+  - `getRecentMonths`: empty → `[]`; < 12 months → all; > 12 months → last 12 only
+  - `buildChartDatasets`: one dataset per skill; missing months → `0`; every dataset has `hidden: true`
+  - Imports will fail to resolve until T11 — that is expected (red phase)
   - _Outcome_: failing tests that define the service contract
 
-- [ ] **T11** Create `frontend/src/services/monthly-count-report.service.ts`
-  - Implement `getRecentMonths` and `buildChartDatasets` to make T10 tests pass
-  - Both functions are pure (no imports from store/repositories)
-  - _Outcome_: `npm run test:unit` green for service tests
+- [ ] **T11** Implement `frontend/src/services/monthly-count-report.service.ts`
+  - `getRecentMonths` and `buildChartDatasets` — pure functions, no store/repository imports
+  - _Outcome_: T10 tests pass (green)
 
-- [ ] **T12** Write unit tests for `arrays.ts`
+- [ ] **T12** Write unit tests for `frontend/src/services/arrays.ts` — **tests first**
   - File: `tests/unit/services/arrays.spec.ts`
-  - `sortByProperty`: sorts ascending by string property; sorts ascending by numeric property; returns same array reference
-  - _Outcome_: `arrays.ts` covered by tests
+  - `sortByProperty`: sorts ascending by string; by number; returns mutated array
+  - `arrays.ts` already exists; tests are written against its current interface
+  - _Outcome_: `arrays.ts` covered; any future change caught
 
 ---
 
-## Phase 3 — Repositories (contract tests first)
+## Phase 3 — Repositories (unit tests + contract tests before each implementation)
 
-Dependencies: T1, T2, T6, T7
+Dependencies: T1, T2, T6, T7, T8
 
-- [ ] **T13** Write contract tests for auth — **before implementing auth repository**
+### Auth repository
+
+- [ ] **T13** Write unit tests for `auth.repository.ts` — **tests first**
+  - File: `tests/unit/repositories/auth.repository.spec.ts`
+  - Mock `@/store/pocketbase` with `vi.mock`
+  - `isAuthenticated` returns `pb.authStore.isValid`
+  - `login(email, pw)` calls `pb.collection('users').authWithPassword(email, pw)`
+  - `register(...)` calls `pb.collection('users').create(...)`
+  - `logout()` calls `pb.authStore.clear()`
+  - _Outcome_: failing tests
+
+- [ ] **T14** Write contract tests for auth — **tests first**
   - File: `tests/contract/auth.contract.spec.ts`
-  - Unauthenticated `POST /api/collections/users/records` (self-register) → HTTP 400
+  - Unauthenticated `POST /api/collections/users/records` → HTTP 400 (self-registration disabled)
   - Valid `POST /api/collections/users/auth-with-password` → HTTP 200 with token
   - Invalid credentials → HTTP 400
-  - _Outcome_: failing tests that verify PocketBase access rules independently of our code
+  - _Outcome_: PocketBase access rules verified at HTTP layer (failing until real server available)
 
-- [ ] **T14** Write contract tests for `monthlyCountReports` — **before implementing**
+- [ ] **T15** Implement `frontend/src/repositories/auth.repository.ts`
+  - `isAuthenticated` getter, `currentUser` getter, `login`, `register`, `logout`
+  - _Outcome_: T13 unit tests pass; T14 contract tests pass
+
+### Monthly count report repository
+
+- [ ] **T16** Write unit tests for `monthly-count-report.repository.ts` — **tests first**
+  - File: `tests/unit/repositories/monthly-count-report.repository.spec.ts`
+  - Mock `@/store/pocketbase`
+  - `getAll()` calls `pb.collection('monthlyCountReports').getFullList` with `expand: 'skillName'` and `sort: 'yearMonthDate'`
+  - _Outcome_: failing tests
+
+- [ ] **T17** Write contract tests for `monthlyCountReports` — **tests first**
   - File: `tests/contract/monthly-count-report.contract.spec.ts`
-  - Unauthenticated `GET /api/collections/monthlyCountReports/records` → HTTP 403
-  - Authenticated → HTTP 200
-  - _Outcome_: access rule verified at the HTTP layer
+  - Unauthenticated fetch → HTTP 403
+  - Authenticated fetch → HTTP 200
+  - _Outcome_: access rule verified at HTTP layer
 
-- [ ] **T15** Write contract tests for `userSettings` — **before implementing**
+- [ ] **T18** Implement `frontend/src/repositories/monthly-count-report.repository.ts`
+  - `getAll()` → `Promise<MonthlyCountRecord[]>`
+  - _Outcome_: T16 unit tests pass; T17 contract tests pass
+
+### User settings repository
+
+- [ ] **T19** Write unit tests for `user-settings.repository.ts` — **tests first**
+  - File: `tests/unit/repositories/user-settings.repository.spec.ts`
+  - Mock `@/store/pocketbase`
+  - `getOrCreate(userId)`: when `getFirstListItem` resolves → returns the record
+  - `getOrCreate(userId)`: when `getFirstListItem` throws "wasn't found" → calls `create` with defaults and returns result
+  - `getOrCreate(userId)`: when `getFirstListItem` throws another error → rethrows without calling `create`
+  - _Outcome_: failing tests (get-or-create logic explicitly covered)
+
+- [ ] **T20** Write contract tests for `userSettings` — **tests first**
   - File: `tests/contract/user-settings.contract.spec.ts`
-  - Authenticated user fetches their own record → HTTP 200
+  - Authenticated user fetches own record → HTTP 200
   - Authenticated user fetches another user's record → HTTP 403
   - Fetch when no record exists → HTTP 404
-  - _Outcome_: per-user isolation rule verified
+  - _Outcome_: per-user isolation rule verified at HTTP layer
 
-- [ ] **T16** Create `frontend/src/repositories/auth.repository.ts`
-  - `isAuthenticated` getter, `currentUser` getter, `login(email, pw)`, `register(name, email, pw, pwConfirm)`, `logout()`
-  - All contract tests in T13 pass
-  - _Outcome_: auth operations in one place; no raw PocketBase calls in views
-
-- [ ] **T17** Create `frontend/src/repositories/monthly-count-report.repository.ts`
-  - `getAll()` → `Promise<MonthlyCountRecord[]>`; expands `skillName`, sorts `yearMonthDate`
-  - T14 contract tests pass
-  - _Outcome_: collection access encapsulated
-
-- [ ] **T18** Create `frontend/src/repositories/user-settings.repository.ts`
-  - `getOrCreate(userId)` → get existing, or create default (`portalTheme: 'white'`) and return
-  - T15 contract tests pass; "not found" handled internally; all other errors re-thrown
-  - _Outcome_: get-or-create logic in one place
+- [ ] **T21** Implement `frontend/src/repositories/user-settings.repository.ts`
+  - `getOrCreate(userId)` with internal "not found" handling
+  - _Outcome_: T19 unit tests pass; T20 contract tests pass
 
 ---
 
-## Phase 4 — Composables (unit tests first)
+## Phase 4 — Composables (unit tests before implementation)
 
-Dependencies: T11, T16, T17, T18, T4
+Dependencies: T15, T18, T21, T4
 
-- [ ] **T19** Write unit tests for `use-auth.ts` — **before implementing**
+- [ ] **T22** Write unit tests for `use-auth.ts` — **tests first**
   - File: `tests/unit/composables/use-auth.spec.ts`
-  - Mock `@/repositories/auth.repository` with `vi.mock`
-  - `isAuthenticated` reflects mocked `authRepository.isAuthenticated`
+  - `vi.mock('@/repositories/auth.repository')`
+  - `isAuthenticated` mirrors `authRepository.isAuthenticated`
   - `login` delegates to `authRepository.login`; propagates rejection
   - `logout` delegates to `authRepository.logout`
-  - _Outcome_: failing tests defining composable contract
+  - _Outcome_: failing tests
 
-- [ ] **T20** Create `frontend/src/composables/use-auth.ts`
-  - `isAuthenticated` and `currentUser` as `computed` (derived from repo)
-  - `login` async, throws on failure; `logout` delegates
-  - T19 tests pass
-  - _Outcome_: layouts and Login.vue can use `useAuth()`
+- [ ] **T23** Implement `frontend/src/composables/use-auth.ts`
+  - `isAuthenticated` and `currentUser` as `computed`; `login` async; `logout` delegates
+  - _Outcome_: T22 tests pass
 
-- [ ] **T21** Write unit tests for `use-monthly-count-report.ts` — **before implementing**
+- [ ] **T24** Write unit tests for `use-monthly-count-report.ts` — **tests first**
   - File: `tests/unit/composables/use-monthly-count-report.spec.ts`
-  - Mock `@/repositories/monthly-count-report.repository` and `@/services/monthly-count-report`
-  - On resolve: `chartData.labels` and `chartData.datasets` populated; `error` null
+  - `vi.mock` repository and service modules
+  - On resolve: `chartData.labels` and `chartData.datasets` populated; `error` is null
   - On reject: `error` set; `chartData` remains empty
   - _Outcome_: failing tests
 
-- [ ] **T22** Create `frontend/src/composables/use-monthly-count-report.ts`
-  - `Chart.register(...registerables)` at module level
-  - Returns `{ chartData, chartHeight, error }`; calls `load()` on init
-  - T21 tests pass
-  - _Outcome_: MonthlyCountReport.vue delegates entirely to this composable
+- [ ] **T25** Implement `frontend/src/composables/use-monthly-count-report.ts`
+  - `Chart.register(...registerables)` at module level; returns `{ chartData, chartHeight, error }`; calls `load()` on init
+  - _Outcome_: T24 tests pass
 
-- [ ] **T23** Write unit tests for `use-user-settings.ts` — **before implementing**
+- [ ] **T26** Write unit tests for `use-user-settings.ts` — **tests first**
   - File: `tests/unit/composables/use-user-settings.spec.ts`
-  - Mock `@/repositories/auth.repository` and `@/repositories/user-settings.repository`
-  - No current user → `userSetting` stays null; repository not called
-  - With current user → repository called; `userSetting` set
+  - `vi.mock` auth repository and user-settings repository
+  - `load()` with no current user → `userSetting` stays null; repository not called
+  - `load()` with current user → repository called; `userSetting` set to result
   - _Outcome_: failing tests
 
-- [ ] **T24** Create `frontend/src/composables/use-user-settings.ts`
+- [ ] **T27** Implement `frontend/src/composables/use-user-settings.ts`
   - Returns `{ userSetting, load }`; `load()` guards on `currentUser`
-  - T23 tests pass
-  - _Outcome_: Settings.vue delegates entirely to this composable
+  - _Outcome_: T26 tests pass
 
 ---
 
-## Phase 5 — Views (integration tests first)
+## Phase 5 — Views (integration tests before each refactor)
 
-Dependencies: T20, T22, T24, T6, T7, T8
+Dependencies: T23, T25, T27, T6, T7, T8
 
-- [ ] **T25** Write integration test for `Login.vue` — **before refactoring**
-  - File: `tests/integration/Login.spec.ts`
-  - Mount `Login.vue` with a router stub pointing at the test PocketBase
-  - Submit valid credentials → `router.currentRoute` is `/user/profile`
-  - Submit invalid credentials → error `<p>` visible; no navigation
-  - Tests will fail until T28 is complete
-  - _Outcome_: failing tests defining expected Login behaviour
-
-- [ ] **T26** Write integration test for `MonthlyCountReport.vue` — **before refactoring**
-  - File: `tests/integration/MonthlyCountReport.spec.ts`
-  - Mount `MonthlyCountReport.vue` against test PocketBase with seed data
-  - Assert a `<canvas>` element is rendered after data loads
-  - Mount with a repository that rejects → assert error text is visible
-  - _Outcome_: failing tests
-
-- [ ] **T27** Write integration test for `Settings.vue` — **before refactoring**
-  - File: `tests/integration/Settings.spec.ts`
-  - Mount `Settings.vue` as authenticated test user against test PocketBase
-  - Assert `userSetting.portalTheme` value appears in the rendered output
-  - _Outcome_: failing tests
-
-- [ ] **T28** Refactor `App.vue` — Options API → `<script setup>`
-  - Remove `defineComponent({ name: 'App' })` wrapper; script block can be empty
-  - _Outcome_: no Options API remains
+- [ ] **T28** Write integration test for `PublicLayout.vue` — **tests first**
+  - File: `tests/integration/PublicLayout.spec.ts`
+  - Mount with unauthenticated state → no redirect; nav links rendered
+  - Mount with authenticated state → `router.push('/user/profile')` called
+  - _Outcome_: failing tests (current component calls `getBackendClient()` which will not resolve correctly in test environment)
 
 - [ ] **T29** Refactor `PublicLayout.vue`
   - Replace `getBackendClient()` check with `useAuth().isAuthenticated`
-  - _Outcome_: no import from `services/backend-client`
+  - _Outcome_: T28 tests pass; no import from `services/backend-client`
 
-- [ ] **T30** Refactor `UserLayout.vue`
-  - Replace `getBackendClient()` auth check, record display, and logout with `useAuth()`
-  - _Outcome_: no import from `services/backend-client`
+- [ ] **T30** Write integration test for `UserLayout.vue` — **tests first**
+  - File: `tests/integration/UserLayout.spec.ts`
+  - Mount with unauthenticated state → redirect to `/`
+  - Mount with authenticated state → displays `currentUser` data; Logout button present
+  - Click Logout → `authRepository.logout` called; redirect to `/`
+  - _Outcome_: failing tests
 
-- [ ] **T31** Refactor `Login.vue` — T25 integration tests pass after this
-  - Replace `getBackendClient()` call with `await useAuth().login(...)`
-  - Fix the async bug: navigation now runs only after `await login(...)` resolves
-  - Replace `alert()` with an inline error `<p>`
-  - _Outcome_: T25 integration tests green
+- [ ] **T31** Refactor `UserLayout.vue`
+  - Replace `getBackendClient()` calls with `useAuth()`; drive display from `currentUser`
+  - _Outcome_: T30 tests pass; no import from `services/backend-client`
 
-- [ ] **T32** Refactor `RegisterUser.vue`
-  - Replace `pb.collection('users').create(...)` with `authRepository.register(...)`
-  - Replace `alert()` with inline error `<p>`
-  - _Outcome_: no raw PocketBase calls
+- [ ] **T32** Refactor `App.vue` — Options API → `<script setup>`
+  - Remove `defineComponent({ name: 'App' })` wrapper; script block can be empty or omitted
+  - No test required: zero logic, cannot meaningfully fail
+  - _Outcome_: no Options API remains in the codebase
 
-- [ ] **T33** Refactor `MonthlyCountReport.vue` — T26 integration tests pass after this
-  - Replace inline IIFE, `createDatasets`, `Chart.register`, and PocketBase calls with `useMonthlyCountReport()`
-  - Add error `<p>` driven by `error` ref; remove local `MonthlyCountRecord` interface
-  - _Outcome_: T26 integration tests green; view ≤ 20 lines
+- [ ] **T33** Write integration test for `Login.vue` — **tests first**
+  - File: `tests/integration/Login.spec.ts`
+  - Submit valid credentials → `router.currentRoute` is `/user/profile`
+  - Submit invalid credentials → error `<p>` visible; no navigation
+  - _Outcome_: failing tests (current component has async bug and calls `getBackendClient()`)
 
-- [ ] **T34** Refactor `Settings.vue` — T27 integration tests pass after this
+- [ ] **T34** Refactor `Login.vue`
+  - Replace `getBackendClient()` with `await useAuth().login(...)`; fix async bug (navigation after await); replace `alert()` with inline error `<p>`
+  - _Outcome_: T33 tests pass
+
+- [ ] **T35** Write integration test for `RegisterUser.vue` — **tests first**
+  - File: `tests/integration/RegisterUser.spec.ts`
+  - Submit valid form → `authRepository.register` called; router navigates to `/`
+  - Password mismatch → `authRepository.register` not called; error message shown
+  - Submit fails → error message shown; no navigation
+  - _Outcome_: failing tests
+
+- [ ] **T36** Refactor `RegisterUser.vue`
+  - Replace `pb.collection('users').create(...)` with `authRepository.register(...)`; replace `alert()` with inline error `<p>`
+  - _Outcome_: T35 tests pass; no raw PocketBase calls
+
+- [ ] **T37** Write integration test for `MonthlyCountReport.vue` — **tests first**
+  - File: `tests/integration/MonthlyCountReport.spec.ts`
+  - Mount against test PocketBase with seed data → `<canvas>` element rendered after data loads
+  - Mount with repository that rejects → error text visible
+  - _Outcome_: failing tests
+
+- [ ] **T38** Refactor `MonthlyCountReport.vue`
+  - Replace inline IIFE, `createDatasets`, `Chart.register`, and PocketBase calls with `useMonthlyCountReport()`; add error `<p>`; remove local `MonthlyCountRecord` interface
+  - _Outcome_: T37 tests pass; view ≤ 20 lines
+
+- [ ] **T39** Write integration test for `Settings.vue` — **tests first**
+  - File: `tests/integration/Settings.spec.ts`
+  - Mount as authenticated test user against test PocketBase → `userSetting.portalTheme` appears in rendered output
+  - _Outcome_: failing tests
+
+- [ ] **T40** Refactor `Settings.vue`
   - Replace inline try/catch and repository call with `useUserSettings()`; call `load()` via `onMounted`
-  - _Outcome_: T27 integration tests green
+  - _Outcome_: T39 tests pass; no raw PocketBase calls in view
 
 ---
 
-## Phase 6 — E2E tests
+## Phase 6 — E2E tests (written after views are stable)
 
-Dependencies: T29–T34, T5
+Dependencies: T29, T31, T34, T36, T38, T40, T5
 
-- [ ] **T35** Write E2E test: login flow
+- [ ] **T41** Write E2E test: login flow
   - File: `tests/e2e/login.e2e.spec.ts`
-  - Navigate to `/login`; fill credentials; submit; assert URL becomes `/user/profile`
+  - Navigate to `/login`; fill valid credentials; submit; assert URL is `/user/profile`
   - _Outcome_: full browser login flow verified on OpenBSD
 
-- [ ] **T36** Write E2E test: monthly count report
+- [ ] **T42** Write E2E test: monthly count report
   - File: `tests/e2e/monthly-count-report.e2e.spec.ts`
-  - Login; navigate to `/monthly-count-report`; assert `canvas` element present
+  - Login; navigate to `/monthly-count-report`; assert `canvas` element is present
   - _Outcome_: chart render verified end-to-end
 
-- [ ] **T37** Write E2E test: logout
+- [ ] **T43** Write E2E test: logout
   - From user layout, click Logout; assert redirect to `/`
-  - Can be added to `login.e2e.spec.ts` as a follow-on step
+  - Can be appended to `login.e2e.spec.ts` as a continuation step
   - _Outcome_: logout flow verified
 
 ---
 
-## Phase 7 — Cleanup
+## Phase 7 — Cleanup (dependencies: T29–T40 all complete)
 
-Dependencies: T29–T34 all complete
-
-- [ ] **T38** Delete `frontend/src/services/backend-client.ts`
-  - Confirm zero imports of `getBackendClient` remain in `src/`
-  - _Outcome_: singleton store is the sole PocketBase entry point
+- [ ] **T44** Delete `frontend/src/services/backend-client.ts`
+  - Confirm zero `getBackendClient` imports remain in `src/`
+  - _Outcome_: store singleton is the sole PocketBase entry point
 
 ---
 
-## Phase 8 — Verification
+## Phase 8 — Verification (dependencies: T41–T44)
 
-Dependencies: T35–T38
+- [ ] **T45** Run `npm run lint` on the server — zero errors
 
-- [ ] **T39** Run `npm run lint` on the server — zero errors
-- [ ] **T40** Run full test suite on the server:
+- [ ] **T46** Run full test suite on the server:
   ```sh
   npm run test:unit
   npm run test:contract
   npm run test:integration
   CHROMIUM_PATH=/usr/local/bin/chromium npm run test:e2e
   ```
-  All passes; no regressions
+  All pass; no regressions
