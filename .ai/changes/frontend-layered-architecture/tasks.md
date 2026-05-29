@@ -58,18 +58,18 @@ Rule: every unit of implementation is preceded by its test. Mark each `[x]` as y
 
 Dependencies: T2, T4
 
-- [ ] **T10** Write unit tests for `monthly-count-report.service.ts` — **tests first**
+- [x] **T10** Write unit tests for `monthly-count-report.service.ts` — **tests first**
   - File: `tests/unit/services/monthly-count-report.service.spec.ts`
   - `getRecentMonths`: empty → `[]`; < 12 months → all; > 12 months → last 12 only
   - `buildChartDatasets`: one dataset per skill; missing months → `0`; every dataset has `hidden: true`
   - Imports will fail to resolve until T11 — that is expected (red phase)
   - _Outcome_: failing tests that define the service contract
 
-- [ ] **T11** Implement `frontend/src/services/monthly-count-report.service.ts`
+- [x] **T11** Implement `frontend/src/services/monthly-count-report.service.ts`
   - `getRecentMonths` and `buildChartDatasets` — pure functions, no store/repository imports
   - _Outcome_: T10 tests pass (green)
 
-- [ ] **T12** Write unit tests for `frontend/src/services/arrays.ts` — **tests first**
+- [x] **T12** Write unit tests for `frontend/src/services/arrays.ts` — **tests first**
   - File: `tests/unit/services/arrays.spec.ts`
   - `sortByProperty`: sorts ascending by string; by number; returns mutated array
   - `arrays.ts` already exists; tests are written against its current interface
@@ -83,7 +83,7 @@ Dependencies: T1, T2, T6, T7, T8
 
 ### Auth repository
 
-- [ ] **T13** Write unit tests for `auth.repository.ts` — **tests first**
+- [x] **T13** Write unit tests for `auth.repository.ts` — **tests first**
   - File: `tests/unit/repositories/auth.repository.spec.ts`
   - Mock `@/store/pocketbase` with `vi.mock`
   - `isAuthenticated` returns `pb.authStore.isValid`
@@ -92,38 +92,41 @@ Dependencies: T1, T2, T6, T7, T8
   - `logout()` calls `pb.authStore.clear()`
   - _Outcome_: failing tests
 
-- [ ] **T14** Write contract tests for auth — **tests first**
+- [x] **T14** Write contract tests for auth — **tests first**
   - File: `tests/contract/auth.contract.spec.ts`
   - Unauthenticated `POST /api/collections/users/records` → HTTP 400 (self-registration disabled)
   - Valid `POST /api/collections/users/auth-with-password` → HTTP 200 with token
   - Invalid credentials → HTTP 400
   - _Outcome_: PocketBase access rules verified at HTTP layer (failing until real server available)
 
-- [ ] **T15** Implement `frontend/src/repositories/auth.repository.ts`
+- [x] **T15** Implement `frontend/src/repositories/auth.repository.ts`
   - `isAuthenticated` getter, `currentUser` getter, `login`, `register`, `logout`
   - _Outcome_: T13 unit tests pass; T14 contract tests pass
 
 ### Monthly count report repository
 
-- [ ] **T16** Write unit tests for `monthly-count-report.repository.ts` — **tests first**
+- [x] **T16** Write unit tests for `monthly-count-report.repository.ts` — **tests first**
   - File: `tests/unit/repositories/monthly-count-report.repository.spec.ts`
   - Mock `@/store/pocketbase`
   - `getAll()` calls `pb.collection('monthlyCountReports').getFullList` with `expand: 'skillName'` and `sort: 'yearMonthDate'`
   - _Outcome_: failing tests
 
-- [ ] **T17** Write contract tests for `monthlyCountReports` — **tests first**
+- [x] **T17** Write contract tests for `monthlyCountReports` — **tests first**
   - File: `tests/contract/monthly-count-report.contract.spec.ts`
-  - Unauthenticated fetch → HTTP 403
+  - Unauthenticated fetch → HTTP 200 (public collection — `MonthlyCountReport` is a public route)
   - Authenticated fetch → HTTP 200
+  - Note: `monthlyCountReports` had nil list/view rules (superadmin-only) in the initial migration.
+    Added `pocketbaseserver/migrations/1780099200_monthly_count_reports_public_read.go` to set
+    `ListRule = ""` and `ViewRule = ""` so the public frontend route can read it.
   - _Outcome_: access rule verified at HTTP layer
 
-- [ ] **T18** Implement `frontend/src/repositories/monthly-count-report.repository.ts`
+- [x] **T18** Implement `frontend/src/repositories/monthly-count-report.repository.ts`
   - `getAll()` → `Promise<MonthlyCountRecord[]>`
   - _Outcome_: T16 unit tests pass; T17 contract tests pass
 
 ### User settings repository
 
-- [ ] **T19** Write unit tests for `user-settings.repository.ts` — **tests first**
+- [x] **T19** Write unit tests for `user-settings.repository.ts` — **tests first**
   - File: `tests/unit/repositories/user-settings.repository.spec.ts`
   - Mock `@/store/pocketbase`
   - `getOrCreate(userId)`: when `getFirstListItem` resolves → returns the record
@@ -131,14 +134,14 @@ Dependencies: T1, T2, T6, T7, T8
   - `getOrCreate(userId)`: when `getFirstListItem` throws another error → rethrows without calling `create`
   - _Outcome_: failing tests (get-or-create logic explicitly covered)
 
-- [ ] **T20** Write contract tests for `userSettings` — **tests first**
+- [x] **T20** Write contract tests for `userSettings` — **tests first**
   - File: `tests/contract/user-settings.contract.spec.ts`
   - Authenticated user fetches own record → HTTP 200
   - Authenticated user fetches another user's record → HTTP 403
   - Fetch when no record exists → HTTP 404
   - _Outcome_: per-user isolation rule verified at HTTP layer
 
-- [ ] **T21** Implement `frontend/src/repositories/user-settings.repository.ts`
+- [x] **T21** Implement `frontend/src/repositories/user-settings.repository.ts`
   - `getOrCreate(userId)` with internal "not found" handling
   - _Outcome_: T19 unit tests pass; T20 contract tests pass
 
