@@ -1,38 +1,37 @@
 <template>
-  <CvFluidForm>
-    <CvTextInput label="Email" v-model="email" />
-    <CvTextInput label="Password" type="password" v-model="password" />
-  </CvFluidForm>
-  <br />
-  <CvButton @click="onSubmit()">Login</CvButton>
-  <br />
-  <br />
-  <br />
-  <p>Don't have an account?</p>
-  <CvLink href="/register">Register</CvLink>
+  <div>
+    <CvFluidForm>
+      <CvTextInput label="Email" v-model="email" />
+      <CvTextInput label="Password" type="password" v-model="password" />
+    </CvFluidForm>
+    <br />
+    <CvButton @click="onSubmit()">Login</CvButton>
+    <p v-if="loginError" data-testid="login-error">{{ loginError }}</p>
+    <br />
+    <br />
+    <p>Don't have an account?</p>
+    <CvLink href="/register">Register</CvLink>
+  </div>
 </template>
 <script lang="ts" setup>
-  import { getBackendClient } from '@/services/backend-client';
-  import { ref } from 'vue';
-  import { useRouter } from 'vue-router';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuth } from '@/composables/use-auth';
 
-  const backendClient = getBackendClient();
-  const router = useRouter();
+const router = useRouter();
+const { login } = useAuth();
 
-  const email = ref('');
-  const password = ref('');
+const email = ref('');
+const password = ref('');
+const loginError = ref('');
 
-  const login = () => {
-    try {
-      backendClient.collection('users').authWithPassword(email.value, password.value);
-      router.push('/user/profile'); // Redirect to user layout or dashboard after login
-    } catch (error) {
-      console.error('Login failed:', error);
-      alert(error);
-    }
+const onSubmit = async () => {
+  loginError.value = '';
+  try {
+    await login(email.value, password.value);
+    router.push('/user/profile');
+  } catch (error) {
+    loginError.value = error instanceof Error ? error.message : String(error);
   }
-
-  const onSubmit = () => {
-    login();
-  }
+};
 </script>
