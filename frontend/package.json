@@ -19,8 +19,8 @@
     "bootstrap": "^5.3.7",
     "bootstrap-vue-3": "^0.5.1",
     "carbon-components": "^10.59.2",
-    "@carbon/charts": "^1.27.11",
-    "@carbon/charts-vue": "^1.11.0",
+    "@carbon/charts": "1.27.11",
+    "@carbon/charts-vue": "1.27.11",
     "pocketbase": "^0.26.2",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1"
