@@ -5,6 +5,9 @@ describe('monthly count report (T42)', () => {
     // Wait for Vue to mount and data to load
     await browser.pause(5000);
 
+    const logs = await browser.getLogs('browser');
+    console.log('--- BROWSER LOGS ---\n', JSON.stringify(logs, null, 2));
+
     const html = (await browser.getPageSource()).substring(0, 4000);
     console.log('--- PAGE SOURCE ---\n', html);
 
