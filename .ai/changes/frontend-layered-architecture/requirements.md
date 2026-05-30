@@ -30,7 +30,7 @@ WHEN the fetch or create fails THE SYSTEM SHALL propagate the error to the calle
 
 ### Monthly count report service
 WHEN the service receives a list of `MonthlyCountRecord` values THE SYSTEM SHALL extract the most recent 12 distinct `YearMonth` values.
-WHEN the service builds chart datasets THE SYSTEM SHALL group records by skill name, fill missing months with zero, and assign a random hex border colour per skill with `hidden: true`.
+WHEN the service builds chart datasets THE SYSTEM SHALL group records by skill name and produce a flat array of `{ group, date, value }` data points; missing months SHALL have a value of `0`.
 
 ## Composable layer — use-case orchestration
 
@@ -41,9 +41,9 @@ WHEN `login` is awaited and fails THE SYSTEM SHALL expose the error for the call
 WHEN `logout` is called THE SYSTEM SHALL call the auth repository and update `isAuthenticated` to `false`.
 
 ### useMonthlyCountReport composable
-WHEN `useMonthlyCountReport` is called THE SYSTEM SHALL return reactive `chartData` (labels + datasets), `chartHeight`, and an `error` ref.
+WHEN `useMonthlyCountReport` is called THE SYSTEM SHALL return reactive `chartData` (flat `CarbonChartDataPoint[]`), `chartOptions` (axis configuration object), and an `error` ref.
 WHEN the composable initialises THE SYSTEM SHALL fetch records via the repository, transform them via the service, and populate `chartData`.
-WHEN the fetch or transform fails THE SYSTEM SHALL set `error` and leave `chartData` in its empty initial state.
+WHEN the fetch or transform fails THE SYSTEM SHALL set `error` and leave `chartData` as an empty array.
 
 ### useUserSettings composable
 WHEN `useUserSettings` is called THE SYSTEM SHALL return a reactive `userSetting` ref and a `load()` async function.
@@ -78,6 +78,12 @@ WHEN the layout is mounted and the user is authenticated THE SYSTEM SHALL redire
 WHEN the layout is mounted and the user is not authenticated THE SYSTEM SHALL redirect to `/` via `useAuth`.
 WHEN the logout button is clicked THE SYSTEM SHALL call `useAuth` logout then navigate to `/`.
 
+## Chart library — Carbon Charts
+
+### Chart rendering
+WHEN the monthly count report is rendered THE SYSTEM SHALL use `CcvLineChart` from `@carbon/charts-vue` instead of `chart.js` and `vue-chart-3`.
+WHEN the frontend is built THE SYSTEM SHALL NOT depend on `chart.js` or `vue-chart-3`.
+
 ## Deleted / removed code
 
 ### getBackendClient factory removed
@@ -95,17 +101,17 @@ WHEN E2E tests run on OpenBSD THE SYSTEM SHALL locate the Chromium binary via th
 WHEN `getRecentMonths` is called with records spanning more than 12 months THE SYSTEM SHALL return only the last 12 distinct `YearMonth` values.
 WHEN `getRecentMonths` is called with records spanning fewer than 12 months THE SYSTEM SHALL return all distinct `YearMonth` values.
 WHEN `getRecentMonths` is called with an empty array THE SYSTEM SHALL return an empty array.
-WHEN `buildChartDatasets` is called THE SYSTEM SHALL return one dataset per distinct skill name.
-WHEN `buildChartDatasets` is called with records that omit a month for a skill THE SYSTEM SHALL fill that month's count with `0`.
-WHEN `buildChartDatasets` is called THE SYSTEM SHALL set `hidden: true` on every dataset.
+WHEN `buildChartDatasets` is called THE SYSTEM SHALL return one `CarbonChartDataPoint` per skill per month within the provided month window.
+WHEN `buildChartDatasets` is called with records that omit a month for a skill THE SYSTEM SHALL include a data point for that month with `value: 0`.
+WHEN `buildChartDatasets` is called THE SYSTEM SHALL set `group` to the skill name and `date` to the `YearMonth` string.
 
 ### Unit tests — composables (repositories mocked)
 WHEN `useAuth` is called and `authRepository.isAuthenticated` is false THE SYSTEM SHALL expose `isAuthenticated` as false.
 WHEN `useAuth.login` is awaited and the repository resolves THE SYSTEM SHALL not throw.
 WHEN `useAuth.login` is awaited and the repository rejects THE SYSTEM SHALL propagate the error to the caller.
 WHEN `useAuth.logout` is called THE SYSTEM SHALL delegate to `authRepository.logout`.
-WHEN `useMonthlyCountReport` initialises and the repository resolves THE SYSTEM SHALL populate `chartData.labels` and `chartData.datasets`.
-WHEN `useMonthlyCountReport` initialises and the repository rejects THE SYSTEM SHALL set `error` and leave `chartData` in its empty initial state.
+WHEN `useMonthlyCountReport` initialises and the repository resolves THE SYSTEM SHALL populate `chartData` with a non-empty `CarbonChartDataPoint[]`.
+WHEN `useMonthlyCountReport` initialises and the repository rejects THE SYSTEM SHALL set `error` and leave `chartData` as an empty array.
 WHEN `useUserSettings.load` is called with no authenticated user THE SYSTEM SHALL leave `userSetting` as null.
 WHEN `useUserSettings.load` is called with an authenticated user THE SYSTEM SHALL call the repository and set `userSetting`.
 
@@ -119,11 +125,11 @@ WHEN a user fetches their own `userSettings` record THE SYSTEM SHALL return HTTP
 ### Integration tests — component mounting
 WHEN `Login.vue` is mounted and the form is submitted with valid credentials THE SYSTEM SHALL navigate to `/user/profile`.
 WHEN `Login.vue` is mounted and the form is submitted with invalid credentials THE SYSTEM SHALL display an error message without navigating.
-WHEN `MonthlyCountReport.vue` is mounted and the repository returns records THE SYSTEM SHALL render a `<canvas>` element.
+WHEN `MonthlyCountReport.vue` is mounted and the repository returns records THE SYSTEM SHALL render an `<svg>` element.
 WHEN `MonthlyCountReport.vue` is mounted and the repository rejects THE SYSTEM SHALL render the error message text.
 WHEN `Settings.vue` is mounted with an authenticated user THE SYSTEM SHALL display the user's `portalTheme`.
 
 ### E2E tests — full user flows
 WHEN a user navigates to `/login` and submits valid credentials THE SYSTEM SHALL redirect to the user layout page.
-WHEN a user navigates to `/monthly-count-report` THE SYSTEM SHALL render a chart canvas.
+WHEN a user navigates to `/monthly-count-report` THE SYSTEM SHALL render a chart SVG element.
 WHEN a logged-in user clicks Logout THE SYSTEM SHALL redirect to `/`.

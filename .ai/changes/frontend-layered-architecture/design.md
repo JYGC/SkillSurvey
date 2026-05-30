@@ -473,6 +473,147 @@ Add to `frontend/package.json`:
 
 Unit tests do not require the PocketBase server; the global setup is guarded so it only starts the server when running contract, integration, or E2E tests.
 
+## Phase 9 — Chart library migration (chart.js → @carbon/charts-vue)
+
+### Overview
+
+`chart.js` and `vue-chart-3` are replaced by `CcvLineChart` from `@carbon/charts-vue`, the charting package in the Carbon Design System family. `@carbon/vue` (already installed) does not include chart components — charts are in the separate `@carbon/charts-vue` package.
+
+
+### Data format change
+
+Chart.js uses a `{ labels, datasets }` structure:
+
+```typescript
+{
+  labels: ['2024-10', '2024-11'],
+  datasets: [{ label: 'Python', data: [10, 15], fill: false, borderColor: '...', hidden: true }]
+}
+```
+
+Carbon Charts uses a flat array of data points:
+
+```typescript
+[
+  { group: 'Python', date: '2024-10', value: 10 },
+  { group: 'Python', date: '2024-11', value: 15 },
+]
+```
+
+Chart options (axis config, title) are passed separately as a `:options` prop.
+
+### New type
+
+Add `CarbonChartDataPoint` to `services/monthly-count-report.service.ts`:
+
+```typescript
+export interface CarbonChartDataPoint {
+  group: string;
+  date: string;
+  value: number;
+}
+```
+
+### Files affected
+
+| File | Change |
+|---|---|
+| `package.json` | Add `@carbon/charts`, `@carbon/charts-vue`; remove `vue-chart-3` |
+| `services/monthly-count-report.service.ts` | `buildChartDatasets` returns `CarbonChartDataPoint[]`; remove Chart.js types |
+| `composables/use-monthly-count-report.ts` | `chartData` type → `CarbonChartDataPoint[]`; remove `Chart.register`; add `chartOptions` |
+| `views/public/MonthlyCountReport.vue` | Replace `<LineChart>` with `<CcvLineChart>`; import styles |
+| `tests/unit/services/monthly-count-report.service.spec.ts` | Update `buildChartDatasets` assertions (no `hidden`/`borderColor`; assert `group`/`date`/`value`) |
+| `tests/unit/composables/use-monthly-count-report.spec.ts` | Assert `chartData` is `CarbonChartDataPoint[]`; remove `chartData.labels`/`datasets` assertions |
+| `tests/integration/MonthlyCountReport.spec.ts` | Mock `@carbon/charts-vue` instead of `chart.js`; stub `CcvLineChart`; check `svg` not `canvas` |
+| `tests/e2e/monthly-count-report.e2e.ts` | Check `svg` instead of `canvas` |
+
+### Updated service interface
+
+```typescript
+export function buildChartDatasets(
+  records: MonthlyCountRecord[],
+  months: string[],
+): CarbonChartDataPoint[] {
+  return months.flatMap(month =>
+    Object.entries(groupBySkill(records)).map(([name, counts]) => ({
+      group: name,
+      date: month,
+      value: counts[month] ?? 0,
+    }))
+  );
+}
+```
+
+`getRecentMonths` is unchanged — still used to extract and limit to the last 12 months before passing to `buildChartDatasets`.
+
+### Updated composable interface
+
+```typescript
+export function useMonthlyCountReport() {
+  const chartData = ref<CarbonChartDataPoint[]>([]);
+  const chartOptions = {
+    axes: {
+      bottom: { title: 'Month', mapsTo: 'date', scaleType: 'labels' },
+      left: { title: 'Job Listings', mapsTo: 'value', scaleType: 'linear' },
+    },
+    height: '400px',
+  };
+  const error = ref<Error | null>(null);
+
+  async function load() {
+    try {
+      const records = await monthlyCountReportRepository.getAll();
+      const months = getRecentMonths(records);
+      chartData.value = buildChartDatasets(records, months);
+      error.value = null;
+    } catch (e) {
+      error.value = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+
+  return { chartData, chartOptions, error, load };
+}
+```
+
+No `Chart.register` call. `chartHeight` is removed — height is expressed in `chartOptions.height` as a CSS string.
+
+### Updated view
+
+```vue
+<template>
+  <div>
+    <p v-if="error" data-testid="report-error">{{ error.message }}</p>
+    <CcvLineChart v-else :data="chartData" :options="chartOptions" />
+  </div>
+</template>
+<script lang="ts" setup>
+import { onMounted } from 'vue';
+import { CcvLineChart } from '@carbon/charts-vue';
+import '@carbon/charts-vue/styles.css';
+import { useMonthlyCountReport } from '@/composables/use-monthly-count-report';
+
+const { chartData, chartOptions, error, load } = useMonthlyCountReport();
+onMounted(load);
+</script>
+```
+
+### Updated integration test mock
+
+```typescript
+vi.mock('@carbon/charts-vue', () => ({
+  CcvLineChart: { template: '<svg />' },
+}));
+const stubs = { CcvLineChart: { template: '<svg />' } };
+// assertion changes: wrapper.find('svg').exists() → true
+```
+
+### Updated E2E selector
+
+```typescript
+await $('svg').waitForExist({ timeout: 15000 });
+expect(await $('svg').isExisting()).toBe(true);
+```
+
 ### Running on the OpenBSD server
 
 ```sh

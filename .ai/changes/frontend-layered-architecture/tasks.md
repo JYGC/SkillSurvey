@@ -292,7 +292,7 @@ Dependencies: T29, T31, T34, T36, T38, T40, T5
 
 - [x] **T45** Run `npm run lint` on the server — zero errors
 
-- [x] **T46** Run full test suite on the server:
+- [x] **T46** Run full test suite on the server (pre-migration baseline):
   ```sh
   npm run test:unit
   npm run test:contract
@@ -300,3 +300,78 @@ Dependencies: T29, T31, T34, T36, T38, T40, T5
   CHROMIUM_PATH=/usr/local/bin/chromium npm run test:e2e
   ```
   All pass; no regressions
+
+---
+
+## Phase 9 — Replace chart.js with @carbon/charts-vue
+
+Dependencies: T46 (all prior tests passing)
+
+- [ ] **T47** Update unit tests for `buildChartDatasets` — **tests first**
+  - File: `tests/unit/services/monthly-count-report.service.spec.ts`
+  - Replace existing `buildChartDatasets` assertions:
+    - Returns one `CarbonChartDataPoint` per skill per month (not one `ChartDataset` per skill)
+    - Missing months → data point with `value: 0`
+    - Each point has `group` (skill name), `date` (YearMonth string), `value` (count)
+    - No assertions on `hidden` or `borderColor`
+  - Tests will fail until T51
+  - _Outcome_: updated test spec that defines the new service contract
+
+- [ ] **T48** Update unit tests for `use-monthly-count-report.ts` — **tests first**
+  - File: `tests/unit/composables/use-monthly-count-report.spec.ts`
+  - Replace `chartData.labels` / `chartData.datasets` assertions with:
+    - On resolve: `chartData.value` is a non-empty `CarbonChartDataPoint[]`
+    - On reject: `chartData.value` is an empty array; `error.value` is set
+  - Remove mock of `chart.js`
+  - Tests will fail until T52
+  - _Outcome_: updated composable test spec
+
+- [ ] **T49** Update integration test for `MonthlyCountReport.vue` — **tests first**
+  - File: `tests/integration/MonthlyCountReport.spec.ts`
+  - Replace `vi.mock('chart.js', ...)` with `vi.mock('@carbon/charts-vue', () => ({ CcvLineChart: { template: '<svg />' } }))`
+  - Replace `stubs: { LineChart: { template: '<canvas />' } }` with `stubs: { CcvLineChart: { template: '<svg />' } }`
+  - Change assertion from `wrapper.find('canvas').exists()` to `wrapper.find('svg').exists()`
+  - Tests will fail until T53
+  - _Outcome_: updated integration test spec
+
+- [ ] **T50** Install `@carbon/charts` and `@carbon/charts-vue`; uninstall `vue-chart-3`
+  - `npm install @carbon/charts @carbon/charts-vue`
+  - `npm uninstall vue-chart-3`
+  - _Outcome_: packages updated in `package.json` and `node_modules`
+
+- [ ] **T51** Update `services/monthly-count-report.service.ts`
+  - Add `CarbonChartDataPoint` interface: `{ group: string; date: string; value: number }`
+  - Rewrite `buildChartDatasets` to return `CarbonChartDataPoint[]` — flat array of one point per skill per month, `value: 0` for missing months
+  - Remove `ChartDataset` import from `chart.js`
+  - `getRecentMonths` is unchanged
+  - _Outcome_: T47 unit tests pass
+
+- [ ] **T52** Update `composables/use-monthly-count-report.ts`
+  - Remove `import { Chart, registerables } from 'chart.js'` and `Chart.register(...registerables)`
+  - Change `chartData` type from `ChartData<'line'>` to `ref<CarbonChartDataPoint[]>([])`
+  - Remove `chartHeight`; add `chartOptions` constant with axis configuration (`mapsTo: 'date'`, `mapsTo: 'value'`, `scaleType: 'labels'` / `'linear'`, `height: '400px'`)
+  - Return `{ chartData, chartOptions, error, load }` instead of `{ chartData, chartHeight, error, load }`
+  - _Outcome_: T48 composable unit tests pass
+
+- [ ] **T53** Update `views/public/MonthlyCountReport.vue`
+  - Replace `import { LineChart } from 'vue-chart-3'` with `import { CcvLineChart } from '@carbon/charts-vue'`
+  - Add `import '@carbon/charts-vue/styles.css'`
+  - Replace `<LineChart :chartData="chartData" :height="chartHeight" />` with `<CcvLineChart :data="chartData" :options="chartOptions" />`
+  - _Outcome_: T49 integration tests pass; build succeeds
+
+- [ ] **T54** Update E2E test for monthly count report
+  - File: `tests/e2e/monthly-count-report.e2e.ts`
+  - Change `$('canvas').waitForExist(...)` to `$('svg').waitForExist(...)`
+  - Change `$('canvas').isExisting()` to `$('svg').isExisting()`
+  - _Outcome_: E2E test targets correct element
+
+- [ ] **T55** Run full test suite on server and verify no regressions
+  - Push, pull on server, `npm install`, then:
+    ```sh
+    npm run test:unit
+    npm run test:contract
+    npm run test:integration
+    CHROMIUM_PATH=/usr/local/bin/chromium npm run test:e2e
+    ```
+  - All pass; `chart.js` and `vue-chart-3` are no longer referenced in `src/`
+  - _Outcome_: migration complete and verified
