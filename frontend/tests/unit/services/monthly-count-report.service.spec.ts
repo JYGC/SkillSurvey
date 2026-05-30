@@ -3,9 +3,11 @@ import { getRecentMonths, buildChartDatasets } from '@/services/monthly-count-re
 import type { MonthlyCountRecord } from '@/schemas/monthly-count-report';
 
 const rec = (ym: string, skill: string, count: number): MonthlyCountRecord => ({
+  id: '1',
   YearMonth: ym,
   yearMonthDate: `${ym}-01`,
   count,
+  skillName: 'some-id',
   expand: { skillName: { name: skill } },
 });
 
@@ -47,43 +49,42 @@ describe('getRecentMonths', () => {
 });
 
 describe('buildChartDatasets', () => {
-  it('produces one dataset per skill', () => {
+  it('produces one data point per skill per month', () => {
     const months = ['2024-10', '2024-11'];
     const records = [
       rec('2024-10', 'TypeScript', 5),
       rec('2024-11', 'TypeScript', 8),
       rec('2024-10', 'Python', 3),
     ];
-    const datasets = buildChartDatasets(records, months);
-    expect(datasets).toHaveLength(2);
-    expect(datasets.map(d => d.label)).toContain('TypeScript');
-    expect(datasets.map(d => d.label)).toContain('Python');
+    const points = buildChartDatasets(records, months);
+    expect(points).toHaveLength(4);
+    expect(points.find(p => p.group === 'TypeScript' && p.date === '2024-10')?.value).toBe(5);
+    expect(points.find(p => p.group === 'TypeScript' && p.date === '2024-11')?.value).toBe(8);
+    expect(points.find(p => p.group === 'Python' && p.date === '2024-10')?.value).toBe(3);
   });
 
-  it('fills missing months with 0', () => {
+  it('fills missing months with value 0', () => {
     const months = ['2024-10', '2024-11', '2024-12'];
     const records = [
       rec('2024-10', 'TypeScript', 5),
       rec('2024-12', 'TypeScript', 7),
     ];
-    const datasets = buildChartDatasets(records, months);
-    expect(datasets).toHaveLength(1);
-    expect(datasets[0].data).toEqual([5, 0, 7]);
+    const points = buildChartDatasets(records, months);
+    expect(points.find(p => p.group === 'TypeScript' && p.date === '2024-11')?.value).toBe(0);
   });
 
-  it('sets hidden: true on every dataset', () => {
-    const datasets = buildChartDatasets(
-      [rec('2024-10', 'TypeScript', 5), rec('2024-10', 'Python', 2)],
-      ['2024-10'],
-    );
-    expect(datasets.every(d => d.hidden === true)).toBe(true);
+  it('sets group, date, and value fields on each data point', () => {
+    const points = buildChartDatasets([rec('2024-10', 'TypeScript', 5)], ['2024-10']);
+    expect(points[0].group).toBe('TypeScript');
+    expect(points[0].date).toBe('2024-10');
+    expect(points[0].value).toBe(5);
   });
 
   it('labels missing expand as "Unknown"', () => {
     const records: MonthlyCountRecord[] = [
-      { YearMonth: '2024-10', yearMonthDate: '2024-10-01', count: 3 },
+      { id: '1', YearMonth: '2024-10', yearMonthDate: '2024-10-01', count: 3, skillName: '' },
     ];
-    const datasets = buildChartDatasets(records, ['2024-10']);
-    expect(datasets[0].label).toBe('Unknown');
+    const points = buildChartDatasets(records, ['2024-10']);
+    expect(points[0].group).toBe('Unknown');
   });
 });

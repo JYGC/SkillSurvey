@@ -1,5 +1,10 @@
-import type { ChartDataset } from 'chart.js';
 import type { MonthlyCountRecord } from '@/schemas/monthly-count-report';
+
+export interface CarbonChartDataPoint {
+  group: string;
+  date: string;
+  value: number;
+}
 
 export function getRecentMonths(records: MonthlyCountRecord[]): string[] {
   return [...new Set(records.map(r => r.YearMonth))].slice(-12);
@@ -8,18 +13,18 @@ export function getRecentMonths(records: MonthlyCountRecord[]): string[] {
 export function buildChartDatasets(
   records: MonthlyCountRecord[],
   months: string[],
-): ChartDataset<'line'>[] {
+): CarbonChartDataPoint[] {
   const bySkill: Record<string, Record<string, number>> = {};
   for (const r of records) {
     const name = r.expand?.skillName?.name ?? 'Unknown';
     if (!bySkill[name]) bySkill[name] = {};
     bySkill[name][r.YearMonth] = r.count;
   }
-  return Object.entries(bySkill).map(([label, counts]) => ({
-    label,
-    data: months.map(m => counts[m] ?? 0),
-    fill: false,
-    borderColor: `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`,
-    hidden: true,
-  } as ChartDataset<'line'>));
+  return Object.entries(bySkill).flatMap(([group, counts]) =>
+    months.map(month => ({
+      group,
+      date: month,
+      value: counts[month] ?? 0,
+    }))
+  );
 }
