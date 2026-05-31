@@ -49,7 +49,6 @@ export const config: Options.Testrunner = {
         binary: chromeBin,
         args: ['--headless', '--no-sandbox', '--disable-dev-shm-usage'],
       },
-      'goog:loggingPrefs': { browser: 'ALL' },
     },
   ],
   baseUrl: PB_URL,
