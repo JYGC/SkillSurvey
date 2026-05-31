@@ -359,13 +359,13 @@ Dependencies: T46 (all prior tests passing)
   - Replace `<LineChart :chartData="chartData" :height="chartHeight" />` with `<CcvLineChart :data="chartData" :options="chartOptions" />`
   - _Outcome_: T49 integration tests pass; build succeeds
 
-- [ ] **T54** Update E2E test for monthly count report
+- [x] **T54** Update E2E test for monthly count report
   - File: `tests/e2e/monthly-count-report.e2e.ts`
   - Change `$('canvas').waitForExist(...)` to `$('svg').waitForExist(...)`
   - Change `$('canvas').isExisting()` to `$('svg').isExisting()`
   - _Outcome_: E2E test targets correct element
 
-- [ ] **T55** Run full test suite on server and verify no regressions
+- [x] **T55** Run full test suite on server and verify no regressions
   - Push, pull on server, `npm install`, then:
     ```sh
     npm run test:unit
