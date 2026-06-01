@@ -11,9 +11,7 @@ SkillSurvey tracks which technical skills appear in Australian job listings (See
 ```
 pocketbaseserver/   PocketBase BaaS — auth, collections, REST API, serves frontend
 runtask/            Scheduled task runner — scrape → report → housekeeping
-migrate/            One-shot legacy SQLite → PocketBase migration tool (temporary)
 frontend/           Vue 3 + TypeScript SPA (served from pocketbaseserver/pb_public/)
-backend/            Legacy GORM/SQLite stack — superseded, not in go.work
 ```
 
 **Data flow:**
@@ -25,7 +23,7 @@ Seek / Jora  →  runtask scrape  →  jobPosts in PocketBase
                          frontend (reads via PocketBase SDK)
 ```
 
-**Go workspace** (`go.work`) includes `./migrate`, `./pocketbaseserver`, `./runtask`. The `backend/` module is standalone and excluded.
+**Go workspace** (`go.work`) includes `./pocketbaseserver`, `./runtask`.
 
 ### pocketbaseserver
 
@@ -55,10 +53,6 @@ Four commands dispatched from `cmd/runtask/main.go`:
 Config loaded from `runtask.json` next to the binary (no env vars). Call `exception.Init(cfg.ErrorLogFile)` once at startup before any `exception.LogErrorWithLabel` / `LogExtraData` / `ReportErrorIfPanic` calls — the logger is nil until initialised.
 
 When using `chromedp.Nodes`, always pass `chromedp.AtLeast(0)` — without it the call blocks forever when a selector is not found.
-
-### migrate
-
-One-shot tool that reads the legacy SQLite DB (via GORM) and writes into PocketBase. Migrates in dependency order: sites → skillTypes → skillNames → skillNameAliases → jobPosts → monthlyCountReports. All steps are idempotent (deduplication by natural key). The service account must have the `migration` role.
 
 ### frontend
 
@@ -210,9 +204,6 @@ make run_dev    # build + serve --dev (auto-migrate, verbose)
 # runtask
 make build      # → runtask/build/runtask
 make run_dev    # build + run
-
-# migrate
-make build      # → migrate/build/migrate
 ```
 
 ## Frontend commands
@@ -235,7 +226,7 @@ Server connection details, credentials, and ready-to-run SSH commands are in `CL
 **Key facts (non-sensitive):**
 - `sshpass` is installed in Cygwin at `/c/cygwin64/bin/sshpass` — **not** on the Git Bash PATH; always use the full path alongside Cygwin's `ssh`/`sftp`.
 - PocketBase listens on a **different network interface** from the SSH host — both are on the same machine.
-- PocketBase is started manually (not via rc.d); config files (`runtask.json`, `migrate.json`) live next to each binary in `build/`.
+- PocketBase is started manually (not via rc.d); `runtask.json` lives next to the runtask binary in `build/`.
 - SSL verification is disabled for `git push` on Windows (`git -c http.sslVerify=false push`).
 
 ### Deployment steps

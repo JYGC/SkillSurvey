@@ -1,32 +1,34 @@
 <template>
-  <p v-if="backendClient.authStore.isValid">
-    Logged in as: {{ JSON.stringify(backendClient.authStore.record) }}
-  </p>
-  <p v-else>
-    Failure to get authenticate user.
-  </p>
-  <CvButton @click="onSettingsClick()">Settings</CvButton>
-  <CvButton @click="onLogout()">Logout</CvButton>
-  <router-view />
+  <div>
+    <p v-if="isAuthenticated">
+      Logged in as: {{ currentUser?.email }}
+    </p>
+    <p v-else>
+      Failure to get authenticate user.
+    </p>
+    <CvButton data-testid="logout-btn" @click="onLogout()">Logout</CvButton>
+    <CvButton @click="onSettingsClick()">Settings</CvButton>
+    <router-view />
+  </div>
 </template>
 
 <script lang="ts" setup>
-  import { getBackendClient } from '@/services/backend-client';
-  import { useRouter } from 'vue-router';
+import { useAuth } from '@/composables/use-auth';
+import { useRouter } from 'vue-router';
 
-  const backendClient = getBackendClient();
-  const router = useRouter();
+const { isAuthenticated, currentUser, logout } = useAuth();
+const router = useRouter();
 
-  if (!backendClient.authStore.isValid) {
-    router.push('/');
-  }
+if (!isAuthenticated.value) {
+  router.push('/');
+}
 
-  const onLogout = () => {
-    backendClient.authStore.clear();
-    router.push('/');
-  }
+const onLogout = () => {
+  logout();
+  router.push('/');
+};
 
-  const onSettingsClick = () => {
-    router.push('/user/settings');
-  }
+const onSettingsClick = () => {
+  router.push('/user/settings');
+};
 </script>
