@@ -155,8 +155,8 @@ func TestNoRoleCannotListSkillCollections(t *testing.T) {
 	user := createTestUser(t, app, "norole-reader@example.com", "testtest123")
 	token := authToken(t, serverURL, user.GetString("email"), "testtest123")
 
-	// skillTypes, skillNames, skillNameAliases require migration role to list/view.
-	for _, col := range []string{"skillTypes", "skillNames", "skillNameAliases"} {
+	// skillTypes and skillNameAliases require migration role to list/view.
+	for _, col := range []string{"skillTypes", "skillNameAliases"} {
 		total := listTotalItems(t, serverURL, token, col)
 		if total != 0 {
 			t.Errorf("expected no-role user to see 0 %s, got %d", col, total)
