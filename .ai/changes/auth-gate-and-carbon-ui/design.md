@@ -91,6 +91,50 @@ Retained in `App.vue`:
 - `table` and `tbody` scroll styles (used by other views)
 - `.fill-parent`, `.vertical-padding` utility classes
 
+## Sequence diagrams
+
+### Unauthenticated user attempts to view the report
+
+```
+Browser          Vue Router       UserLayout        PocketBase API
+   |                 |                |                   |
+   |--GET /user/monthly-count-report->|                   |
+   |                 |  isAuthenticated? false             |
+   |                 |<-router.push('/')------------------|
+   |<--redirect /    |                |                   |
+   |--GET /login---->|                |                   |
+   |                 |  PublicLayout (no sidebar)         |
+   |<--login form----|                |                   |
+```
+
+### Authenticated user views the report
+
+```
+Browser          Vue Router       UserLayout        PocketBase API
+   |                 |                |                   |
+   |--GET /user/monthly-count-report->|                   |
+   |                 |  isAuthenticated? true              |
+   |<--render layout (CvHeader + CvSideNav + CvContent)---|
+   |                 |  onMounted: load()                 |
+   |                 |  GET /api/collections/monthlyCountReports/records?Bearer <token>
+   |                 |                |<---------200 OK---|
+   |<--chart renders |                |                   |
+```
+
+### Unauthenticated direct API call (blocked at API layer)
+
+```
+Client                     PocketBase API
+  |                              |
+  |--GET /api/collections/monthlyCountReports/records (no token)
+  |                              |  listRule: @request.auth.id != ""
+  |<-----------403 Forbidden-----|
+```
+
+## Data models and interfaces
+
+No new data models or TypeScript interfaces are introduced by this change. The existing `MonthlyCountRecord` schema (`src/schemas/monthly-count-report.ts`) and all repository/service signatures are unchanged. The only structural change is the file path of `MonthlyCountReport.vue` and its route name (`monthly-count-report` → `user-monthly-count-report`).
+
 ## Component file moves
 
 | Old path | New path |
@@ -133,10 +177,18 @@ The `UserLayout` auth failure message (`Failure to get authenticate user`) is re
 
 ## Testing strategy
 
-No new automated tests are required for this change. The changes are routing configuration and layout composition. Existing integration and e2e tests that verify:
-- Login redirects to user area
-- Logout redirects to `/`
-- `data-testid="logout-btn"` on the logout button
-- Monthly count report renders chart data
+### Contract test (required — written before the migration)
 
-...remain valid and must continue to pass. Run on the OpenBSD server after deployment.
+A new contract test file `pocketbaseserver/migrations/1780963200_monthly_count_reports_auth_required_test.go` must be written first, then watched to fail, then the migration written to make it pass.
+
+The contract test verifies:
+- Unauthenticated `GET /api/collections/monthlyCountReports/records` → HTTP 403
+- Authenticated `GET /api/collections/monthlyCountReports/records` (any valid user, no special role) → HTTP 200
+
+### Existing test that must be updated
+
+`TestMonthlyCountReportExpandSkillNameUnauthenticated` in `1780185600_skill_names_public_read_test.go` currently asserts that an unauthenticated request to `monthlyCountReports` returns 200. After the migration this will return 403, so the test must be updated to authenticate the request before calling the expand endpoint.
+
+### Frontend and routing changes
+
+No new automated tests are required for the frontend layout and routing changes (Tasks 1–8). These are layout composition changes with no new API-connected behaviour. Existing tests that verify login redirect, logout redirect, `data-testid="logout-btn"`, and chart rendering remain valid and must continue to pass. Run on the OpenBSD server after deployment.

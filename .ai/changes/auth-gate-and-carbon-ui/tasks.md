@@ -2,7 +2,7 @@
 
 ## Task list
 
-- [ ] **Task 1 — Move MonthlyCountReport component**
+- [ ] **Task 1 — Move MonthlyCountReport component** _(Required)_
 
   Copy `src/views/public/MonthlyCountReport.vue` to `src/views/user/MonthlyCountReport.vue`, then delete the original.
 
@@ -10,7 +10,7 @@
 
 ---
 
-- [ ] **Task 2 — Update router in `main.ts`** _(depends on Task 1)_
+- [ ] **Task 2 — Update router in `main.ts`** _(Required; depends on Task 1)_
 
   - Change the import of `MonthlyCountReport` to point to `./views/user/MonthlyCountReport.vue`
   - Remove `monthly-count-report` from the `PublicLayout` children
@@ -21,7 +21,7 @@
 
 ---
 
-- [ ] **Task 3 — Update post-login redirect targets**
+- [ ] **Task 3 — Update post-login redirect targets** _(Required)_
 
   - In `PublicLayout.vue`: change `router.push('/user/profile')` → `router.push('/user/monthly-count-report')`
   - In `Login.vue`: change `router.push('/user/profile')` → `router.push('/user/monthly-count-report')`
@@ -30,7 +30,7 @@
 
 ---
 
-- [ ] **Task 4 — Simplify `PublicLayout.vue`** _(depends on Task 3)_
+- [ ] **Task 4 — Simplify `PublicLayout.vue`** _(Required; depends on Task 3)_
 
   Replace the entire template and script with a minimal pass-through layout:
   - Remove `<b-nav>` / `<b-nav-item>` sidebar
@@ -41,7 +41,7 @@
 
 ---
 
-- [ ] **Task 5 — Rewrite `UserLayout.vue` with Carbon UI Shell** _(depends on Task 2)_
+- [ ] **Task 5 — Rewrite `UserLayout.vue` with Carbon UI Shell** _(Required; depends on Task 2)_
 
   Replace the current layout with Carbon UI Shell components:
   - `CvHeader` + `CvHeaderName` for the top bar
@@ -56,7 +56,7 @@
 
 ---
 
-- [ ] **Task 6 — Clean up `App.vue` styles** _(depends on Tasks 4 and 5)_
+- [ ] **Task 6 — Clean up `App.vue` styles** _(Required; depends on Tasks 4 and 5)_
 
   Remove Bootstrap-specific CSS from `App.vue`:
   - Delete rules targeting `.nav`, `.nav > .association`, `.nav > .new-association`
@@ -70,7 +70,7 @@
 
 ---
 
-- [ ] **Task 7 — Remove Bootstrap from `package.json`**
+- [ ] **Task 7 — Remove Bootstrap from `package.json`** _(Required)_
 
   Remove from `dependencies`:
   - `bootstrap`
@@ -81,7 +81,7 @@
 
 ---
 
-- [ ] **Task 8 — Run `npm install`** _(depends on Task 7)_
+- [ ] **Task 8 — Run `npm install`** _(Required; depends on Task 7)_
 
   Run `npm install` from `frontend/` to update `package-lock.json` and remove Bootstrap packages from `node_modules`.
 
@@ -89,11 +89,27 @@
 
 ---
 
-- [ ] **Task 9 — Add PocketBase migration: restrict `monthlyCountReports` to authenticated users**
+- [ ] **Task 9 — Write contract test for `monthlyCountReports` auth rule** _(Required — written before Task 10)_
+
+  Create `pocketbaseserver/migrations/1780963200_monthly_count_reports_auth_required_test.go` with two test cases:
+  - Unauthenticated `GET /api/collections/monthlyCountReports/records` → expect HTTP 403
+  - Authenticated `GET /api/collections/monthlyCountReports/records` (any valid user, no special role required) → expect HTTP 200
+
+  Also update `TestMonthlyCountReportExpandSkillNameUnauthenticated` in `1780185600_skill_names_public_read_test.go`: change the unauthenticated `http.Get` call to an authenticated request (the test currently asserts 200 for unauthenticated access; after Task 10 it will return 403 and must be updated to remain green).
+
+  Run the new tests on the OpenBSD server — they must **fail** at this point (migration not yet written).
+
+  Expected outcome: contract tests exist and fail; updated existing test still passes (it now uses auth, so it is unaffected by Task 10).
+
+---
+
+- [ ] **Task 10 — Add PocketBase migration: restrict `monthlyCountReports` to authenticated users** _(Required; depends on Task 9)_
 
   Create `pocketbaseserver/migrations/1780963200_monthly_count_reports_auth_required.go`.
 
   - Up: set `listRule` and `viewRule` to `@request.auth.id != ""`
   - Down: restore `listRule` and `viewRule` to `""` (public — the value set by the preceding `1780099200` migration)
+
+  Run the contract tests on the OpenBSD server — they must now **pass**.
 
   Expected outcome: unauthenticated requests to `GET /api/collections/monthlyCountReports/records` receive HTTP 403; authenticated requests succeed.

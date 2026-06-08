@@ -36,7 +36,8 @@ WHEN an unauthenticated request is made to list or view `monthlyCountReports` re
 WHEN an authenticated request is made to list or view `monthlyCountReports` records THE SYSTEM SHALL allow access.
 WHEN `runtask report` writes `monthlyCountReports` records THE SYSTEM SHALL continue to allow write access (write rules are unchanged).
 
-### Unchanged behaviours
+## Unchanged Behaviours
+
 WHEN an authenticated user visits a public route (`/`, `/login`, `/register`) THE SYSTEM SHALL redirect to `/user/monthly-count-report`.
 WHEN an unauthenticated user visits any user route (`/user/*`) THE SYSTEM SHALL redirect to `/`.
 WHEN an unauthenticated user visits `/login` THE SYSTEM SHALL display the login form.
