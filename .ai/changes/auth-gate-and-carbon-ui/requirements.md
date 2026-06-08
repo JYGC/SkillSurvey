@@ -32,7 +32,7 @@ WHEN the user clicks Logout THE SYSTEM SHALL log them out and redirect to `/`.
 ## PocketBase API Rules
 
 ### monthlyCountReports collection
-WHEN an unauthenticated request is made to list or view `monthlyCountReports` records THE SYSTEM SHALL deny access (HTTP 403).
+WHEN an unauthenticated request is made to list `monthlyCountReports` records THE SYSTEM SHALL return HTTP 200 with zero items (PocketBase filter rules hide data but do not block the endpoint with 403).
 WHEN an authenticated request is made to list or view `monthlyCountReports` records THE SYSTEM SHALL allow access.
 WHEN `runtask report` writes `monthlyCountReports` records THE SYSTEM SHALL continue to allow write access (write rules are unchanged).
 

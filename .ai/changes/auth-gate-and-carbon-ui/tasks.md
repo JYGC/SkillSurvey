@@ -89,21 +89,21 @@
 
 ---
 
-- [ ] **Task 9 — Write contract test for `monthlyCountReports` auth rule** _(Required — written before Task 10)_
+- [x] **Task 9 — Write contract test for `monthlyCountReports` auth rule** _(Required — written before Task 10)_
 
   Create `pocketbaseserver/migrations/1780963200_monthly_count_reports_auth_required_test.go` with two test cases:
-  - Unauthenticated `GET /api/collections/monthlyCountReports/records` → expect HTTP 403
-  - Authenticated `GET /api/collections/monthlyCountReports/records` (any valid user, no special role required) → expect HTTP 200
+  - Unauthenticated list: seed a record, expect HTTP 200 with 0 items (PocketBase filter rules hide data but do not return 403)
+  - Authenticated list: seed a record, expect HTTP 200 with 1+ items
 
-  Also update `TestMonthlyCountReportExpandSkillNameUnauthenticated` in `1780185600_skill_names_public_read_test.go`: change the unauthenticated `http.Get` call to an authenticated request (the test currently asserts 200 for unauthenticated access; after Task 10 it will return 403 and must be updated to remain green).
+  Also update `TestMonthlyCountReportExpandSkillNameUnauthenticated` → `TestMonthlyCountReportExpandSkillName` in `1780185600_skill_names_public_read_test.go`: changed unauthenticated `http.Get` to authenticated request.
 
   Run the new tests on the OpenBSD server — they must **fail** at this point (migration not yet written).
 
-  Expected outcome: contract tests exist and fail; updated existing test still passes (it now uses auth, so it is unaffected by Task 10).
+  Expected outcome: contract tests exist and fail; updated existing test still passes.
 
 ---
 
-- [ ] **Task 10 — Add PocketBase migration: restrict `monthlyCountReports` to authenticated users** _(Required; depends on Task 9)_
+- [x] **Task 10 — Add PocketBase migration: restrict `monthlyCountReports` to authenticated users** _(Required; depends on Task 9)_
 
   Create `pocketbaseserver/migrations/1780963200_monthly_count_reports_auth_required.go`.
 
@@ -112,4 +112,4 @@
 
   Run the contract tests on the OpenBSD server — they must now **pass**.
 
-  Expected outcome: unauthenticated requests to `GET /api/collections/monthlyCountReports/records` receive HTTP 403; authenticated requests succeed.
+  Expected outcome: unauthenticated callers see 0 items from `monthlyCountReports`; authenticated callers see all items.
