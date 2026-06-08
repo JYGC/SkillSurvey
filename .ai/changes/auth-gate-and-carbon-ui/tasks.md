@@ -81,7 +81,7 @@
 
 ---
 
-- [ ] **Task 8 — Run `npm install`** _(Required; depends on Task 7)_
+- [x] **Task 8 — Run `npm install`** _(Required; depends on Task 7)_
 
   Run `npm install` from `frontend/` to update `package-lock.json` and remove Bootstrap packages from `node_modules`.
 
