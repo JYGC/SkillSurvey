@@ -15,9 +15,6 @@
   "dependencies": {
     "@carbon/icons-vue": "^10.118.0",
     "@carbon/vue": "^3.0.27",
-    "@popperjs/core": "^2.11.8",
-    "bootstrap": "^5.3.7",
-    "bootstrap-vue-3": "^0.5.1",
     "carbon-components": "^10.59.2",
     "@carbon/charts": "1.27.11",
     "@carbon/charts-vue": "1.27.11",

@@ -41,7 +41,7 @@
 
 ---
 
-- [ ] **Task 5 — Rewrite `UserLayout.vue` with Carbon UI Shell** _(Required; depends on Task 2)_
+- [x] **Task 5 — Rewrite `UserLayout.vue` with Carbon UI Shell** _(Required; depends on Task 2)_
 
   Replace the current layout with Carbon UI Shell components:
   - `CvHeader` + `CvHeaderName` for the top bar
@@ -56,7 +56,7 @@
 
 ---
 
-- [ ] **Task 6 — Clean up `App.vue` styles** _(Required; depends on Tasks 4 and 5)_
+- [x] **Task 6 — Clean up `App.vue` styles** _(Required; depends on Tasks 4 and 5)_
 
   Remove Bootstrap-specific CSS from `App.vue`:
   - Delete rules targeting `.nav`, `.nav > .association`, `.nav > .new-association`
@@ -70,7 +70,7 @@
 
 ---
 
-- [ ] **Task 7 — Remove Bootstrap from `package.json`** _(Required)_
+- [x] **Task 7 — Remove Bootstrap from `package.json`** _(Required)_
 
   Remove from `dependencies`:
   - `bootstrap`
