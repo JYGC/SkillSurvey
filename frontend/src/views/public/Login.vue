@@ -29,7 +29,7 @@ const onSubmit = async () => {
   loginError.value = '';
   try {
     await login(email.value, password.value);
-    router.push('/user/profile');
+    router.push('/user/monthly-count-report');
   } catch (error) {
     loginError.value = error instanceof Error ? error.message : String(error);
   }

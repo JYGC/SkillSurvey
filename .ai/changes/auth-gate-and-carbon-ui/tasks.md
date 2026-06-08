@@ -2,7 +2,7 @@
 
 ## Task list
 
-- [ ] **Task 1 — Move MonthlyCountReport component** _(Required)_
+- [x] **Task 1 — Move MonthlyCountReport component** _(Required)_
 
   Copy `src/views/public/MonthlyCountReport.vue` to `src/views/user/MonthlyCountReport.vue`, then delete the original.
 
@@ -10,7 +10,7 @@
 
 ---
 
-- [ ] **Task 2 — Update router in `main.ts`** _(Required; depends on Task 1)_
+- [x] **Task 2 — Update router in `main.ts`** _(Required; depends on Task 1)_
 
   - Change the import of `MonthlyCountReport` to point to `./views/user/MonthlyCountReport.vue`
   - Remove `monthly-count-report` from the `PublicLayout` children
@@ -21,7 +21,7 @@
 
 ---
 
-- [ ] **Task 3 — Update post-login redirect targets** _(Required)_
+- [x] **Task 3 — Update post-login redirect targets** _(Required)_
 
   - In `PublicLayout.vue`: change `router.push('/user/profile')` → `router.push('/user/monthly-count-report')`
   - In `Login.vue`: change `router.push('/user/profile')` → `router.push('/user/monthly-count-report')`
@@ -30,7 +30,7 @@
 
 ---
 
-- [ ] **Task 4 — Simplify `PublicLayout.vue`** _(Required; depends on Task 3)_
+- [x] **Task 4 — Simplify `PublicLayout.vue`** _(Required; depends on Task 3)_
 
   Replace the entire template and script with a minimal pass-through layout:
   - Remove `<b-nav>` / `<b-nav-item>` sidebar
