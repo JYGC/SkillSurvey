@@ -158,7 +158,7 @@ Before starting any non-trivial feature, refactor, or bug fix, check `.ai/change
 
 ### Mandate
 
-**All tests run on the OpenBSD server — not on Windows.** Push changes, pull on the server, run tests there. (see `CLAUDE.local.md` for connection details).
+**All tests run on the OpenBSD server.** Push changes, pull on the server, run tests there. (see `CLAUDE.local.md` for connection details).
 
 **Unit tests must be written before the implementation code they cover.** Write the test, watch it fail, then write the minimum code to make it pass. Frontend unit tests are not required; Go unit tests are not required where an integration test covers the same behaviour.
 
@@ -224,17 +224,17 @@ After building, copy `dist/` contents to `pocketbaseserver/pb_public/` to deploy
 Server connection details, credentials, and ready-to-run SSH commands are in `CLAUDE.local.md` (gitignored — not committed).
 
 **Key facts (non-sensitive):**
-- `sshpass` is installed in Cygwin at `/c/cygwin64/bin/sshpass` — **not** on the Git Bash PATH; always use the full path alongside Cygwin's `ssh`/`sftp`.
-- PocketBase listens on a **different network interface** from the SSH host — both are on the same machine.
-- PocketBase is started manually (not via rc.d); `runtask.json` lives next to the runtask binary in `build/`.
-- SSL verification is disabled for `git push` on Windows (`git -c http.sslVerify=false push`).
+- Connect with the OpenSSH client using key auth: `ssh -i ~/.ssh/openbsd_key junying@192.168.8.145`.
+- The SSH address and the address services listen on differ, but both reach the same machine.
+- `runtask.json` lives next to the runtask binary in `build/`.
+- The **production** PocketBase runs as user `skillsurvey` from its own checkout. Deployment steps below act on the `junying` checkout only and must not stop, restart, or rebuild the production instance.
 
 ### Deployment steps
 
-1. Push from Windows: `git -c http.sslVerify=false push`
-2. On server: `git fetch --all && git checkout origin/<branch-name>`
+1. Push: `git push`
+2. On server: `git fetch --all && git checkout --detach origin/<branch-name>`
 3. On server: `cd <module>/ && make build` (repeat for each changed module)
-4. Restart pocketbaseserver if changed: `pkill pocketbaseserver`, then start with `nohup ... &` and capture the printed PID
+4. Do **not** `pkill pocketbaseserver` — that would target the production instance. Restarting production is a deliberate manual act performed as `skillsurvey`.
 
 ### Running tests on the server
 
