@@ -1,9 +1,7 @@
-// Declare app
 import { createApp } from 'vue';
 import App from './App.vue';
 const app = createApp(App);
 
-// Declare routes
 import { createRouter, createWebHistory } from 'vue-router';
 import PublicLayout from './layouts/PublicLayout.vue';
 import UserLayout from './layouts/UserLayout.vue';
@@ -63,9 +61,7 @@ const router = createRouter({
 });
 app.use(router);
 
-// Add Carbon
 import CarbonVue3 from '@carbon/vue';
 app.use(CarbonVue3);
 
-//app.use(store);
 app.mount('#app');

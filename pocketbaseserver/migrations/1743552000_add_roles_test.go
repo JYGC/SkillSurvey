@@ -243,81 +243,85 @@ func TestMigrationRoleCanPostToAllCollections(t *testing.T) {
 	assignRole(t, app, user.Id, "migration")
 	token := authToken(t, serverURL, user.GetString("email"), "testtest123")
 
-	// sites
-	status := apiPost(t, serverURL, token, "sites", map[string]any{
-		"name": "MigSite",
-		"url":  "https://mig.example.com",
+	var skillTypeID, skillNameID, siteID string
+
+	t.Run("sites", func(t *testing.T) {
+		status := apiPost(t, serverURL, token, "sites", map[string]any{
+			"name": "MigSite",
+			"url":  "https://mig.example.com",
+		})
+		if status != http.StatusOK {
+			t.Fatalf("expected 200 for sites POST with migration role, got %d", status)
+		}
+		siteRecs, err := app.FindRecordsByFilter("sites", "name='MigSite'", "", 1, 0)
+		if err != nil || len(siteRecs) == 0 {
+			t.Fatalf("expected to find MigSite record after POST: err=%v, count=%d", err, len(siteRecs))
+		}
+		siteID = siteRecs[0].Id
 	})
-	if status != http.StatusOK {
-		t.Fatalf("expected 200 for sites POST with migration role, got %d", status)
-	}
 
-	// skillTypes
-	status = apiPost(t, serverURL, token, "skillTypes", map[string]any{
-		"name":        "Programming",
-		"description": "Programming languages",
+	t.Run("skillTypes", func(t *testing.T) {
+		status := apiPost(t, serverURL, token, "skillTypes", map[string]any{
+			"name":        "Programming",
+			"description": "Programming languages",
+		})
+		if status != http.StatusOK {
+			t.Errorf("expected 200 for skillTypes POST with migration role, got %d", status)
+		}
+		stRecs, err := app.FindRecordsByFilter("skillTypes", "name='Programming'", "", 1, 0)
+		if err == nil && len(stRecs) > 0 {
+			skillTypeID = stRecs[0].Id
+		}
 	})
-	if status != http.StatusOK {
-		t.Errorf("expected 200 for skillTypes POST with migration role, got %d", status)
-	}
 
-	skillTypeID := ""
-	stRecs, err := app.FindRecordsByFilter("skillTypes", "name='Programming'", "", 1, 0)
-	if err == nil && len(stRecs) > 0 {
-		skillTypeID = stRecs[0].Id
-	}
-
-	// skillNames
-	status = apiPost(t, serverURL, token, "skillNames", map[string]any{
-		"name":      "Go",
-		"isEnabled": true,
-		"skillType": skillTypeID,
+	t.Run("skillNames", func(t *testing.T) {
+		status := apiPost(t, serverURL, token, "skillNames", map[string]any{
+			"name":      "Go",
+			"isEnabled": true,
+			"skillType": skillTypeID,
+		})
+		if status != http.StatusOK {
+			t.Errorf("expected 200 for skillNames POST with migration role, got %d", status)
+		}
+		snRecs, err := app.FindRecordsByFilter("skillNames", "name='Go'", "", 1, 0)
+		if err == nil && len(snRecs) > 0 {
+			skillNameID = snRecs[0].Id
+		}
 	})
-	if status != http.StatusOK {
-		t.Errorf("expected 200 for skillNames POST with migration role, got %d", status)
-	}
 
-	skillNameID := ""
-	snRecs, err := app.FindRecordsByFilter("skillNames", "name='Go'", "", 1, 0)
-	if err == nil && len(snRecs) > 0 {
-		skillNameID = snRecs[0].Id
-	}
-
-	// skillNameAliases
-	status = apiPost(t, serverURL, token, "skillNameAliases", map[string]any{
-		"skillName": skillNameID,
-		"alias":     "golang",
+	t.Run("skillNameAliases", func(t *testing.T) {
+		status := apiPost(t, serverURL, token, "skillNameAliases", map[string]any{
+			"skillName": skillNameID,
+			"alias":     "golang",
+		})
+		if status != http.StatusOK {
+			t.Errorf("expected 200 for skillNameAliases POST with migration role, got %d", status)
+		}
 	})
-	if status != http.StatusOK {
-		t.Errorf("expected 200 for skillNameAliases POST with migration role, got %d", status)
-	}
 
-	// jobPosts — need a site
-	siteRecs, siteErr := app.FindRecordsByFilter("sites", "name='MigSite'", "", 1, 0)
-	if siteErr != nil || len(siteRecs) == 0 {
-		t.Fatalf("expected to find MigSite record after POST: err=%v, count=%d", siteErr, len(siteRecs))
-	}
-	siteID := siteRecs[0].Id
-	status = apiPost(t, serverURL, token, "jobPosts", map[string]any{
-		"jobSiteNumber": "MIG-001",
-		"site":          siteID,
-		"content":       map[string]any{"title": "Dev", "body": "role body"},
-		"location":      map[string]any{"city": "Melbourne", "country": "AU", "suburb": "CBD"},
+	t.Run("jobPosts", func(t *testing.T) {
+		status := apiPost(t, serverURL, token, "jobPosts", map[string]any{
+			"jobSiteNumber": "MIG-001",
+			"site":          siteID,
+			"content":       map[string]any{"title": "Dev", "body": "role body"},
+			"location":      map[string]any{"city": "Melbourne", "country": "AU", "suburb": "CBD"},
+		})
+		if status != http.StatusOK {
+			t.Errorf("expected 200 for jobPosts POST with migration role, got %d", status)
+		}
 	})
-	if status != http.StatusOK {
-		t.Errorf("expected 200 for jobPosts POST with migration role, got %d", status)
-	}
 
-	// monthlyCountReports
-	status = apiPost(t, serverURL, token, "monthlyCountReports", map[string]any{
-		"identifier":    "mig_2024-01",
-		"YearMonth":     "2024-01",
-		"yearMonthDate": "2024-01-01 00:00:00",
-		"count":         10,
+	t.Run("monthlyCountReports", func(t *testing.T) {
+		status := apiPost(t, serverURL, token, "monthlyCountReports", map[string]any{
+			"identifier":    "mig_2024-01",
+			"YearMonth":     "2024-01",
+			"yearMonthDate": "2024-01-01 00:00:00",
+			"count":         10,
+		})
+		if status != http.StatusOK {
+			t.Errorf("expected 200 for monthlyCountReports POST with migration role, got %d", status)
+		}
 	})
-	if status != http.StatusOK {
-		t.Errorf("expected 200 for monthlyCountReports POST with migration role, got %d", status)
-	}
 }
 
 func TestMigrationRoleCannotWriteUsersUserRolesOrRoles(t *testing.T) {
@@ -327,33 +331,36 @@ func TestMigrationRoleCannotWriteUsersUserRolesOrRoles(t *testing.T) {
 	assignRole(t, app, user.Id, "migration")
 	token := authToken(t, serverURL, user.GetString("email"), "testtest123")
 
-	// Cannot POST to users
-	status := apiPost(t, serverURL, token, "users", map[string]any{
-		"email":           "new@example.com",
-		"password":        "testtest123",
-		"passwordConfirm": "testtest123",
+	t.Run("users", func(t *testing.T) {
+		status := apiPost(t, serverURL, token, "users", map[string]any{
+			"email":           "new@example.com",
+			"password":        "testtest123",
+			"passwordConfirm": "testtest123",
+		})
+		if status != http.StatusForbidden {
+			t.Errorf("expected 403 for users POST with migration role, got %d", status)
+		}
 	})
-	if status != http.StatusForbidden {
-		t.Errorf("expected 403 for users POST with migration role, got %d", status)
-	}
 
-	// Cannot POST to userRoles
-	status = apiPost(t, serverURL, token, "userRoles", map[string]any{
-		"user": user.Id,
-		"role": user.Id, // arbitrary; rule check fires before validation
+	t.Run("userRoles", func(t *testing.T) {
+		status := apiPost(t, serverURL, token, "userRoles", map[string]any{
+			"user": user.Id,
+			"role": user.Id, // arbitrary; rule check fires before validation
+		})
+		if status != http.StatusForbidden {
+			t.Errorf("expected 403 for userRoles POST with migration role, got %d", status)
+		}
 	})
-	if status != http.StatusForbidden {
-		t.Errorf("expected 403 for userRoles POST with migration role, got %d", status)
-	}
 
-	// Cannot POST to roles
-	status = apiPost(t, serverURL, token, "roles", map[string]any{
-		"name":        "hacker",
-		"description": "bad actor",
+	t.Run("roles", func(t *testing.T) {
+		status := apiPost(t, serverURL, token, "roles", map[string]any{
+			"name":        "hacker",
+			"description": "bad actor",
+		})
+		if status != http.StatusForbidden {
+			t.Errorf("expected 403 for roles POST with migration role, got %d", status)
+		}
 	})
-	if status != http.StatusForbidden {
-		t.Errorf("expected 403 for roles POST with migration role, got %d", status)
-	}
 }
 
 func TestDuplicateUserRoleIsRejected(t *testing.T) {

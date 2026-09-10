@@ -95,6 +95,7 @@ Before starting any non-trivial feature, refactor, or bug fix, check `docs/chang
 
 - Always read a file before editing it.
 - No speculative abstractions — only build what is needed now.
+- **Prefer descriptive naming over comments.** Names carry the explanation: a method, function, class, or variable should state what it is for without a comment alongside it. Where a comment would introduce a block of code, extract that block into a named function instead. Reserve comments for what a name cannot express — why a non-obvious approach was chosen, an external constraint or workaround, or a pointer to the spec or issue behind the code.
 - Apply the formatting, linting, and style-guide rules listed under Development rules in CLAUDE-project.md before committing.
 
 ## Testing

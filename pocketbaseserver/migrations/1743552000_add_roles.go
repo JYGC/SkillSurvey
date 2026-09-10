@@ -8,40 +8,32 @@ import (
 
 func init() {
 	m.Register(func(app core.App) error {
-		// Step 1: create roles collection.
 		if err := createRoles(app); err != nil {
 			return err
 		}
 
-		// Step 2: seed role records.
 		if err := seedRoles(app); err != nil {
 			return err
 		}
 
-		// Step 3: create userRoles collection.
 		if err := createUserRoles(app); err != nil {
 			return err
 		}
 
-		// Step 4: apply access rules to existing collections.
 		return applyCollectionRules(app)
 	}, func(app core.App) error {
-		// Down step 1: revert access rules on existing collections.
 		if err := revertCollectionRules(app); err != nil {
 			return err
 		}
 
-		// Down step 2: delete seed records from roles.
 		if err := deleteSeedRoles(app); err != nil {
 			return err
 		}
 
-		// Down step 3: delete userRoles collection.
 		if err := dropCollection(app, "userRoles"); err != nil {
 			return err
 		}
 
-		// Down step 4: delete roles collection.
 		return dropCollection(app, "roles")
 	})
 }
@@ -210,7 +202,10 @@ func applyCollectionRules(app core.App) error {
 		}
 	}
 
-	// Disable self-registration on the users collection (superadmin only).
+	return disableUserSelfRegistration(app)
+}
+
+func disableUserSelfRegistration(app core.App) error {
 	usersCol, err := app.FindCollectionByNameOrId("_pb_users_auth_")
 	if err != nil {
 		return err
@@ -247,7 +242,10 @@ func revertCollectionRules(app core.App) error {
 		}
 	}
 
-	// Restore users open registration.
+	return restoreUserSelfRegistration(app)
+}
+
+func restoreUserSelfRegistration(app core.App) error {
 	usersCol, err := app.FindCollectionByNameOrId("_pb_users_auth_")
 	if err != nil {
 		return err

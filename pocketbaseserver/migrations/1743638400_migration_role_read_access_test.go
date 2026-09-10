@@ -56,46 +56,97 @@ func listTotalItems(t *testing.T, serverURL, token, collection string) int {
 	return int(total)
 }
 
+// seedSite creates a sites record and returns it.
+func seedSite(t *testing.T, app core.App, name, url string) *core.Record {
+	t.Helper()
+	col, err := app.FindCollectionByNameOrId("sites")
+	if err != nil {
+		t.Fatalf("find sites collection: %v", err)
+	}
+	rec := core.NewRecord(col)
+	rec.Set("name", name)
+	rec.Set("url", url)
+	if err := app.Save(rec); err != nil {
+		t.Fatalf("save site: %v", err)
+	}
+	return rec
+}
+
+// seedSkillType creates a skillTypes record and returns it.
+func seedSkillType(t *testing.T, app core.App, name, description string) *core.Record {
+	t.Helper()
+	col, err := app.FindCollectionByNameOrId("skillTypes")
+	if err != nil {
+		t.Fatalf("find skillTypes collection: %v", err)
+	}
+	rec := core.NewRecord(col)
+	rec.Set("name", name)
+	rec.Set("description", description)
+	if err := app.Save(rec); err != nil {
+		t.Fatalf("save skillType: %v", err)
+	}
+	return rec
+}
+
+// seedSkillName creates an enabled skillNames record under skillTypeID and returns it.
+func seedSkillName(t *testing.T, app core.App, name, skillTypeID string) *core.Record {
+	t.Helper()
+	col, err := app.FindCollectionByNameOrId("skillNames")
+	if err != nil {
+		t.Fatalf("find skillNames collection: %v", err)
+	}
+	rec := core.NewRecord(col)
+	rec.Set("name", name)
+	rec.Set("isEnabled", true)
+	rec.Set("skillType", skillTypeID)
+	if err := app.Save(rec); err != nil {
+		t.Fatalf("save skillName: %v", err)
+	}
+	return rec
+}
+
+// seedSkillNameAlias creates a skillNameAliases record under skillNameID and returns it.
+func seedSkillNameAlias(t *testing.T, app core.App, skillNameID, alias string) *core.Record {
+	t.Helper()
+	col, err := app.FindCollectionByNameOrId("skillNameAliases")
+	if err != nil {
+		t.Fatalf("find skillNameAliases collection: %v", err)
+	}
+	rec := core.NewRecord(col)
+	rec.Set("skillName", skillNameID)
+	rec.Set("alias", alias)
+	if err := app.Save(rec); err != nil {
+		t.Fatalf("save skillNameAlias: %v", err)
+	}
+	return rec
+}
+
+// seedJobPost creates a jobPosts record under siteID with placeholder content/location and returns it.
+func seedJobPost(t *testing.T, app core.App, jobSiteNumber, siteID string) *core.Record {
+	t.Helper()
+	col, err := app.FindCollectionByNameOrId("jobPosts")
+	if err != nil {
+		t.Fatalf("find jobPosts collection: %v", err)
+	}
+	rec := core.NewRecord(col)
+	rec.Set("jobSiteNumber", jobSiteNumber)
+	rec.Set("site", siteID)
+	rec.Set("content", map[string]any{"title": "t", "body": "b"})
+	rec.Set("location", map[string]any{"city": "c", "country": "au", "suburb": "s"})
+	if err := app.Save(rec); err != nil {
+		t.Fatalf("save jobPost: %v", err)
+	}
+	return rec
+}
+
 func TestMigrationRoleCanListCollections(t *testing.T) {
 	app, serverURL := startTestServer(t)
 
-	// Seed a site (needed for jobPosts relation).
-	siteCol, _ := app.FindCollectionByNameOrId("sites")
-	site := core.NewRecord(siteCol)
-	site.Set("name", "ReadTestSite")
-	site.Set("url", "https://read.example.com")
-	app.Save(site)
-
-	// Seed a skillType.
-	stCol, _ := app.FindCollectionByNameOrId("skillTypes")
-	st := core.NewRecord(stCol)
-	st.Set("name", "Programming")
-	st.Set("description", "Programming languages")
-	app.Save(st)
-
-	// Seed a skillName.
-	snCol, _ := app.FindCollectionByNameOrId("skillNames")
-	sn := core.NewRecord(snCol)
-	sn.Set("name", "Go")
-	sn.Set("isEnabled", true)
-	sn.Set("skillType", st.Id)
-	app.Save(sn)
-
-	// Seed a skillNameAlias.
-	aliasCol, _ := app.FindCollectionByNameOrId("skillNameAliases")
-	alias := core.NewRecord(aliasCol)
-	alias.Set("skillName", sn.Id)
-	alias.Set("alias", "golang")
-	app.Save(alias)
-
-	// Seed a jobPost.
-	jpCol, _ := app.FindCollectionByNameOrId("jobPosts")
-	jp := core.NewRecord(jpCol)
-	jp.Set("jobSiteNumber", "READ-001")
-	jp.Set("site", site.Id)
-	jp.Set("content", map[string]any{"title": "t", "body": "b"})
-	jp.Set("location", map[string]any{"city": "c", "country": "au", "suburb": "s"})
-	app.Save(jp)
+	site := seedSite(t, app, "ReadTestSite", "https://read.example.com")
+	st := seedSkillType(t, app, "Programming", "Programming languages")
+	sn := seedSkillName(t, app, "Go", st.Id)
+	alias := seedSkillNameAlias(t, app, sn.Id, "golang")
+	jp := seedJobPost(t, app, "READ-001", site.Id)
 
 	user := createTestUser(t, app, "migration-reader@example.com", "testtest123")
 	assignRole(t, app, user.Id, "migration")
@@ -111,11 +162,11 @@ func TestMigrationRoleCanListCollections(t *testing.T) {
 
 	// Verify seeded records are visible.
 	for col, id := range map[string]string{
-		"sites":             site.Id,
-		"skillTypes":        st.Id,
-		"skillNames":        sn.Id,
-		"skillNameAliases":  alias.Id,
-		"jobPosts":          jp.Id,
+		"sites":            site.Id,
+		"skillTypes":       st.Id,
+		"skillNames":       sn.Id,
+		"skillNameAliases": alias.Id,
+		"jobPosts":         jp.Id,
 	} {
 		status := apiGetOne(t, serverURL, token, col, id)
 		if status != http.StatusOK {

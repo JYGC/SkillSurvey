@@ -24,16 +24,7 @@ func Run(_ config.Config, pb *pbclient.Client) error {
 		return fmt.Errorf("get job posts: %w", err)
 	}
 
-	// Build a map of yearMonth → jobPosts for efficient grouping.
-	postsByMonth := make(map[string][]pbclient.JobPost)
-	for _, jp := range jobPosts {
-		ym := jp.PostedDate.Format("2006-01")
-		if ym == "0001-01" {
-			// PostedDate was not parsed — skip.
-			continue
-		}
-		postsByMonth[ym] = append(postsByMonth[ym], jp)
-	}
+	postsByMonth := groupJobPostsByMonth(jobPosts)
 
 	for _, sn := range skillNames {
 		for yearMonth, posts := range postsByMonth {
@@ -68,8 +59,22 @@ func Run(_ config.Config, pb *pbclient.Client) error {
 	return nil
 }
 
-// bodyMatchesAnyAlias reports whether body contains the skill name or any of its aliases
-// using the 16 word-boundary patterns ported from backend/internal/database/jobposttablecall.go.
+// groupJobPostsByMonth buckets jobPosts by their PostedDate's year-month, skipping
+// posts whose PostedDate was not parsed (zero time formats as "0001-01").
+func groupJobPostsByMonth(jobPosts []pbclient.JobPost) map[string][]pbclient.JobPost {
+	postsByMonth := make(map[string][]pbclient.JobPost)
+	for _, jp := range jobPosts {
+		ym := jp.PostedDate.Format("2006-01")
+		if ym == "0001-01" {
+			continue
+		}
+		postsByMonth[ym] = append(postsByMonth[ym], jp)
+	}
+	return postsByMonth
+}
+
+// bodyMatchesAnyAlias reports whether body contains the skill name or any of its aliases,
+// matching on word boundaries via matchesTerm.
 func bodyMatchesAnyAlias(body, skillName string, aliases []string) bool {
 	terms := append([]string{skillName}, aliases...)
 	for _, term := range terms {

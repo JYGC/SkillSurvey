@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"keybook/runtask/internal/config"
 	"keybook/runtask/internal/exception"
@@ -68,6 +67,3 @@ func adapterForSite(siteName string, cfg config.Config) (siteadapters.ISiteAdapt
 		return nil, fmt.Errorf("no adapter configured for site %q", siteName)
 	}
 }
-
-// ensure time is used (postedDate field)
-var _ = time.Now
