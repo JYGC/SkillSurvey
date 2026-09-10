@@ -1,14 +1,6 @@
 <template>
-  <div class="row">
-    <div class="col-md-2 nav-div">
-      <b-nav vertical>
-        <b-nav-item to="/" active>Home</b-nav-item>
-        <b-nav-item to="/monthly-count-report">Monthly count report</b-nav-item>
-      </b-nav>
-    </div>
-    <div class="col-md-10">
-      <router-view />
-    </div>
+  <div class="public-layout">
+    <router-view />
   </div>
 </template>
 
@@ -20,6 +12,6 @@ const { isAuthenticated } = useAuth();
 const router = useRouter();
 
 if (isAuthenticated.value) {
-  router.push('/user/profile');
+  router.push('/user/monthly-count-report');
 }
 </script>

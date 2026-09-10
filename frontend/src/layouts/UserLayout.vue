@@ -1,14 +1,22 @@
 <template>
   <div>
-    <p v-if="isAuthenticated">
-      Logged in as: {{ currentUser?.email }}
-    </p>
-    <p v-else>
-      Failure to get authenticate user.
-    </p>
-    <CvButton data-testid="logout-btn" @click="onLogout()">Logout</CvButton>
-    <CvButton @click="onSettingsClick()">Settings</CvButton>
+  <CvHeader aria-label="SkillSurvey">
+    <CvHeaderName prefix="">SkillSurvey</CvHeaderName>
+    <template #header-global>
+      <span v-if="isAuthenticated" class="bx--header__name">{{ currentUser?.email }}</span>
+      <span v-else class="bx--header__name">Authentication error.</span>
+      <CvButton kind="ghost" data-testid="logout-btn" @click="onLogout">Logout</CvButton>
+    </template>
+  </CvHeader>
+  <CvSideNav :fixed="true">
+    <CvSideNavItems>
+      <CvSideNavLink :to="{ name: 'user-monthly-count-report' }">Monthly count report</CvSideNavLink>
+      <CvSideNavLink :to="{ name: 'user-settings' }">Settings</CvSideNavLink>
+    </CvSideNavItems>
+  </CvSideNav>
+  <CvContent>
     <router-view />
+  </CvContent>
   </div>
 </template>
 
@@ -26,9 +34,5 @@ if (!isAuthenticated.value) {
 const onLogout = () => {
   logout();
   router.push('/');
-};
-
-const onSettingsClick = () => {
-  router.push('/user/settings');
 };
 </script>

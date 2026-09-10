@@ -11,7 +11,6 @@ import (
 )
 
 // CleanFS removes Chromium temporary directories under baseDir (pass "/tmp" in production).
-// The glob patterns mirror those used in backend/cmd/housekeeping/main.go.
 func CleanFS(baseDir string) error {
 	patterns := []string{
 		// with leading dot (Linux)

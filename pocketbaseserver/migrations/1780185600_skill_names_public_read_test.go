@@ -40,7 +40,7 @@ func TestSkillNamesPublicRead(t *testing.T) {
 	}
 }
 
-func TestMonthlyCountReportExpandSkillNameUnauthenticated(t *testing.T) {
+func TestMonthlyCountReportExpandSkillName(t *testing.T) {
 	app, serverURL := startTestServer(t)
 
 	// Seed skill type, skill name, and a monthly count report.
@@ -66,9 +66,14 @@ func TestMonthlyCountReportExpandSkillNameUnauthenticated(t *testing.T) {
 	mcr.Set("skillName", sn.Id)
 	app.Save(mcr)
 
-	// Unauthenticated GET with expand=skillName must include skill name in response.
+	// monthlyCountReports requires authentication — create a user and get a token.
+	user := createTestUser(t, app, "expand-reader@example.com", "testtest123")
+	token := authToken(t, serverURL, user.GetString("email"), "testtest123")
+
 	url := fmt.Sprintf("%s/api/collections/monthlyCountReports/records?expand=skillName", serverURL)
-	resp, err := http.Get(url)
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatalf("GET monthlyCountReports: %v", err)
 	}

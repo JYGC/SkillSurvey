@@ -120,7 +120,18 @@ func (c *Client) GetEnabledSkillNamesWithAliases() ([]SkillNameWithAliases, erro
 		return nil, fmt.Errorf("list skillNames: %w", err)
 	}
 
-	// Build ID→SkillNameWithAliases map.
+	aliasItems, err := getFullList(c.pb, "skillNameAliases", pocketbase.ParamsList{})
+	if err != nil {
+		return nil, fmt.Errorf("list skillNameAliases: %w", err)
+	}
+
+	return joinSkillNamesWithAliases(snItems, aliasItems), nil
+}
+
+// joinSkillNamesWithAliases pairs each skillNames record with its matching skillNameAliases
+// records. snItems' capacity must not be exceeded during construction — result is pre-sized
+// to len(snItems) so appending never reallocates, keeping the byId pointers valid.
+func joinSkillNamesWithAliases(snItems, aliasItems []map[string]any) []SkillNameWithAliases {
 	byId := make(map[string]*SkillNameWithAliases, len(snItems))
 	result := make([]SkillNameWithAliases, 0, len(snItems))
 	for _, item := range snItems {
@@ -132,11 +143,6 @@ func (c *Client) GetEnabledSkillNamesWithAliases() ([]SkillNameWithAliases, erro
 		byId[sn.Id] = &result[len(result)-1]
 	}
 
-	// Fetch all aliases and join.
-	aliasItems, err := getFullList(c.pb, "skillNameAliases", pocketbase.ParamsList{})
-	if err != nil {
-		return nil, fmt.Errorf("list skillNameAliases: %w", err)
-	}
 	for _, item := range aliasItems {
 		snId := str(item, "skillName")
 		if sn, ok := byId[snId]; ok {
@@ -144,7 +150,7 @@ func (c *Client) GetEnabledSkillNamesWithAliases() ([]SkillNameWithAliases, erro
 		}
 	}
 
-	return result, nil
+	return result
 }
 
 // GetAllJobPosts returns jobPost records posted on or after since, with content
@@ -166,22 +172,10 @@ func (c *Client) GetAllJobPosts(since time.Time) ([]JobPost, error) {
 			JobSiteNumber: str(item, "jobSiteNumber"),
 			SiteId:        str(item, "site"),
 		}
-		// Unmarshal nested JSON content/location.
-		if raw, err := json.Marshal(item["content"]); err == nil {
-			_ = json.Unmarshal(raw, &jp.Content)
-		}
-		if raw, err := json.Marshal(item["location"]); err == nil {
-			_ = json.Unmarshal(raw, &jp.Location)
-		}
-		// Parse postedDate. PocketBase returns "2006-01-02 15:04:05.000Z"; normalise
-		// the space separator to T so standard RFC3339 parsers handle it.
-		if s := str(item, "postedDate"); s != "" {
-			s = strings.Replace(s, " ", "T", 1)
-			if t, err := time.Parse(time.RFC3339Nano, s); err == nil {
-				jp.PostedDate = t
-			} else if t, err := time.Parse(time.RFC3339, s); err == nil {
-				jp.PostedDate = t
-			}
+		decodeJSONField(item["content"], &jp.Content)
+		decodeJSONField(item["location"], &jp.Location)
+		if t, ok := parsePocketBaseDate(str(item, "postedDate")); ok {
+			jp.PostedDate = t
 		}
 		posts = append(posts, jp)
 	}
@@ -234,6 +228,31 @@ func getFullList(pb *pocketbase.Client, collection string, params pocketbase.Par
 		}
 	}
 	return all, nil
+}
+
+// decodeJSONField re-decodes a generic JSON value (as produced by decoding a record into
+// map[string]any) into a typed destination via a marshal/unmarshal round trip.
+func decodeJSONField(value any, dst any) {
+	if raw, err := json.Marshal(value); err == nil {
+		_ = json.Unmarshal(raw, dst)
+	}
+}
+
+// parsePocketBaseDate parses PocketBase's date format ("2006-01-02 15:04:05.000Z"),
+// normalising the space separator to T so standard RFC3339 parsers accept it. It reports
+// false for an empty or unparseable input.
+func parsePocketBaseDate(s string) (time.Time, bool) {
+	if s == "" {
+		return time.Time{}, false
+	}
+	s = strings.Replace(s, " ", "T", 1)
+	if t, err := time.Parse(time.RFC3339Nano, s); err == nil {
+		return t, true
+	}
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
+		return t, true
+	}
+	return time.Time{}, false
 }
 
 // str extracts a string field from a record map, returning "" if absent or wrong type.

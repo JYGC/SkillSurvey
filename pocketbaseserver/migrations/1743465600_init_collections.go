@@ -8,40 +8,35 @@ import (
 
 func init() {
 	m.Register(func(app core.App) error {
-		// Collections are created in dependency order so relation fields resolve correctly.
+		// Collections are created in dependency order so relation fields resolve correctly:
+		// sites and skillTypes have no dependencies; skillNames -> skillTypes;
+		// skillNameAliases -> skillNames; jobPosts -> sites; monthlyCountReports -> skillNames;
+		// userSettings -> users.
 		// Note: "users" is already created by PocketBase's own system migration — do not recreate it.
-
-		// 1. sites (no dependencies)
 		if err := createSites(app); err != nil {
 			return err
 		}
 
-		// 2. skillTypes (no dependencies)
 		if err := createSkillTypes(app); err != nil {
 			return err
 		}
 
-		// 3. skillNames (-> skillTypes)
 		if err := createSkillNames(app); err != nil {
 			return err
 		}
 
-		// 4. skillNameAliases (-> skillNames)
 		if err := createSkillNameAliases(app); err != nil {
 			return err
 		}
 
-		// 5. jobPosts (-> sites)
 		if err := createJobPosts(app); err != nil {
 			return err
 		}
 
-		// 6. monthlyCountReports (-> skillNames)
 		if err := createMonthlyCountReports(app); err != nil {
 			return err
 		}
 
-		// 7. userSettings (-> users)
 		if err := createUserSettings(app); err != nil {
 			return err
 		}

@@ -13,49 +13,6 @@
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-.nav > .association * {
-  background-color: rgb(131, 180, 221);
-  color: white;
-}
-
-.nav > .association:nth-child(even) * {
-  background-color: steelblue;
-  color: white;
-}
-
-.nav > .new-association * {
-  background-color: rgb(70, 176, 180);
-  color: white;
-}
-
-.nav > .association:hover *, .nav > .new-association:hover * {
-  background-color: rgb(180, 207, 230);
-  color: #0d6efd;
-}
-
-.margin-left-10 {
-  margin-left: 10px;
-}
-
-.nav-div {
-  padding-top: 60px;
-  padding-right: 0px;
-}
-
-.nav-div, .nav-div .dropdown-menu {
-  background-color: darkslateblue;
-}
-
-.nav-div .nav-item:not(.expand) a:hover, .btn:hover {
-  background-color: lightslategray;
-}
-
-.nav-div .nav-item:not(.expand) a.router-link-exact-active {
-  background-color: slateblue;
 }
 
 .fill-parent {
@@ -63,51 +20,10 @@
   height: 100%;
 }
 
-.expand button:not(.collapsed) {
-  font-weight: bold;
+.vertical-padding {
+    margin: 10px 0 10px 0;
 }
 
-.btn {
-    border: hidden;
-    border-radius: 0;
-    text-decoration-line: none;
-    background-color: darkslateblue;
-}
-
-.btn-danger {
-  background-color: red;
-}
-
-.expand .nav-link {
-  padding: 0;
-}
-
-.expand .nav-link:hover {
-  background-color: rgb(83, 93, 104);
-}
-
-.nav-div .nav-item.expand button {
-  background-color: transparent;
-  border: hidden;
-  border-radius: 0;
-}
-
-.nav-div .nav-item.expand button:focus, .btn:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-.nav-div .nav-item:not(.expand) a, .nav-div .nav-item button {
-  color: white;
-  padding: 20px 0px 20px 0px;
-}
-
-#app > .row {
-  height: 100vh;
-  width: 100vw;
-}
-
-/* Affects SkillTypeList needs to be in common file */
 tbody {
     display: block;
     height: calc( 100vh - 100px );
@@ -116,7 +32,7 @@ tbody {
 thead, tbody tr {
     display: table;
     width: 100%;
-    table-layout: fixed;/* even columns width , fix width of table too*/
+    table-layout: fixed;
 }
 table {
     width: 100%;
@@ -130,9 +46,5 @@ thead tr {
 
 table tbody tr:nth-child(even) {
     background-color: rgb(239, 240, 248);
-}
-
-.vertical-padding {
-    margin: 10px 0 10px 0;
 }
 </style>
