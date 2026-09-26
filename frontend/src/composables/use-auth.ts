@@ -1,17 +1,21 @@
 import { computed } from 'vue';
-import { authRepository } from '@/repositories/auth.repository';
+import { authService } from '@/services/auth.service';
 
 export function useAuth() {
-  const isAuthenticated = computed(() => authRepository.isAuthenticated);
-  const currentUser = computed(() => authRepository.currentUser);
+  const isAuthenticated = computed(() => authService.isAuthenticated);
+  const currentUser = computed(() => authService.currentUser);
 
   async function login(email: string, password: string) {
-    return authRepository.login(email, password);
+    return authService.login(email, password);
+  }
+
+  async function register(name: string, email: string, password: string, passwordConfirm: string) {
+    return authService.register(name, email, password, passwordConfirm);
   }
 
   function logout() {
-    authRepository.logout();
+    authService.logout();
   }
 
-  return { isAuthenticated, currentUser, login, logout };
+  return { isAuthenticated, currentUser, login, register, logout };
 }

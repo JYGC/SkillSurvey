@@ -18,9 +18,10 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { authRepository } from '@/repositories/auth.repository';
+import { useAuth } from '@/composables/use-auth';
 
 const router = useRouter();
+const { register } = useAuth();
 
 const name = ref('');
 const email = ref('');
@@ -35,7 +36,7 @@ const onSubmit = async () => {
     return;
   }
   try {
-    await authRepository.register(name.value, email.value, password.value, confirmPassword.value);
+    await register(name.value, email.value, password.value, confirmPassword.value);
     router.push('/');
   } catch (error) {
     registerError.value = error instanceof Error ? error.message : String(error);
