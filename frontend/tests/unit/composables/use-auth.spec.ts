@@ -1,64 +1,73 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const mockAuthRepository = vi.hoisted(() => ({
+const mockAuthService = vi.hoisted(() => ({
   isAuthenticated: false,
   currentUser: null as { id: string; email: string } | null,
   login: vi.fn(),
+  register: vi.fn(),
   logout: vi.fn(),
 }));
 
-vi.mock('@/repositories/auth.repository', () => ({
-  authRepository: mockAuthRepository,
+vi.mock('@/services/auth.service', () => ({
+  authService: mockAuthService,
 }));
 
 describe('useAuth', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockAuthRepository.isAuthenticated = false;
-    mockAuthRepository.currentUser = null;
+    mockAuthService.isAuthenticated = false;
+    mockAuthService.currentUser = null;
   });
 
-  it('isAuthenticated mirrors authRepository.isAuthenticated when false', async () => {
-    mockAuthRepository.isAuthenticated = false;
+  it('isAuthenticated mirrors authService.isAuthenticated when false', async () => {
+    mockAuthService.isAuthenticated = false;
     const { useAuth } = await import('@/composables/use-auth');
     const { isAuthenticated } = useAuth();
     expect(isAuthenticated.value).toBe(false);
   });
 
-  it('isAuthenticated mirrors authRepository.isAuthenticated when true', async () => {
-    mockAuthRepository.isAuthenticated = true;
+  it('isAuthenticated mirrors authService.isAuthenticated when true', async () => {
+    mockAuthService.isAuthenticated = true;
     const { useAuth } = await import('@/composables/use-auth');
     const { isAuthenticated } = useAuth();
     expect(isAuthenticated.value).toBe(true);
   });
 
-  it('currentUser mirrors authRepository.currentUser', async () => {
+  it('currentUser mirrors authService.currentUser', async () => {
     const user = { id: 'user1', email: 'user@example.com' };
-    mockAuthRepository.currentUser = user;
+    mockAuthService.currentUser = user;
     const { useAuth } = await import('@/composables/use-auth');
     const { currentUser } = useAuth();
     expect(currentUser.value).toBe(user);
   });
 
-  it('login delegates to authRepository.login', async () => {
-    mockAuthRepository.login.mockResolvedValue({ token: 'tok' });
+  it('login delegates to authService.login', async () => {
+    mockAuthService.login.mockResolvedValue({ token: 'tok' });
     const { useAuth } = await import('@/composables/use-auth');
     const { login } = useAuth();
     await login('a@b.com', 'pass');
-    expect(mockAuthRepository.login).toHaveBeenCalledWith('a@b.com', 'pass');
+    expect(mockAuthService.login).toHaveBeenCalledWith('a@b.com', 'pass');
   });
 
-  it('login propagates rejection from authRepository.login', async () => {
-    mockAuthRepository.login.mockRejectedValue(new Error('bad credentials'));
+  it('login propagates rejection from authService.login', async () => {
+    mockAuthService.login.mockRejectedValue(new Error('bad credentials'));
     const { useAuth } = await import('@/composables/use-auth');
     const { login } = useAuth();
     await expect(login('a@b.com', 'wrong')).rejects.toThrow('bad credentials');
   });
 
-  it('logout delegates to authRepository.logout', async () => {
+  it('register delegates to authService.register', async () => {
+    mockAuthService.register.mockResolvedValue({ id: 'user1' });
+    const { useAuth } = await import('@/composables/use-auth');
+    const { register } = useAuth();
+    await register('Test', 'a@b.com', 'pass', 'pass');
+    expect(mockAuthService.register).toHaveBeenCalledWith('Test', 'a@b.com', 'pass', 'pass');
+  });
+
+  it('logout delegates to authService.logout', async () => {
     const { useAuth } = await import('@/composables/use-auth');
     const { logout } = useAuth();
     logout();
-    expect(mockAuthRepository.logout).toHaveBeenCalledOnce();
+    expect(mockAuthService.logout).toHaveBeenCalledOnce();
   });
 });

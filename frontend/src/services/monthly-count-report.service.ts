@@ -1,4 +1,5 @@
 import type { MonthlyCountRecord } from '@/schemas/monthly-count-report';
+import { monthlyCountReportRepository } from '@/repositories/monthly-count-report.repository';
 
 export interface CarbonChartDataPoint {
   group: string;
@@ -27,4 +28,10 @@ export function buildChartDatasets(
       value: counts[month] ?? 0,
     }))
   );
+}
+
+export async function loadRecentMonthlyCountChartData(): Promise<CarbonChartDataPoint[]> {
+  const records = await monthlyCountReportRepository.getAll();
+  const months = getRecentMonths(records);
+  return buildChartDatasets(records, months);
 }

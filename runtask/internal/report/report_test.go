@@ -14,10 +14,10 @@ import (
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	pocketbaseclient "github.com/r--w/pocketbase"
 
+	_ "keybook/pocketbaseserver/migrations"
 	"keybook/runtask/internal/config"
 	"keybook/runtask/internal/pbclient"
 	"keybook/runtask/internal/report"
-	_ "keybook/pocketbaseserver/migrations"
 )
 
 func startTestPocketBase(t *testing.T) (core.App, string) {
@@ -74,8 +74,7 @@ func startTestPocketBase(t *testing.T) (core.App, string) {
 	return app, serverURL
 }
 
-// createReportingAccount creates a user with both webscraper and reporting roles.
-func createReportingAccount(t *testing.T, app core.App) (email, password string) {
+func createAccountWithWebscraperAndReportingRoles(t *testing.T, app core.App) (email, password string) {
 	t.Helper()
 	email = "reporting-svc@example.com"
 	password = "testtest123"
@@ -101,7 +100,6 @@ func createReportingAccount(t *testing.T, app core.App) (email, password string)
 	return email, password
 }
 
-// seedSkillData creates a skillType, skillName, and alias; returns their PocketBase IDs.
 func seedSkillData(t *testing.T, app core.App) (skillTypeID, skillNameID string) {
 	t.Helper()
 
@@ -129,7 +127,6 @@ func seedSkillData(t *testing.T, app core.App) (skillTypeID, skillNameID string)
 	return skillTypeID, skillNameID
 }
 
-// seedJobPost creates a jobPost with a body that mentions an alias.
 func seedJobPost(t *testing.T, app core.App, siteID, jobSiteNumber, body string, postedDate time.Time) {
 	t.Helper()
 	col, _ := app.FindCollectionByNameOrId("jobPosts")
@@ -146,7 +143,7 @@ func seedJobPost(t *testing.T, app core.App, siteID, jobSiteNumber, body string,
 
 func TestReportRunExcludesOldJobPosts(t *testing.T) {
 	pbApp, pbURL := startTestPocketBase(t)
-	email, password := createReportingAccount(t, pbApp)
+	email, password := createAccountWithWebscraperAndReportingRoles(t, pbApp)
 
 	siteCol, _ := pbApp.FindCollectionByNameOrId("sites")
 	site := core.NewRecord(siteCol)
@@ -184,9 +181,8 @@ func TestReportRunExcludesOldJobPosts(t *testing.T) {
 
 func TestReportRunCreatesMonthlyCountReports(t *testing.T) {
 	pbApp, pbURL := startTestPocketBase(t)
-	email, password := createReportingAccount(t, pbApp)
+	email, password := createAccountWithWebscraperAndReportingRoles(t, pbApp)
 
-	// Seed a site.
 	siteCol, _ := pbApp.FindCollectionByNameOrId("sites")
 	site := core.NewRecord(siteCol)
 	site.Set("name", "TestSite")
@@ -195,8 +191,8 @@ func TestReportRunCreatesMonthlyCountReports(t *testing.T) {
 
 	_, skillNameID := seedSkillData(t, pbApp)
 
-	// Seed a job post whose body contains " golang " (word-boundary match).
-	// Use a date within the 13-month window so the report filter includes it.
+	// Body wraps "golang" in spaces to exercise word-boundary matching; date is within
+	// the 13-month window so the report filter includes it.
 	seedJobPost(t, pbApp, site.Id, "JP-R-001", "We need a golang developer for our team.", time.Now().AddDate(0, -1, 0))
 
 	pb, err := pbclient.New(pbURL, email, password)

@@ -57,13 +57,7 @@ func ensureRuntaskUserRole(app core.App, userID, roleName string) error {
 		return fmt.Errorf("find role %q: %w", roleName, err)
 	}
 
-	// Skip if already linked.
-	existing, err := app.FindRecordsByFilter(
-		"userRoles",
-		"user='"+userID+"' && role='"+role.Id+"'",
-		"", 1, 0,
-	)
-	if err == nil && len(existing) > 0 {
+	if userAlreadyHasRole(app, userID, role.Id) {
 		return nil
 	}
 
@@ -75,6 +69,15 @@ func ensureRuntaskUserRole(app core.App, userID, roleName string) error {
 	ur.Set("user", userID)
 	ur.Set("role", role.Id)
 	return app.Save(ur)
+}
+
+func userAlreadyHasRole(app core.App, userID, roleID string) bool {
+	existing, err := app.FindRecordsByFilter(
+		"userRoles",
+		"user='"+userID+"' && role='"+roleID+"'",
+		"", 1, 0,
+	)
+	return err == nil && len(existing) > 0
 }
 
 func runtaskRandomPassword(n int) (string, error) {

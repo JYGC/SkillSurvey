@@ -94,7 +94,7 @@ func (c *Client) UpsertJobPost(post JobPost) error {
 		return fmt.Errorf("list jobPosts: %w", err)
 	}
 	if existing.TotalItems > 0 {
-		return nil // already exists — skip
+		return nil
 	}
 
 	contentJSON, _ := json.Marshal(post.Content)

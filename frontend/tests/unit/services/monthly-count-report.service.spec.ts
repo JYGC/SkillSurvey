@@ -1,6 +1,17 @@
-import { describe, it, expect } from 'vitest';
-import { getRecentMonths, buildChartDatasets } from '@/services/monthly-count-report.service';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { MonthlyCountRecord } from '@/schemas/monthly-count-report';
+
+const mockMonthlyCountReportRepository = vi.hoisted(() => ({
+  getAll: vi.fn(),
+}));
+
+vi.mock('@/repositories/monthly-count-report.repository', () => ({
+  monthlyCountReportRepository: mockMonthlyCountReportRepository,
+}));
+
+const { getRecentMonths, buildChartDatasets, loadRecentMonthlyCountChartData } = await import(
+  '@/services/monthly-count-report.service'
+);
 
 const rec = (ym: string, skill: string, count: number): MonthlyCountRecord => ({
   id: '1',
@@ -86,5 +97,27 @@ describe('buildChartDatasets', () => {
     ];
     const points = buildChartDatasets(records, ['2024-10']);
     expect(points[0].group).toBe('Unknown');
+  });
+});
+
+describe('loadRecentMonthlyCountChartData', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('fetches records from the repository and builds chart data points', async () => {
+    mockMonthlyCountReportRepository.getAll.mockResolvedValue([
+      rec('2024-10', 'TypeScript', 5),
+      rec('2024-11', 'TypeScript', 8),
+    ]);
+    const points = await loadRecentMonthlyCountChartData();
+    expect(mockMonthlyCountReportRepository.getAll).toHaveBeenCalledOnce();
+    expect(points).toHaveLength(2);
+    expect(points.find(p => p.date === '2024-10')?.value).toBe(5);
+  });
+
+  it('propagates rejection from the repository', async () => {
+    mockMonthlyCountReportRepository.getAll.mockRejectedValue(new Error('network error'));
+    await expect(loadRecentMonthlyCountChartData()).rejects.toThrow('network error');
   });
 });

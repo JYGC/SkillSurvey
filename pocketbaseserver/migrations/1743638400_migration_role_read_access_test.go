@@ -56,7 +56,6 @@ func listTotalItems(t *testing.T, serverURL, token, collection string) int {
 	return int(total)
 }
 
-// seedSite creates a sites record and returns it.
 func seedSite(t *testing.T, app core.App, name, url string) *core.Record {
 	t.Helper()
 	col, err := app.FindCollectionByNameOrId("sites")
@@ -72,7 +71,6 @@ func seedSite(t *testing.T, app core.App, name, url string) *core.Record {
 	return rec
 }
 
-// seedSkillType creates a skillTypes record and returns it.
 func seedSkillType(t *testing.T, app core.App, name, description string) *core.Record {
 	t.Helper()
 	col, err := app.FindCollectionByNameOrId("skillTypes")

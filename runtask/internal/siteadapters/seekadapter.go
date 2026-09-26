@@ -198,7 +198,6 @@ func structToQueryString(params any) (string, error) {
 	return result, nil
 }
 
-// loadJSON decodes a JSON file at path into dst.
 func loadJSON(path string, dst any) error {
 	f, err := os.Open(path)
 	if err != nil {

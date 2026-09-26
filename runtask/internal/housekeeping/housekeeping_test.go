@@ -17,30 +17,41 @@ import (
 func TestCleanFSRemovesChromiumTempDirs(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	// Create directories matching the Chromium temp patterns.
 	chromiumDir := filepath.Join(tmpDir, ".org.chromium.Chromium.abcdef")
 	chromedpDir := filepath.Join(tmpDir, "chromedp-runner123")
 	unrelatedDir := filepath.Join(tmpDir, "unrelated-dir")
-
-	for _, d := range []string{chromiumDir, chromedpDir, unrelatedDir} {
-		if err := os.Mkdir(d, 0755); err != nil {
-			t.Fatalf("mkdir %s: %v", d, err)
-		}
-	}
+	makeTestDirs(t, chromiumDir, chromedpDir, unrelatedDir)
 
 	if err := housekeeping.CleanFS(tmpDir); err != nil {
 		t.Fatalf("CleanFS: %v", err)
 	}
 
-	// Chromium dirs must be gone.
-	for _, d := range []string{chromiumDir, chromedpDir} {
-		if _, err := os.Stat(d); !os.IsNotExist(err) {
-			t.Errorf("expected %s to be removed, still exists", d)
+	assertPathsRemoved(t, chromiumDir, chromedpDir)
+	assertPathExists(t, unrelatedDir)
+}
+
+func makeTestDirs(t *testing.T, paths ...string) {
+	t.Helper()
+	for _, p := range paths {
+		if err := os.Mkdir(p, 0755); err != nil {
+			t.Fatalf("mkdir %s: %v", p, err)
 		}
 	}
-	// Unrelated dir must still exist.
-	if _, err := os.Stat(unrelatedDir); os.IsNotExist(err) {
-		t.Error("unrelated-dir was incorrectly removed by CleanFS")
+}
+
+func assertPathsRemoved(t *testing.T, paths ...string) {
+	t.Helper()
+	for _, p := range paths {
+		if _, err := os.Stat(p); !os.IsNotExist(err) {
+			t.Errorf("expected %s to be removed, still exists", p)
+		}
+	}
+}
+
+func assertPathExists(t *testing.T, path string) {
+	t.Helper()
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		t.Errorf("expected %s to still exist, but it was removed", path)
 	}
 }
 
@@ -144,7 +155,12 @@ func TestSendLogEmailsContentsAndTruncates(t *testing.T) {
 		t.Fatalf("SendLog: %v", err)
 	}
 
-	// Verify email received with log content.
+	assertEmailReceivedContainsLogContent(t, received, logContent)
+	assertFileIsEmpty(t, logFile)
+}
+
+func assertEmailReceivedContainsLogContent(t *testing.T, received <-chan string, logContent string) {
+	t.Helper()
 	select {
 	case msg := <-received:
 		if !strings.Contains(msg, logContent) {
@@ -153,13 +169,15 @@ func TestSendLogEmailsContentsAndTruncates(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		t.Error("SMTP stub did not receive a message within 3s")
 	}
+}
 
-	// Verify error.log is now zero bytes.
-	fi, err := os.Stat(logFile)
+func assertFileIsEmpty(t *testing.T, path string) {
+	t.Helper()
+	fi, err := os.Stat(path)
 	if err != nil {
-		t.Fatalf("stat error.log: %v", err)
+		t.Fatalf("stat %s: %v", path, err)
 	}
 	if fi.Size() != 0 {
-		t.Errorf("expected error.log size=0 after SendLog, got %d", fi.Size())
+		t.Errorf("expected %s size=0, got %d", path, fi.Size())
 	}
 }

@@ -1,34 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { MonthlyCountRecord } from '@/schemas/monthly-count-report';
 
-const mockRepository = vi.hoisted(() => ({
-  getAll: vi.fn(),
+const mockLoadRecentMonthlyCountChartData = vi.hoisted(() => vi.fn());
+
+vi.mock('@/services/monthly-count-report.service', () => ({
+  loadRecentMonthlyCountChartData: mockLoadRecentMonthlyCountChartData,
 }));
 
-const mockService = vi.hoisted(() => ({
-  getRecentMonths: vi.fn(),
-  buildChartDatasets: vi.fn(),
-}));
-
-vi.mock('@/repositories/monthly-count-report.repository', () => ({
-  monthlyCountReportRepository: mockRepository,
-}));
-
-vi.mock('@/services/monthly-count-report.service', () => mockService);
-
-const seedRecords: MonthlyCountRecord[] = [
-  { id: '1', YearMonth: '2024-01', yearMonthDate: '2024-01-01', count: 5, skillName: 's1', expand: { skillName: { name: 'TypeScript' } } },
-];
-const seedMonths = ['2024-01'];
 const seedDataPoints = [{ group: 'TypeScript', date: '2024-01', value: 5 }];
 
 describe('useMonthlyCountReport', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.resetModules();
-    mockRepository.getAll.mockResolvedValue(seedRecords);
-    mockService.getRecentMonths.mockReturnValue(seedMonths);
-    mockService.buildChartDatasets.mockReturnValue(seedDataPoints);
+    mockLoadRecentMonthlyCountChartData.mockResolvedValue(seedDataPoints);
   });
 
   it('populates chartData with data points after successful load', async () => {
@@ -40,8 +24,8 @@ describe('useMonthlyCountReport', () => {
     expect(error.value).toBeNull();
   });
 
-  it('sets error and leaves chartData empty when repository rejects', async () => {
-    mockRepository.getAll.mockRejectedValue(new Error('network error'));
+  it('sets error and leaves chartData empty when the service rejects', async () => {
+    mockLoadRecentMonthlyCountChartData.mockRejectedValue(new Error('network error'));
     const { useMonthlyCountReport } = await import('@/composables/use-monthly-count-report');
     const { chartData, error, load } = useMonthlyCountReport();
     await load();

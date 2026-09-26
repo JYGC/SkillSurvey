@@ -1,7 +1,6 @@
 import { ref } from 'vue';
 import type { CarbonChartDataPoint } from '@/services/monthly-count-report.service';
-import { monthlyCountReportRepository } from '@/repositories/monthly-count-report.repository';
-import { getRecentMonths, buildChartDatasets } from '@/services/monthly-count-report.service';
+import { loadRecentMonthlyCountChartData } from '@/services/monthly-count-report.service';
 
 export function useMonthlyCountReport() {
   const chartData = ref<CarbonChartDataPoint[]>([]);
@@ -16,9 +15,7 @@ export function useMonthlyCountReport() {
 
   async function load() {
     try {
-      const records = await monthlyCountReportRepository.getAll();
-      const months = getRecentMonths(records);
-      chartData.value = buildChartDatasets(records, months);
+      chartData.value = await loadRecentMonthlyCountChartData();
       error.value = null;
     } catch (e) {
       error.value = e instanceof Error ? e : new Error(String(e));
