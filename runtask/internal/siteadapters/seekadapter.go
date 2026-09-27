@@ -22,12 +22,12 @@ type SeekAdapter struct {
 }
 
 // NewSeekAdapter loads adapter configuration from the provided JSON file path.
-func NewSeekAdapter(configFilePath string) (*SeekAdapter, error) {
+func NewSeekAdapter(configFilePath string, dynamicContentExtractionTimeout time.Duration) (*SeekAdapter, error) {
 	seek := new(SeekAdapter)
 	if err := loadJSON(configFilePath, &seek.configSettings); err != nil {
 		return nil, fmt.Errorf("load seek config %s: %w", configFilePath, err)
 	}
-	seek.dynamicContentExtractor = dynamiccontentextractor.NewDynamicContentExtractor()
+	seek.dynamicContentExtractor = dynamiccontentextractor.NewDynamicContentExtractor(dynamicContentExtractionTimeout)
 	return seek, nil
 }
 
