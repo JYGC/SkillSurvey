@@ -16,9 +16,15 @@ failure**. That is the expected outcome — do not soften a test to fit the curr
 | 5 | [x] | Thread the duration from scrape to the chromedp context | Required | 1, 4 |
 | 6 | [x] | Regression run on the OpenBSD server | Required | 5 |
 | 7 | [x] | Document the new field | Required | 4 |
-| 8 | [ ] | Verify the production `runtask.json` against the new rules | Required | 4 |
+| 8 | [ ] | Verify the production `runtask.json` against the new rules | Required, deferred to deployment | 4 |
 | 9 | [x] | Format with `gofmt` and `goimports` | Required | 5 |
-| 10 | [ ] | Set a longer timeout in the deployed config | Optional | 5 |
+| 10 | [ ] | Set a longer timeout in the deployed config | Optional, deferred to deployment | 5 |
+
+Tasks 8 and 10 cannot be executed as part of this change: both are gated on an actual production
+deployment, and this change does not deploy anything — that happens later, as part of the vmm guest
+work in [`../use-vmm-guest-parent/preproposal.md`](../use-vmm-guest-parent/preproposal.md). They stay
+listed here as the gate/follow-up that deployment must satisfy, not as open work items blocking this
+change's completion.
 
 ---
 
@@ -188,8 +194,11 @@ allow. This check cannot be done from the dev checkout at all. The dev copy at
 
 **Expected outcome:** a production config known to satisfy the new rules, or a corrected one.
 
-**Actual outcome:** still open — this is a deployment-time check performed by whoever deploys to
-production, not something to run from the dev checkout.
+**Actual outcome:** out of scope for this change. This change does not deploy anything — it lands code
+and specs in the repository — and nothing gets deployed to production until the vmm guest work in
+[`../use-vmm-guest-parent/preproposal.md`](../use-vmm-guest-parent/preproposal.md) happens. Task 8 stays
+a required gate before that eventual rollout, but there is no deployment step within this change for it
+to attach to, so it cannot be executed or closed out here.
 
 ## 9. [x] Format with `gofmt` and `goimports`
 
@@ -212,3 +221,6 @@ Note that `runtask/build/runtask.json` is not tracked in git, so this is a serve
 than a repository change.
 
 **Expected outcome:** deferred to [`../use-vmm-guest-parent/preproposal.md`](../use-vmm-guest-parent/preproposal.md).
+
+**Actual outcome:** out of scope for this change, same as task 8 — there is no deployment within this
+change for a longer timeout to be meaningful against.
