@@ -62,7 +62,8 @@ runtask/
   "SmtpPort":               587,
   "SenderEmail":            "<gmail>",
   "SenderEmailPassword":    "<app-password>",
-  "EmailRecipient":         "<recipient>"
+  "EmailRecipient":         "<recipient>",
+  "DynamicContentExtractionTimeoutSeconds": 60
 }
 ```
 
@@ -78,7 +79,11 @@ runtask/
 ## Key packages
 
 ### config
-Loads `runtask.json` from the directory containing the executable. No env vars.
+Loads `runtask.json` from the directory containing the executable. No env vars. Validates fields
+that have a checkable invariant (e.g. `PocketBaseUrl` scheme/host, `SmtpPort` range, email address
+fields) and fails startup naming every invalid field at once. `DynamicContentExtractionTimeoutSeconds`
+governs the chromedp page-load timeout used by both adapters; absent or `0` defaults to 60 seconds,
+negative values are rejected at startup.
 
 ### pbclient
 Typed wrapper around `github.com/r--w/pocketbase`. Handles auth and provides:
