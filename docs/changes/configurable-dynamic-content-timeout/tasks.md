@@ -7,22 +7,22 @@ written and seen to fail before the code it covers exists. Because Go will not c
 function signature that does not exist yet, the initial red state for tasks 1–3 is a **compile
 failure**. That is the expected outcome — do not soften a test to fit the current signatures.
 
-| # | Task | Required | Depends on |
-|---|---|---|---|
-| 1 | Integration test: configured timeout governs extraction | Required | — |
-| 2 | Unit test: timeout resolution | Required | — |
-| 3 | Unit test: config validation | Required | — |
-| 4 | Implement config field, accessor, load split, validation | Required | 2, 3 |
-| 5 | Thread the duration from scrape to the chromedp context | Required | 1, 4 |
-| 6 | Regression run on the OpenBSD server | Required | 5 |
-| 7 | Document the new field | Required | 4 |
-| 8 | Verify the production `runtask.json` against the new rules | Required | 4 |
-| 9 | Format with `gofmt` and `goimports` | Required | 5 |
-| 10 | Set a longer timeout in the deployed config | Optional | 5 |
+| # | Done | Task | Required | Depends on |
+|---|---|---|---|---|
+| 1 | [x] | Integration test: configured timeout governs extraction | Required | — |
+| 2 | [x] | Unit test: timeout resolution | Required | — |
+| 3 | [x] | Unit test: config validation | Required | — |
+| 4 | [x] | Implement config field, accessor, load split, validation | Required | 2, 3 |
+| 5 | [x] | Thread the duration from scrape to the chromedp context | Required | 1, 4 |
+| 6 | [x] | Regression run on the OpenBSD server | Required | 5 |
+| 7 | [x] | Document the new field | Required | 4 |
+| 8 | [ ] | Verify the production `runtask.json` against the new rules | Required | 4 |
+| 9 | [x] | Format with `gofmt` and `goimports` | Required | 5 |
+| 10 | [ ] | Set a longer timeout in the deployed config | Optional | 5 |
 
 ---
 
-## 1. Integration test: configured timeout governs extraction
+## 1. [x] Integration test: configured timeout governs extraction
 
 **Required.** Depends on nothing.
 
@@ -46,7 +46,10 @@ no arguments. This is the red state.
 `TestScrapeRunCreatesJobPosts` already does so through the Seek adapter's job-page fetch — but it does
 mean they only run on the OpenBSD server, which has `chromium-147` installed.
 
-## 2. Unit test: timeout resolution
+**Actual outcome:** compile failure observed as expected, then both tests pass — on this dev box
+(which happens to have `chromium-browser`) and confirmed again on the OpenBSD server in task 6.
+
+## 2. [x] Unit test: timeout resolution
 
 **Required.** Depends on nothing.
 
@@ -69,7 +72,9 @@ resolve to 60 seconds. This is the guard on the five struct literals listed in `
 **Expected outcome:** the package fails to build — the field, the accessor, and `loadFromFile` do not
 exist yet.
 
-## 3. Unit test: config validation
+**Actual outcome:** compile failure observed as expected; all cases pass after task 4.
+
+## 3. [x] Unit test: config validation
 
 **Required.** Depends on nothing. Same file as task 2.
 
@@ -87,7 +92,10 @@ Two cases carry specific requirements and must not be dropped:
 
 **Expected outcome:** the package fails to build — `validate` does not exist yet.
 
-## 4. Implement config field, accessor, load split, validation
+**Actual outcome:** compile failure observed as expected; both critical cases (simultaneous failures
+joined, `cleanfs`-shaped config accepted) pass after task 4.
+
+## 4. [x] Implement config field, accessor, load split, validation
 
 **Required.** Depends on tasks 2 and 3.
 
@@ -105,7 +113,9 @@ In `runtask/internal/config/config.go`:
 
 **Expected outcome:** tasks 2 and 3 pass. Task 1 still fails to compile.
 
-## 5. Thread the duration from scrape to the chromedp context
+**Actual outcome:** implemented in `runtask/internal/config/config.go` as specified.
+
+## 5. [x] Thread the duration from scrape to the chromedp context
 
 **Required.** Depends on tasks 1 and 4.
 
@@ -125,7 +135,9 @@ Neither `siteadapters` nor `dynamiccontentextractor` may gain an import of `inte
 
 **Expected outcome:** task 1 passes; `go build ./runtask/...` is clean.
 
-## 6. Regression run on the OpenBSD server
+**Actual outcome:** all four files updated together; `go build ./runtask/...` clean on the first try.
+
+## 6. [x] Regression run on the OpenBSD server
 
 **Required.** Depends on task 5.
 
@@ -137,7 +149,13 @@ edit either one is the signal that the defaulting landed in `Load()` instead of 
 **Expected outcome:** the whole `runtask` module is green. chromedp websocket timeouts on this host are
 load-related; re-run once idle before treating one as a real failure.
 
-## 7. Document the new field
+**Actual outcome:** first `go test ./runtask/... -count=1` (default parallel packages) produced two
+load-related flakes — a chromedp websocket dial timeout in the new extractor test, and a PocketBase
+test server startup timeout in the unrelated `report` package. Re-run with `-p 1` (sequential
+packages): fully green, including `TestScrapeRunCreatesJobPosts` and `TestScrapeRunIsIdempotent`
+unmodified.
+
+## 7. [x] Document the new field
 
 **Required.** Depends on task 4.
 
@@ -149,7 +167,9 @@ load-related; re-run once idle before treating one as a real failure.
 
 **Expected outcome:** both files describe the field and the validation behaviour.
 
-## 8. Verify the production `runtask.json` against the new rules
+**Actual outcome:** both files updated as specified.
+
+## 8. [ ] Verify the production `runtask.json` against the new rules
 
 **Required.** Depends on task 4. Manual, and a prerequisite for deployment rather than for the build.
 
@@ -163,13 +183,19 @@ This cannot be done as `junying` — `/home/skillsurvey/` is not readable. The d
 
 **Expected outcome:** a production config known to satisfy the new rules, or a corrected one.
 
-## 9. Format with `gofmt` and `goimports`
+**Actual outcome:** still open — needs `skillsurvey` access.
+
+## 9. [x] Format with `gofmt` and `goimports`
 
 **Required.** Depends on task 5. Per the development rules in `CLAUDE-project.md`, before committing.
 
 **Expected outcome:** no diff from either tool.
 
-## 10. Set a longer timeout in the deployed config
+**Actual outcome:** `gofmt -l runtask/` clean after one pass over `config.go`/`config_test.go`.
+`goimports` is not installed on the dev box; `gofmt`'s import sort plus a clean `go vet` stood in for
+it, and the changed files added no new imports needing regrouping.
+
+## 10. [ ] Set a longer timeout in the deployed config
 
 **Optional.** Depends on task 5.
 
