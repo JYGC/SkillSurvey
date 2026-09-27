@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -55,6 +56,13 @@ func TestLoadFromFileResolvesDynamicContentExtractionTimeout(t *testing.T) {
 			expectLoadError: true,
 			errorNamesField: "DynamicContentExtractionTimeoutSeconds",
 		},
+		{
+			name:            "timeout field large enough to overflow time.Duration seconds",
+			timeoutFieldSet: true,
+			timeoutSeconds:  math.MaxInt64,
+			expectLoadError: true,
+			errorNamesField: "DynamicContentExtractionTimeoutSeconds",
+		},
 	}
 
 	for _, tt := range tests {
@@ -93,6 +101,21 @@ func TestZeroValueConfigResolvesToDefaultTimeout(t *testing.T) {
 	var cfg Config
 	if got := cfg.DynamicContentExtractionTimeout(); got != 60*time.Second {
 		t.Errorf("expected zero-value Config to resolve to 60s, got %v", got)
+	}
+}
+
+// TestConfigWithOverflowingTimeoutSecondsResolvesToDefaultTimeout guards a Config
+// built directly as a struct literal (bypassing validate(), exactly like the five
+// literals documented in design.md) against the same overflow that
+// TestLoadFromFileResolvesDynamicContentExtractionTimeout proves is rejected on
+// the file-loading path. time.Duration is int64 nanoseconds, so a large enough
+// positive seconds value wraps around to a non-positive duration when multiplied
+// by time.Second — which is exactly the "already expired" failure mode
+// requirements.md rejects negative values to avoid.
+func TestConfigWithOverflowingTimeoutSecondsResolvesToDefaultTimeout(t *testing.T) {
+	cfg := Config{DynamicContentExtractionTimeoutSeconds: math.MaxInt64}
+	if got := cfg.DynamicContentExtractionTimeout(); got != 60*time.Second {
+		t.Errorf("expected an overflowing timeout to resolve to the 60s default, got %v", got)
 	}
 }
 

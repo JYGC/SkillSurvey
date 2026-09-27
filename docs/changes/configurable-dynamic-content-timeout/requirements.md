@@ -33,10 +33,15 @@ into a plain `int` field cannot distinguish them.
 
 ### Rejecting invalid values
 WHEN `runtask.json` sets `DynamicContentExtractionTimeoutSeconds` to a negative number THE SYSTEM SHALL fail at startup with an error naming the field and the offending value.
+WHEN `runtask.json` sets `DynamicContentExtractionTimeoutSeconds` to a value large enough that converting it to a `time.Duration` in nanoseconds would overflow THE SYSTEM SHALL fail at startup with an error naming the field and the offending value.
 WHEN the timeout value is rejected THE SYSTEM SHALL NOT run the requested command.
 
 Failing fast is required here because a negative duration produces a context that is already expired,
-which would surface as every page load failing for an unrelated-looking reason.
+which would surface as every page load failing for an unrelated-looking reason. A large enough positive
+value produces the identical failure by a different route: `time.Duration` is `int64` nanoseconds, so
+seconds beyond roughly 9.2 billion (about 292 years) wrap around to a non-positive duration when
+multiplied — the same "already expired" context this section exists to prevent, reachable through a
+value that is not itself negative.
 
 ## Configuration Validation
 
