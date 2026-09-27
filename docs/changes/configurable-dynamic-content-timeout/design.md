@@ -100,6 +100,11 @@ file can supply one, and the requirement is to fail at startup with a message na
 ```go
 const defaultDynamicContentExtractionTimeoutSeconds = 60
 
+// maxDynamicContentExtractionTimeoutSeconds is the largest seconds value that converts to a positive
+// time.Duration without overflowing its int64 nanosecond representation. Added in round 1 review —
+// see "Round 1 review finding" below.
+const maxDynamicContentExtractionTimeoutSeconds int64 = math.MaxInt64 / int64(time.Second)
+
 type Config struct {
 	PocketBaseUrl                          string
 	ServiceAccountEmail                    string
@@ -117,7 +122,8 @@ type Config struct {
 
 // DynamicContentExtractionTimeout resolves the configured seconds to a duration, substituting the
 // default when the field is unset. A zero value is indistinguishable from an absent JSON field, so
-// both — and any non-positive value — resolve to the default.
+// both — and any non-positive value, including a positive value large enough to overflow into a
+// non-positive duration — resolve to the default.
 func (c Config) DynamicContentExtractionTimeout() time.Duration
 
 func Load() (Config, error)                                        // resolves path next to executable
@@ -177,6 +183,11 @@ func (c Config) validate() error {
 			fmt.Errorf("DynamicContentExtractionTimeoutSeconds must not be negative, got %d",
 				c.DynamicContentExtractionTimeoutSeconds))
 	}
+	if int64(c.DynamicContentExtractionTimeoutSeconds) > maxDynamicContentExtractionTimeoutSeconds {
+		validationErrors = append(validationErrors,
+			fmt.Errorf("DynamicContentExtractionTimeoutSeconds must not exceed %d (larger values overflow the timeout duration), got %d",
+				maxDynamicContentExtractionTimeoutSeconds, c.DynamicContentExtractionTimeoutSeconds))
+	}
 
 	return errors.Join(validationErrors...)
 }
@@ -200,6 +211,18 @@ Two properties of this shape matter:
 
 Note that `validate()` is deliberately *not* called by `DynamicContentExtractionTimeout()` or by any
 in-process `config.Config` literal. The five test literals listed above stay valid as-is.
+
+**Round 1 review finding, fixed in this change:** `time.Duration` is `int64` nanoseconds, so a
+`DynamicContentExtractionTimeoutSeconds` value beyond `math.MaxInt64 / int64(time.Second)`
+(≈9.2 billion, the new `maxDynamicContentExtractionTimeoutSeconds` constant) overflows when multiplied
+by `time.Second` and wraps to a non-positive duration — reproduced with `math.MaxInt64` seconds
+resolving to `-1s`. `validate()` now rejects it at load time, by the same reasoning as the negative
+check above it. Because `DynamicContentExtractionTimeout()` already defends non-positive input
+independently of `validate()` (for the five struct literals that bypass `Load()`), that accessor gained
+a matching independent guard: it checks the *result* of the multiplication and falls back to the
+default whenever that result is not positive, rather than only checking the pre-multiplication sign.
+This mirrors the existing two-layer shape exactly — `Load()` fails loudly and by name, any bypass path
+degrades quietly to the default — rather than introducing a new one.
 
 ### `internal/dynamiccontentextractor`
 
@@ -365,10 +388,14 @@ a valid `ErrorLogFile`, since that field is now required:
 | `"DynamicContentExtractionTimeoutSeconds": 0` | 60s |
 | `"DynamicContentExtractionTimeoutSeconds": 180` | 180s |
 | `"DynamicContentExtractionTimeoutSeconds": -1` | `loadFromFile` returns an error mentioning the field name |
+| `"DynamicContentExtractionTimeoutSeconds": math.MaxInt64` | `loadFromFile` returns an error mentioning the field name — added in round 1 review, see "Round 1 review finding" above |
 
-Plus a separate case that does not go through a file at all: `config.Config{}` — the zero value used
-by the five struct literals — resolves to 60s. This is the specific guard against the regression
-described under Key Decision.
+Plus two separate cases that do not go through a file at all: `config.Config{}` — the zero value used
+by the five struct literals — resolves to 60s, and (added in round 1 review)
+`Config{DynamicContentExtractionTimeoutSeconds: math.MaxInt64}` also resolves to 60s, proving the
+accessor's own overflow guard holds even for a literal that bypasses `validate()` entirely. The first
+is the specific guard against the regression described under Key Decision; the second is its overflow
+counterpart.
 
 ### Unit — validation
 

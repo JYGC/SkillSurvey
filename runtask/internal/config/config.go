@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net/mail"
 	"net/url"
 	"os"
@@ -12,6 +13,13 @@ import (
 )
 
 const defaultDynamicContentExtractionTimeoutSeconds = 60
+
+// maxDynamicContentExtractionTimeoutSeconds is the largest seconds value that
+// converts to a positive time.Duration without overflowing its int64
+// nanosecond representation. Anything beyond it wraps around to a non-positive
+// duration — the same "already expired" failure mode requirements.md rejects
+// negative values to avoid.
+const maxDynamicContentExtractionTimeoutSeconds int64 = math.MaxInt64 / int64(time.Second)
 
 type Config struct {
 	PocketBaseUrl                          string
@@ -35,7 +43,11 @@ func (c Config) DynamicContentExtractionTimeout() time.Duration {
 	if c.DynamicContentExtractionTimeoutSeconds <= 0 {
 		return defaultDynamicContentExtractionTimeoutSeconds * time.Second
 	}
-	return time.Duration(c.DynamicContentExtractionTimeoutSeconds) * time.Second
+	timeout := time.Duration(c.DynamicContentExtractionTimeoutSeconds) * time.Second
+	if timeout <= 0 {
+		return defaultDynamicContentExtractionTimeoutSeconds * time.Second
+	}
+	return timeout
 }
 
 // Load reads runtask.json from the directory containing the executable.
@@ -107,6 +119,9 @@ func (c Config) validate() error {
 
 	if c.DynamicContentExtractionTimeoutSeconds < 0 {
 		validationErrors = append(validationErrors, fmt.Errorf("DynamicContentExtractionTimeoutSeconds must not be negative, got %d", c.DynamicContentExtractionTimeoutSeconds))
+	}
+	if int64(c.DynamicContentExtractionTimeoutSeconds) > maxDynamicContentExtractionTimeoutSeconds {
+		validationErrors = append(validationErrors, fmt.Errorf("DynamicContentExtractionTimeoutSeconds must not exceed %d (larger values overflow the timeout duration), got %d", maxDynamicContentExtractionTimeoutSeconds, c.DynamicContentExtractionTimeoutSeconds))
 	}
 
 	return errors.Join(validationErrors...)

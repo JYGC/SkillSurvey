@@ -83,7 +83,8 @@ Loads `runtask.json` from the directory containing the executable. No env vars. 
 that have a checkable invariant (e.g. `PocketBaseUrl` scheme/host, `SmtpPort` range, email address
 fields) and fails startup naming every invalid field at once. `DynamicContentExtractionTimeoutSeconds`
 governs the chromedp page-load timeout used by both adapters; absent or `0` defaults to 60 seconds,
-negative values are rejected at startup.
+negative values and values large enough to overflow `time.Duration` (beyond ~9.2 billion) are rejected
+at startup.
 
 ### pbclient
 Typed wrapper around `github.com/r--w/pocketbase`. Handles auth and provides:
