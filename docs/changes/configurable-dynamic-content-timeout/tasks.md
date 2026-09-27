@@ -174,16 +174,22 @@ unmodified.
 **Required.** Depends on task 4. Manual, and a prerequisite for deployment rather than for the build.
 
 Validation converts a previously tolerated malformed value into a startup failure, so the production
-config must be checked before the new binary runs. As `skillsurvey`, confirm that `ErrorLogFile` is
-non-empty, `PocketBaseUrl` has an `http`/`https` scheme and a host, `SmtpPort` is in range, the three
-email fields parse as addresses, and any timeout value present is not negative.
+config must be checked before the new binary runs there. This is a deployment-time check, not a test —
+`skillsurvey` is reserved exclusively for running the production service; all building and testing for
+this change happens as `junying`. Whoever performs the production deployment should confirm, as part of
+that deployment, that `ErrorLogFile` is non-empty, `PocketBaseUrl` has an `http`/`https` scheme and a
+host, `SmtpPort` is in range, the three email fields parse as addresses, and any timeout value present
+is not negative.
 
-This cannot be done as `junying` — `/home/skillsurvey/` is not readable. The dev copy at
+`/home/skillsurvey/` is production and is off-limits to testing — it must not be read or written to as
+part of this change's verification, regardless of what `junying`'s file permissions would technically
+allow. This check cannot be done from the dev checkout at all. The dev copy at
 `runtask/build/runtask.json` has already been checked and passes.
 
 **Expected outcome:** a production config known to satisfy the new rules, or a corrected one.
 
-**Actual outcome:** still open — needs `skillsurvey` access.
+**Actual outcome:** still open — this is a deployment-time check performed by whoever deploys to
+production, not something to run from the dev checkout.
 
 ## 9. [x] Format with `gofmt` and `goimports`
 
