@@ -22,12 +22,12 @@ type JoraAdapter struct {
 }
 
 // NewJoraAdapter loads adapter configuration from the provided JSON file path.
-func NewJoraAdapter(configFilePath string) (*JoraAdapter, error) {
+func NewJoraAdapter(configFilePath string, dynamicContentExtractionTimeout time.Duration) (*JoraAdapter, error) {
 	jora := new(JoraAdapter)
 	if err := loadJSON(configFilePath, &jora.configSettings); err != nil {
 		return nil, fmt.Errorf("load jora config %s: %w", configFilePath, err)
 	}
-	jora.dynamicContentExtractor = dynamiccontentextractor.NewDynamicContentExtractor()
+	jora.dynamicContentExtractor = dynamiccontentextractor.NewDynamicContentExtractor(dynamicContentExtractionTimeout)
 	return jora, nil
 }
 

@@ -60,9 +60,9 @@ func adapterForSite(siteName string, cfg config.Config) (siteadapters.ISiteAdapt
 
 	switch {
 	case strings.EqualFold(siteName, seekName) || strings.EqualFold(siteName, "seek"):
-		return siteadapters.NewSeekAdapter(cfg.SeekConfigFile)
+		return siteadapters.NewSeekAdapter(cfg.SeekConfigFile, cfg.DynamicContentExtractionTimeout())
 	case strings.EqualFold(siteName, joraName) || strings.EqualFold(siteName, "jora"):
-		return siteadapters.NewJoraAdapter(cfg.JoraConfigFile)
+		return siteadapters.NewJoraAdapter(cfg.JoraConfigFile, cfg.DynamicContentExtractionTimeout())
 	default:
 		return nil, fmt.Errorf("no adapter configured for site %q", siteName)
 	}

@@ -52,7 +52,7 @@ Four commands dispatched from `cmd/runtask/main.go`:
 | `runtask housekeeping cleanfs` | Remove Chromium temp dirs under `/tmp` |
 | `runtask housekeeping sendlog` | Email `ErrorLogFile` via SMTP PlainAuth; truncate log |
 
-Config loaded from `runtask.json` next to the binary (no env vars). Call `exception.Init(cfg.ErrorLogFile)` once at startup before any `exception.LogErrorWithLabel` / `LogExtraData` / `ReportErrorIfPanic` calls — the logger is nil until initialised.
+Config loaded from `runtask.json` next to the binary (no env vars); malformed values (bad `PocketBaseUrl`, out-of-range `SmtpPort`, unparsable email addresses, a negative or overflow-causing `DynamicContentExtractionTimeoutSeconds`) are rejected at startup, naming every failing field. `DynamicContentExtractionTimeoutSeconds` governs chromedp's per-page-load timeout for both adapters and defaults to 60 seconds when absent or `0`. Call `exception.Init(cfg.ErrorLogFile)` once at startup before any `exception.LogErrorWithLabel` / `LogExtraData` / `ReportErrorIfPanic` calls — the logger is nil until initialised.
 
 When using `chromedp.Nodes`, always pass `chromedp.AtLeast(0)` — without it the call blocks forever when a selector is not found.
 

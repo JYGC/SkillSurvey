@@ -15,10 +15,11 @@ const webdriverProperty = `Object.defineProperty(navigator, 'webdriver', {get: (
 const pluginsProperty = `Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});`
 
 type DynamicContentExtractor struct {
-	chromedpOptions []chromedp.ExecAllocatorOption
+	chromedpOptions                 []chromedp.ExecAllocatorOption
+	dynamicContentExtractionTimeout time.Duration
 }
 
-func NewDynamicContentExtractor() *DynamicContentExtractor {
+func NewDynamicContentExtractor(dynamicContentExtractionTimeout time.Duration) *DynamicContentExtractor {
 	// Chrome requires XDG_RUNTIME_DIR on Linux/BSD. Set a fallback if missing
 	// (common in SSH sessions without a login manager).
 	if os.Getenv("XDG_RUNTIME_DIR") == "" {
@@ -36,7 +37,8 @@ func NewDynamicContentExtractor() *DynamicContentExtractor {
 		chromedp.Flag("disable-blink-features", "AutomationControlled"),
 	}
 	return &DynamicContentExtractor{
-		chromedpOptions,
+		chromedpOptions:                 chromedpOptions,
+		dynamicContentExtractionTimeout: dynamicContentExtractionTimeout,
 	}
 }
 
@@ -53,7 +55,7 @@ func (d DynamicContentExtractor) ExtractDynamicContent(
 	ctx, cancel := chromedp.NewContext(allocatorCtx)
 	defer cancel()
 
-	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, 60*time.Second)
+	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, d.dynamicContentExtractionTimeout)
 	defer timeoutCancel()
 
 	chromedpActions := []chromedp.Action{
