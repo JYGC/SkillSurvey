@@ -407,9 +407,13 @@ edit either one is the signal that the defaulting landed in the wrong place.
 
 The deployed `runtask.json` must also be checked against the new rules before rollout. The dev copy at
 `runtask/build/runtask.json` on the server has been inspected and passes: eleven fields present,
-`PocketBaseUrl` carries an `http://` scheme, `SmtpPort` is 587. The production copy lives under
-`/home/skillsurvey/` and is not readable as `junying`, so it must be verified by whoever deploys as
-`skillsurvey` — validation turns a previously tolerated malformed value into a startup failure.
+`PocketBaseUrl` carries an `http://` scheme, `SmtpPort` is 587. The production copy lives under `/home/skillsurvey/`, which is off-limits to testing — it must not be
+read or written to as part of this change's verification, regardless of what `junying`'s file
+permissions would technically allow. Verifying it is a deployment-time check performed by whoever
+deploys to production, not a testing task — `skillsurvey` is reserved exclusively for running the
+production service, and all building and testing for this change happens as `junying`. Validation turns
+a previously tolerated malformed value into a startup failure, which is why this check matters before
+rollout.
 
 ### Flakiness
 
