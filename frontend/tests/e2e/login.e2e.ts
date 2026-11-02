@@ -1,7 +1,7 @@
 import { SEED_USER_EMAIL, SEED_USER_PASSWORD } from '../setup/seed';
 
 describe('login and logout flow', () => {
-  it('valid credentials navigate to /user/profile (T41)', async () => {
+  it('valid credentials navigate to /user/monthly-count-report (T41)', async () => {
     await browser.url('/login');
 
     // Wait for Vue to render the login form before collecting inputs
@@ -13,11 +13,11 @@ describe('login and logout flow', () => {
     await $('button=Login').click();
 
     await browser.waitUntil(
-      async () => (await browser.getUrl()).includes('/user/profile'),
+      async () => (await browser.getUrl()).includes('/user/monthly-count-report'),
       { timeout: 10000, interval: 200 },
     );
 
-    expect(await browser.getUrl()).toContain('/user/profile');
+    expect(await browser.getUrl()).toContain('/user/monthly-count-report');
   });
 
   it('logout redirects to / (T43)', async () => {
@@ -25,7 +25,7 @@ describe('login and logout flow', () => {
     await $('[data-testid="logout-btn"]').click();
 
     await browser.waitUntil(
-      async () => !(await browser.getUrl()).includes('/user/profile'),
+      async () => !(await browser.getUrl()).includes('/user/'),
       { timeout: 10000, interval: 200 },
     );
 

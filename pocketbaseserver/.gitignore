@@ -1,5 +1,6 @@
 .vscode
 build/
+pb_public/
 target/
 frontend/dist/
 frontend/node_modules/
