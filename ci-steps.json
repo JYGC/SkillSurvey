@@ -27,6 +27,30 @@
       "Command": ["go", "test", "-count=1", "./pocketbaseserver/...", "./runtask/..."],
       "DependsOn": ["build-pocketbaseserver", "build-runtask"],
       "RepeatOnceOnFailure": true
+    },
+    {
+      "Name": "vitest-unit",
+      "WorkingDirectory": "frontend",
+      "Command": ["npm", "run", "test:unit"],
+      "DependsOn": ["install-frontend-dependencies", "build-pocketbaseserver", "build-runtask", "build-frontend", "go-tests"]
+    },
+    {
+      "Name": "vitest-contract",
+      "WorkingDirectory": "frontend",
+      "Command": ["npm", "run", "test:contract"],
+      "DependsOn": ["install-frontend-dependencies", "build-pocketbaseserver", "build-runtask", "build-frontend", "go-tests"]
+    },
+    {
+      "Name": "vitest-integration",
+      "WorkingDirectory": "frontend",
+      "Command": ["npm", "run", "test:integration"],
+      "DependsOn": ["install-frontend-dependencies", "build-pocketbaseserver", "build-runtask", "build-frontend", "go-tests"]
+    },
+    {
+      "Name": "eslint",
+      "WorkingDirectory": "frontend",
+      "Command": ["npx", "eslint", "."],
+      "DependsOn": ["install-frontend-dependencies", "build-pocketbaseserver", "build-runtask", "build-frontend", "go-tests"]
     }
   ]
 }
