@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build:e2e": "VUE_APP_POCKETBASE_URL=http://127.0.0.1:18091 vue-cli-service build --dest ../pocketbaseserver/pb_public",
     "lint": "eslint .",
     "test:unit": "VITEST_UNIT_ONLY=1 vitest run tests/unit",
     "test:contract": "vitest run tests/contract",

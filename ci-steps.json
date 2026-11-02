@@ -51,6 +51,18 @@
       "WorkingDirectory": "frontend",
       "Command": ["npx", "eslint", "."],
       "DependsOn": ["install-frontend-dependencies", "build-pocketbaseserver", "build-runtask", "build-frontend", "go-tests"]
+    },
+    {
+      "Name": "build-frontend-for-e2e",
+      "WorkingDirectory": "frontend",
+      "Command": ["npm", "run", "build:e2e"],
+      "DependsOn": ["vitest-unit", "vitest-contract", "vitest-integration", "eslint"]
+    },
+    {
+      "Name": "e2e-tests",
+      "WorkingDirectory": "frontend",
+      "Command": ["npm", "run", "test:e2e"],
+      "DependsOn": ["build-frontend-for-e2e"]
     }
   ]
 }

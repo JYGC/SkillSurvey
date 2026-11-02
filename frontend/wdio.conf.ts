@@ -7,8 +7,8 @@ import * as path from 'path';
 const REPO_ROOT = path.resolve(__dirname, '..');
 const PB_BIN = path.join(REPO_ROOT, 'pocketbaseserver', 'build', 'pocketbaseserver');
 const PB_CWD = path.join(REPO_ROOT, 'pocketbaseserver');
-const PB_HOST = '192.168.8.147';
-const PB_PORT = '8090';
+const PB_HOST = '127.0.0.1';
+const PB_PORT = '18091';
 export const PB_URL = `http://${PB_HOST}:${PB_PORT}`;
 
 const chromeBin = process.env.CHROMIUM_PATH ?? '/usr/local/bin/chrome';
@@ -36,6 +36,7 @@ async function waitForUrl(url: string, timeoutMs = 15_000): Promise<void> {
 export const config: Options.Testrunner = {
   runner: 'local',
   specs: ['./tests/e2e/**/*.e2e.ts'],
+  maxInstances: 1,
   framework: 'mocha',
   reporters: ['spec'],
   mochaOpts: { timeout: 30000 },
@@ -45,6 +46,7 @@ export const config: Options.Testrunner = {
   capabilities: [
     {
       browserName: 'chrome',
+      'goog:loggingPrefs': { browser: 'ALL' },
       'goog:chromeOptions': {
         binary: chromeBin,
         args: ['--headless', '--no-sandbox', '--disable-dev-shm-usage'],
@@ -53,11 +55,17 @@ export const config: Options.Testrunner = {
   ],
   baseUrl: PB_URL,
 
-  async onPrepare() {
-    // Kill any leftover pocketbaseserver process on this port
-    try { execFileSync('pkill', ['pocketbaseserver'], { stdio: 'pipe' }); } catch { /* none running */ }
-    await new Promise((r) => setTimeout(r, 500));
+  async afterTest(test, _context, { passed }) {
+    const runArtifactDirectory = process.env.CI_RUN_ARTIFACT_DIRECTORY;
+    if (passed || !runArtifactDirectory) return;
 
+    const fileNameStem = test.title.replace(/[^a-zA-Z0-9]+/g, '-');
+    await browser.saveScreenshot(path.join(runArtifactDirectory, `${fileNameStem}.png`));
+    const browserLog = await browser.getLogs('browser');
+    fs.writeFileSync(path.join(runArtifactDirectory, `${fileNameStem}.log`), JSON.stringify(browserLog, null, 2));
+  },
+
+  async onPrepare() {
     // Start a fresh test PocketBase instance
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pb-e2e-'));
 
