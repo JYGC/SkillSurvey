@@ -14,14 +14,14 @@ const SEED_MONTHS = [
 export async function seedInitialData(baseUrl: string): Promise<void> {
   // The superadmin is created via `pocketbaseserver superuser upsert` in
   // vitest.global-setup.ts before the server starts. Authenticate here.
-  const authRes = await post(baseUrl, '/api/collections/_superusers/auth-with-password', undefined, {
+  const authRes = await post<{ token: string }>(baseUrl, '/api/collections/_superusers/auth-with-password', undefined, {
     identity: SEED_ADMIN_EMAIL,
     password: SEED_ADMIN_PASSWORD,
   });
   const adminToken: string = authRes.token;
 
   // Create test user (self-registration is disabled; superadmin creates accounts).
-  const user = await post(baseUrl, '/api/collections/users/records', adminToken, {
+  const user = await post<{ id: string }>(baseUrl, '/api/collections/users/records', adminToken, {
     name: 'Test User',
     email: SEED_USER_EMAIL,
     password: SEED_USER_PASSWORD,
@@ -35,13 +35,13 @@ export async function seedInitialData(baseUrl: string): Promise<void> {
   });
 
   // Create a skillType for test monthlyCountReports.
-  const skillType = await post(baseUrl, '/api/collections/skillTypes/records', adminToken, {
+  const skillType = await post<{ id: string }>(baseUrl, '/api/collections/skillTypes/records', adminToken, {
     name: 'Test Skill Type',
     description: 'Used by automated tests',
   });
 
   // Create a skillName under that type.
-  const skillName = await post(baseUrl, '/api/collections/skillNames/records', adminToken, {
+  const skillName = await post<{ id: string }>(baseUrl, '/api/collections/skillNames/records', adminToken, {
     name: 'TestSkill',
     isEnabled: true,
     skillType: skillType.id,
@@ -62,7 +62,7 @@ export async function seedInitialData(baseUrl: string): Promise<void> {
   process.env.TEST_USER_PASSWORD = SEED_USER_PASSWORD;
 }
 
-async function post(baseUrl: string, path: string, token: string | undefined, body: unknown): Promise<any> {
+async function post<ResponseBody>(baseUrl: string, path: string, token: string | undefined, body: unknown): Promise<ResponseBody> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = token;
   const res = await fetch(`${baseUrl}${path}`, {
