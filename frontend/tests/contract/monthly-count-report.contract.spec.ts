@@ -14,15 +14,15 @@ async function getUserToken(): Promise<string> {
 }
 
 describe('monthlyCountReports contract', () => {
-  it('unauthenticated list returns 200 (public collection)', async () => {
+  it('unauthenticated list returns 200', async () => {
     const res = await fetch(`${baseUrl}/api/collections/monthlyCountReports/records`);
     expect(res.status).toBe(200);
   });
 
-  it('unauthenticated list returns seed records', async () => {
+  it('unauthenticated list returns no records', async () => {
     const res = await fetch(`${baseUrl}/api/collections/monthlyCountReports/records`);
     const data = await res.json();
-    expect(data.totalItems).toBeGreaterThan(0);
+    expect(data.totalItems).toBe(0);
   });
 
   it('authenticated list also returns 200', async () => {
@@ -31,5 +31,14 @@ describe('monthlyCountReports contract', () => {
       headers: { Authorization: token },
     });
     expect(res.status).toBe(200);
+  });
+
+  it('authenticated list returns seed records', async () => {
+    const token = await getUserToken();
+    const res = await fetch(`${baseUrl}/api/collections/monthlyCountReports/records`, {
+      headers: { Authorization: token },
+    });
+    const data = await res.json();
+    expect(data.totalItems).toBeGreaterThan(0);
   });
 });

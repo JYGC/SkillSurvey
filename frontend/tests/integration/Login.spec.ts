@@ -15,7 +15,7 @@ function makeRouter() {
     routes: [
       { path: '/', component: { template: '<div/>' } },
       { path: '/login', component: Login },
-      { path: '/user/profile', component: { template: '<div/>' } },
+      { path: '/user/monthly-count-report', component: { template: '<div/>' } },
     ],
   });
 }
@@ -36,7 +36,7 @@ describe('Login', () => {
     vi.resetAllMocks();
   });
 
-  it('valid credentials navigate to /user/profile', async () => {
+  it('valid credentials navigate to /user/monthly-count-report', async () => {
     mockLogin.mockResolvedValue({});
     const router = makeRouter();
     await router.push('/login');
@@ -49,7 +49,7 @@ describe('Login', () => {
     await flushPromises();
 
     expect(mockLogin).toHaveBeenCalledWith('user@example.com', 'password');
-    expect(router.currentRoute.value.path).toBe('/user/profile');
+    expect(router.currentRoute.value.path).toBe('/user/monthly-count-report');
   });
 
   it('invalid credentials show error paragraph, no navigation', async () => {

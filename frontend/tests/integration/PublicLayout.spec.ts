@@ -10,7 +10,7 @@ function makeRouter() {
     history: createMemoryHistory(),
     routes: [
       { path: '/', component: PublicLayout, children: [{ path: '', component: { template: '<div/>' } }] },
-      { path: '/user/profile', component: { template: '<div/>' } },
+      { path: '/user/monthly-count-report', component: { template: '<div/>' } },
     ],
   });
 }
@@ -46,12 +46,12 @@ describe('PublicLayout', () => {
     expect(router.currentRoute.value.path).toBe('/');
   });
 
-  it('authenticated: redirects to /user/profile', async () => {
+  it('authenticated: redirects to /user/monthly-count-report', async () => {
     await authenticateTestUser();
     const router = makeRouter();
     await router.push('/');
     mount(PublicLayout, { global: { plugins: [router], stubs } });
     await flushPromises();
-    expect(router.currentRoute.value.path).toBe('/user/profile');
+    expect(router.currentRoute.value.path).toBe('/user/monthly-count-report');
   });
 });
