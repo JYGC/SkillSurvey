@@ -51,4 +51,8 @@ export const routes: RouteRecordRaw[] = [
             }
         ]
     },
+    {
+        path: '/monthly-count-report',
+        redirect: { name: 'user-monthly-count-report' }
+    },
 ];
