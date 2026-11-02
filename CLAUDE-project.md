@@ -97,7 +97,7 @@ Place test files alongside the Go source (`*_test.go`).
 Run from the repo root on the server:
 
 ```sh
-go test ./...                                                              # all modules
+go test ./pocketbaseserver/... ./runtask/...                               # all modules (./... fails at the go.work root)
 go test ./runtask/internal/housekeeping/ -v -timeout 60s                   # specific package
 go test ./runtask/internal/scrape/ -run TestScrapeRunCreatesJobPosts -v    # single test
 go test ./pocketbaseserver/migrations/ -v -timeout 120s                    # migration + RBAC tests
