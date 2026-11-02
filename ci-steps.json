@@ -1,0 +1,32 @@
+{
+  "Steps": [
+    {
+      "Name": "install-frontend-dependencies",
+      "WorkingDirectory": "frontend",
+      "Command": ["npm", "ci", "--no-audit", "--no-fund"]
+    },
+    {
+      "Name": "build-pocketbaseserver",
+      "WorkingDirectory": "pocketbaseserver",
+      "Command": ["make", "build"]
+    },
+    {
+      "Name": "build-runtask",
+      "WorkingDirectory": "runtask",
+      "Command": ["make", "build"]
+    },
+    {
+      "Name": "build-frontend",
+      "WorkingDirectory": "frontend",
+      "Command": ["npm", "run", "build"],
+      "DependsOn": ["install-frontend-dependencies"]
+    },
+    {
+      "Name": "go-tests",
+      "WorkingDirectory": ".",
+      "Command": ["go", "test", "-count=1", "./pocketbaseserver/...", "./runtask/..."],
+      "DependsOn": ["build-pocketbaseserver", "build-runtask"],
+      "RepeatOnceOnFailure": true
+    }
+  ]
+}
