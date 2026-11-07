@@ -1,0 +1,32 @@
+{
+  "BaseUrl": "https://au.jora.com",
+  "AllowedDomains": [
+    "jora.com",
+    "au.jora.com"
+  ],
+  "SearchCriterias": [
+    {
+      "Name": "REPLACE_ME",
+      "Url": "https://au.jora.com/j?q=REPLACE_ME&l=REPLACE_ME&p={p}"
+    }
+  ],
+  "PageFlag": "{p}",
+  "Pages": 2,
+  "SiteSelectors": {
+    "SiteName": "au.jora.com",
+    "JobPostLink": ".job-link",
+    "TitleSelector": "h1.job-title",
+    "BodySelector": "#job-description-container",
+    "PostedDateSelector": ".listed-date",
+    "CitySelector": ".location",
+    "Country": "Australia",
+    "SuburbSelector": ".location",
+    "TitleType": "text",
+    "BodyType": "text",
+    "PostedDateType": "text",
+    "CityType": "text",
+    "SuburbType": "text"
+  },
+  "SecondsBetweenJobPosts": 2,
+  "SecondsBetweenLinkPages": 2
+}

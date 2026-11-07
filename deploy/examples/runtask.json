@@ -1,0 +1,14 @@
+{
+  "PocketBaseUrl": "http://REPLACE_ME:8090",
+  "ServiceAccountEmail": "runtask@skillsurvey.com",
+  "ServiceAccountPassword": "REPLACE_ME",
+  "SeekConfigFile": "/etc/runtask/www.seek.com.au.json",
+  "JoraConfigFile": "/etc/runtask/au.jora.com.json",
+  "ErrorLogFile": "/var/log/runtask/error.log",
+  "SmtpDomain": "REPLACE_ME",
+  "SmtpPort": 587,
+  "SenderEmail": "REPLACE_ME",
+  "SenderEmailPassword": "REPLACE_ME",
+  "EmailRecipient": "REPLACE_ME",
+  "DynamicContentExtractionTimeoutSeconds": 60
+}
