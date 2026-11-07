@@ -1,0 +1,34 @@
+{
+  "BaseUrl": "https://www.seek.com.au",
+  "AllowedDomains": [
+    "www.seek.com.au"
+  ],
+  "SearchApiUrl": "https://www.seek.com.au/api/jobsearch/v5/search",
+  "SearchCriterias": [],
+  "PageFlag": "{p}",
+  "Pages": 2,
+  "SiteSelectors": {
+    "SiteName": "www.seek.com.au",
+    "TitleSelector": "[data-automation=\"job-detail-title\"]",
+    "BodySelector": "[data-automation=\"jobAdDetails\"]"
+  },
+  "ApiParameters": [
+    {
+      "NewSinceDaysAgo": 1,
+      "SiteKey": "REPLACE_ME",
+      "SourceSystem": "REPLACE_ME",
+      "UserQueryId": "REPLACE_ME",
+      "UserId": "REPLACE_ME",
+      "UserSessionId": "REPLACE_ME",
+      "EventCaptureSessionId": "REPLACE_ME",
+      "Where": "REPLACE_ME",
+      "Classification": "REPLACE_ME",
+      "PageSize": "REPLACE_ME",
+      "Include": "REPLACE_ME",
+      "Locale": "REPLACE_ME",
+      "SolId": "REPLACE_ME",
+      "RelatedSearchesCount": "REPLACE_ME",
+      "BaseKeywords": "REPLACE_ME"
+    }
+  ]
+}

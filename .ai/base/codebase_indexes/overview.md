@@ -10,6 +10,7 @@ SkillSurvey tracks which technical skills appear in Australian job listings (See
 | `runtask/` | Scheduled task runner — scrape, report, housekeeping | Active |
 | `migrate/` | One-shot legacy SQLite → PocketBase migration tool | Active (tool) |
 | `frontend/` | Vue 3 + TypeScript SPA | Active |
+| `deploy/` | Bundle build script, install scripts for OpenBSD hosts, and their tests | Active |
 | `backend/` | Old Go stack: GORM/SQLite scrapers + REST API | Legacy (standalone, not in go.work) |
 
 ## Go workspace

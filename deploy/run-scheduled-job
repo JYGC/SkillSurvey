@@ -1,0 +1,7 @@
+#!/bin/sh
+# cron and check-setup both start runtask through this file, so a passing check-setup means the jobs start the same way.
+HOME=/var/runtask
+PATH=/usr/bin:/bin:/usr/local/bin
+export HOME PATH
+cd /var/runtask
+exec /usr/local/libexec/runtask/runtask "$@"

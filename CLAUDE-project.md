@@ -11,9 +11,10 @@ SkillSurvey tracks which technical skills appear in Australian job listings (See
 ## Architecture
 
 ```
-pocketbaseserver/   PocketBase BaaS — auth, collections, REST API, serves frontend
+pocketbaseserver/   PocketBase BaaS — auth, collections, REST API
 runtask/            Scheduled task runner — scrape → report → housekeeping
-frontend/           Vue 3 + TypeScript SPA (served from pocketbaseserver/pb_public/)
+frontend/           Vue 3 + TypeScript SPA (served by httpd on hosts, from pocketbaseserver/pb_public/ in E2E)
+deploy/             Bundle build script, idempotent install scripts for OpenBSD hosts, and their tests
 ```
 
 **Data flow:**
@@ -25,7 +26,7 @@ Seek / Jora  →  runtask scrape  →  jobPosts in PocketBase
                          frontend (reads via PocketBase SDK)
 ```
 
-**Go workspace** (`go.work`) includes `./pocketbaseserver`, `./runtask`.
+**Go workspace** (`go.work`) includes `./deploy`, `./pocketbaseserver`, `./runtask`.
 
 ### pocketbaseserver
 
@@ -59,7 +60,7 @@ When using `chromedp.Nodes`, always pass `chromedp.AtLeast(0)` — without it th
 
 ### frontend
 
-Vue 3 SPA built to `frontend/dist/`, then copied to `pocketbaseserver/pb_public/`. Uses the PocketBase JS SDK for all data and auth. Dev and E2E builds take the base URL from `VUE_APP_POCKETBASE_URL` (`.env`, or `build:e2e`'s own value).
+Vue 3 SPA built to `frontend/dist/`. Uses the PocketBase JS SDK for all data and auth. Dev and E2E builds take the base URL from `VUE_APP_POCKETBASE_URL` (`.env`, or `build:e2e`'s own value).
 
 `npm run build:hosted` leaves `VUE_APP_POCKETBASE_URL` empty, so one build works on any host. At startup, `src/store/host-config.ts` fetches `/host-config.json` (`{"PocketBaseUrl": "http://<host>:8090"}`) uncached, and points the SDK at that address before the router starts. The file is written per host and is never part of a build. If it is missing or has no address, the page shows `SkillSurvey cannot start: its settings could not be read.` instead of a blank screen.
 
@@ -100,7 +101,8 @@ Place test files alongside the Go source (`*_test.go`).
 Run from the repo root on the server:
 
 ```sh
-go test ./pocketbaseserver/... ./runtask/...                               # all modules (./... fails at the go.work root)
+go test ./pocketbaseserver/... ./runtask/...                               # app and runtask modules (./... fails at the go.work root)
+go test ./deploy/...                                                       # install script tests, run on their own: alongside the others they slow PocketBase and Chromium start-up enough to fail tests
 go test ./runtask/internal/housekeeping/ -v -timeout 60s                   # specific package
 go test ./runtask/internal/scrape/ -run TestScrapeRunCreatesJobPosts -v    # single test
 go test ./pocketbaseserver/migrations/ -v -timeout 120s                    # migration + RBAC tests
@@ -132,21 +134,20 @@ npm run build:hosted  # build → dist/, reading the address from /host-config.j
 npm run lint    # ESLint + style check
 ```
 
-After building, copy `dist/` contents to `pocketbaseserver/pb_public/` to deploy the frontend.
+Hosts serve a `build:hosted` build through `httpd`. `build:e2e` writes into `pocketbaseserver/pb_public/`, which PocketBase serves for E2E only.
 
-## Deploying to the OpenBSD server
+## Deploying
 
-**Key facts (non-sensitive):**
-- Connect with the OpenSSH client using key auth: `ssh -i ~/.ssh/openbsd_key junying@192.168.8.145`.
-- The SSH address and the address services listen on differ, but both reach the same machine.
-- `runtask.json` lives next to the runtask binary in `build/`.
-- The **production** PocketBase runs as user `skillsurvey` from its own checkout. Deployment steps below act on the `junying` checkout only and must not stop, restart, or rebuild the production instance.
+Every deployment is manual. CI builds two bundles as its last step on every passing run on `master` (`build-bundles` in `ci-steps.json`, which runs `deploy/build-bundles.sh`), and the operator copies them to each host and runs the install script as root. **`deploy/README.md` is the operator guide**: getting bundles, first installs, the steps left by hand, the schedule, upgrading and going back.
 
-### Deployment steps
+**Key facts:**
+- A bundle is one commit, built from `git archive` with `go build -trimpath -buildvcs=false` and `npm run build:hosted`, so the same commit gives byte-identical programs wherever it is built. A plain `make build` does not, and would make every commit look like a new `pocketbaseserver` to the install script.
+- The server bundle holds `pocketbaseserver`, the frontend and `install-server.sh`. The runtask bundle holds `runtask`, `install-runtask.sh` and example settings holding `REPLACE_ME`. Neither holds a real setting.
+- The install scripts are idempotent, refuse before changing anything when a check fails, never overwrite a settings file and never remove `pb_data`. Their tests in `deploy/*_test.go` run each script against a throwaway root through `DESTDIR`, with stubs for the commands that need root. They need OpenBSD's `sha256`, so they skip elsewhere.
+- Nothing under `deploy/` may name a real host or a private address, because the repository is public. `deploy/publicrepo_test.go` enforces it, and the README uses `<host>` placeholders.
 
-1. Push: `git push`
-2. On server: `git fetch --all && git checkout --detach origin/<branch-name>`
-3. On server: `cd <module>/ && make build` (repeat for each changed module)
-4. Do **not** `pkill pocketbaseserver` — that would target the production instance. Restarting production is a deliberate manual act performed as `skillsurvey`.
+### The current production server
 
-Run tests on the server the same way — push, pull on the server, then use the commands under [Go tests](#go-tests).
+Until production moves to the new hosts, it still runs on the old OpenBSD server as user `skillsurvey`, from that account's own checkout. Connection details are in `CLAUDE.local.md`. Work on that server acts on your own checkout only and must not stop, restart or rebuild the production instance. Do **not** `pkill pocketbaseserver`, which would target it. Restarting production there is a deliberate manual act performed as `skillsurvey`.
+
+To try a branch on that server: push, then `git fetch --all && git checkout --detach origin/<branch-name>` in your checkout, then `make build` in each changed module. Run tests the same way, using the commands under [Go tests](#go-tests).
