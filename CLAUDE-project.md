@@ -43,7 +43,7 @@ Self-registration on `users` is disabled — superadmin creates accounts. Servic
 
 ### runtask
 
-Four commands dispatched from `cmd/runtask/main.go`:
+Five commands dispatched from `cmd/runtask/main.go`:
 
 | Command | Description |
 |---|---|
@@ -51,6 +51,7 @@ Four commands dispatched from `cmd/runtask/main.go`:
 | `runtask report` | Count alias occurrences in jobPosts; write monthlyCountReports |
 | `runtask housekeeping cleanfs` | Remove Chromium temp dirs under `/tmp` |
 | `runtask housekeeping sendlog` | Email `ErrorLogFile` via SMTP PlainAuth; truncate log |
+| `runtask check-setup` | Check that both site files load, the service account can sign in and read `sites`, and Chromium starts on a blank page. Runs every check, prints one line each, and exits 1 if any failed. Writes nothing and scrapes nothing |
 
 Config loaded from `runtask.json` next to the binary (no env vars); malformed values (bad `PocketBaseUrl`, out-of-range `SmtpPort`, unparsable email addresses, a negative or overflow-causing `DynamicContentExtractionTimeoutSeconds`) are rejected at startup, naming every failing field. `DynamicContentExtractionTimeoutSeconds` governs chromedp's per-page-load timeout for both adapters and defaults to 60 seconds when absent or `0`. Call `exception.Init(cfg.ErrorLogFile)` once at startup before any `exception.LogErrorWithLabel` / `LogExtraData` / `ReportErrorIfPanic` calls — the logger is nil until initialised.
 
@@ -58,7 +59,9 @@ When using `chromedp.Nodes`, always pass `chromedp.AtLeast(0)` — without it th
 
 ### frontend
 
-Vue 3 SPA built to `frontend/dist/`, then copied to `pocketbaseserver/pb_public/`. Uses the PocketBase JS SDK for all data and auth. Base URL from `VUE_APP_POCKETBASE_URL` (`.env`).
+Vue 3 SPA built to `frontend/dist/`, then copied to `pocketbaseserver/pb_public/`. Uses the PocketBase JS SDK for all data and auth. Dev and E2E builds take the base URL from `VUE_APP_POCKETBASE_URL` (`.env`, or `build:e2e`'s own value).
+
+`npm run build:hosted` leaves `VUE_APP_POCKETBASE_URL` empty, so one build works on any host. At startup, `src/store/host-config.ts` fetches `/host-config.json` (`{"PocketBaseUrl": "http://<host>:8090"}`) uncached, and points the SDK at that address before the router starts. The file is written per host and is never part of a build. If it is missing or has no address, the page shows `SkillSurvey cannot start: its settings could not be read.` instead of a blank screen.
 
 ## Development rules
 
@@ -124,7 +127,8 @@ Run from `frontend/`:
 ```sh
 npm install
 npm run serve   # dev server (hot-reload)
-npm run build   # production build → dist/
+npm run build   # build → dist/, with the address from .env
+npm run build:hosted  # build → dist/, reading the address from /host-config.json at startup
 npm run lint    # ESLint + style check
 ```
 

@@ -21,7 +21,10 @@ frontend/
 ├── public/
 │   └── index.html              # SPA entry; mounts #app
 ├── src/
-│   ├── main.ts                 # createApp, router, Carbon + BootstrapVue3 plugins
+│   ├── main.ts                 # Reads host-config.json if needed, then createApp, router, Carbon
+│   ├── store/
+│   │   ├── pocketbase.ts       # Shared PocketBase client (cookie auth store)
+│   │   └── host-config.ts      # pointPocketBaseAtAddressInHostConfig() for build:hosted builds
 │   ├── App.vue                 # Root: <router-view> only
 │   ├── assets/logo.png
 │   ├── schemas/
