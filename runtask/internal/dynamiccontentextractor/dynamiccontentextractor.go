@@ -19,7 +19,10 @@ type DynamicContentExtractor struct {
 	dynamicContentExtractionTimeout time.Duration
 }
 
-func NewDynamicContentExtractor(dynamicContentExtractionTimeout time.Duration) *DynamicContentExtractor {
+func NewDynamicContentExtractor(
+	dynamicContentExtractionTimeout time.Duration,
+	browserOptionsAppliedAfterDefaults ...chromedp.ExecAllocatorOption,
+) *DynamicContentExtractor {
 	// Chrome requires XDG_RUNTIME_DIR on Linux/BSD. Set a fallback if missing
 	// (common in SSH sessions without a login manager).
 	if os.Getenv("XDG_RUNTIME_DIR") == "" {
@@ -36,6 +39,7 @@ func NewDynamicContentExtractor(dynamicContentExtractionTimeout time.Duration) *
 		chromedp.Flag("headless", true),
 		chromedp.Flag("disable-blink-features", "AutomationControlled"),
 	}
+	chromedpOptions = append(chromedpOptions, browserOptionsAppliedAfterDefaults...)
 	return &DynamicContentExtractor{
 		chromedpOptions:                 chromedpOptions,
 		dynamicContentExtractionTimeout: dynamicContentExtractionTimeout,

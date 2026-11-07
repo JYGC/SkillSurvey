@@ -11,6 +11,7 @@ import (
 	"keybook/runtask/internal/pbclient"
 	"keybook/runtask/internal/report"
 	"keybook/runtask/internal/scrape"
+	"keybook/runtask/internal/setupcheck"
 )
 
 func main() {
@@ -76,10 +77,27 @@ func main() {
 			exception.LogErrorWithLabel("report", err)
 			log.Fatalf("report: %v", err)
 		}
+	case "check-setup":
+		if !printOneLinePerCheckAndReportWhetherEveryCheckPassed(setupcheck.RunAllChecks(cfg, pb)) {
+			os.Exit(1)
+		}
 	default:
 		printUsage()
 		os.Exit(1)
 	}
+}
+
+func printOneLinePerCheckAndReportWhetherEveryCheckPassed(outcomes []setupcheck.CheckOutcome) bool {
+	everyCheckPassed := true
+	for _, outcome := range outcomes {
+		if outcome.Failure != nil {
+			everyCheckPassed = false
+			fmt.Printf("FAILED  %s: %v\n", outcome.CheckName, outcome.Failure)
+			continue
+		}
+		fmt.Printf("ok      %s\n", outcome.CheckName)
+	}
+	return everyCheckPassed
 }
 
 func printUsage() {
@@ -87,6 +105,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "Commands:")
 	fmt.Fprintln(os.Stderr, "  scrape")
 	fmt.Fprintln(os.Stderr, "  report")
+	fmt.Fprintln(os.Stderr, "  check-setup")
 	fmt.Fprintln(os.Stderr, "  housekeeping cleanfs")
 	fmt.Fprintln(os.Stderr, "  housekeeping sendlog")
 }
