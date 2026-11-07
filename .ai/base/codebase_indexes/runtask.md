@@ -16,7 +16,7 @@ Command-line task runner that handles periodic scraping, reporting, and maintena
 ```
 runtask/
 ├── cmd/runtask/
-│   └── main.go                         # Command dispatcher (scrape | report | housekeeping)
+│   └── main.go                         # Command dispatcher (scrape | report | housekeeping | check-setup)
 ├── internal/
 │   ├── config/
 │   │   └── config.go                   # JSON config loader (runtask.json)
@@ -36,6 +36,10 @@ runtask/
 │   ├── scrape/
 │   │   ├── scrape.go                   # Orchestrates site adapters → PocketBase upserts
 │   │   └── scrape_test.go
+│   ├── setupcheck/
+│   │   ├── setupcheck.go               # RunAllChecks: site files, PocketBase sign-in, Chromium start
+│   │   ├── export_test.go              # Lets tests point the Chromium check at a missing browser
+│   │   └── setupcheck_test.go
 │   └── siteadapters/
 │       ├── siteadapterbase.go          # ISiteAdapter interface + JobPostResult type
 │       ├── seekadapter.go              # Seek search API + Chromedp detail pages
@@ -75,6 +79,7 @@ runtask/
 | `runtask report` | Reads jobPosts + skill aliases; writes monthlyCountReports |
 | `runtask housekeeping cleanfs` | Removes Chromium temp dirs under `/tmp` |
 | `runtask housekeeping sendlog` | Emails `ErrorLogFile` contents; truncates the file |
+| `runtask check-setup` | Checks both site files load, PocketBase sign-in works and Chromium starts; one line per check, exit 1 on any failure; writes nothing |
 
 ## Key packages
 
