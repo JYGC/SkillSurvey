@@ -29,6 +29,11 @@
       "RepeatOnceOnFailure": true
     },
     {
+      "Name": "deploy-tests",
+      "WorkingDirectory": ".",
+      "Command": ["go", "test", "-count=1", "./deploy/..."]
+    },
+    {
       "Name": "vitest-unit",
       "WorkingDirectory": "frontend",
       "Command": ["npm", "run", "test:unit"],
@@ -63,6 +68,12 @@
       "WorkingDirectory": "frontend",
       "Command": ["npm", "run", "test:e2e"],
       "DependsOn": ["build-frontend-for-e2e"]
+    },
+    {
+      "Name": "build-bundles",
+      "WorkingDirectory": ".",
+      "Command": ["sh", "deploy/build-bundles.sh"],
+      "DependsOn": ["e2e-tests", "deploy-tests"]
     }
   ]
 }
