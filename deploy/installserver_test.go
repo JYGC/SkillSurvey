@@ -198,7 +198,7 @@ func TestFirstServerInstallSetsUpBothServicesAndInstallsNoPackages(t *testing.T)
 	if fixture.readFileInRoot(serverInstallRecord) != bundleInformation(bundle.commit) {
 		t.Error("the install record differs from the bundle's BUNDLE-INFO")
 	}
-	assertOutputContains(t, output, "superuser upsert", "runtask@skillsurvey.com", "another machine")
+	assertOutputContains(t, output, "superuser upsert", "runtask@skillsurvey.com", "record to the users collection", "another machine")
 }
 
 func TestSecondServerRunWithTheSameBundleChangesNothingAndRestartsNothing(t *testing.T) {

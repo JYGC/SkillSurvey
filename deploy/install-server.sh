@@ -398,7 +398,9 @@ This was a first install. These steps are left to do by hand:
      doas -u $service_account $program_path superuser upsert EMAIL PASSWORD --dir=$data_folder_path
   2. In the dashboard at $pocketbase_dashboard, set a password on runtask@skillsurvey.com,
      for the runtask host's runtask.json.
-  3. Open $site_address and $pocketbase_dashboard from another machine. Only that shows whether pf lets them through.
+  3. For each person who will log in to the site, add a record to the users collection in that dashboard.
+     Nobody can sign up on the site, and the superuser can log in to the dashboard only.
+  4. Open $site_address and $pocketbase_dashboard from another machine. Only that shows whether pf lets them through.
 STEPS_LEFT_BY_HAND
 }
 
