@@ -109,7 +109,9 @@ The script prints these too:
 
 2. In the dashboard at `http://<app-host>:8090/_/`, set a password on `runtask@skillsurvey.com`. The runtask host
    needs it.
-3. Open `http://<app-host>` and `http://<app-host>:8090/_/` from another machine. Only that shows whether the
+3. For each person who will log in to the site, add a record to the `users` collection in the dashboard. Nobody can
+   sign up on the site, and the superuser can log in to the dashboard only.
+4. Open `http://<app-host>` and `http://<app-host>:8090/_/` from another machine. Only that shows whether the
    firewall lets them through.
 
 ## Installing a runtask host
